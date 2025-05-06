@@ -1,0 +1,156 @@
+.cardd {
+  border-radius: 10px;
+  /* box-shadow: rgba(0, 0, 0, 0.19) 0px 10px 20px, rgba(0, 0, 0, 0.23) 0px 6px 6px !important; */
+  box-shadow: rgba(0, 0, 0, 0.25) 0px 0.0625em 0.0625em,
+    rgba(0, 0, 0, 0.25) 0px 0.125em 0.5em,
+    rgba(255, 255, 255, 0.1) 0px 0px 0px 1px inset !important;
+  background: #fff;
+  position: relative;
+}
+
+.childcardd {
+  position: absolute;
+  bottom: -40%;
+  left: 2rem;
+  padding: 1rem;
+  cursor: pointer;
+}
+.childcardd2 {
+  position: absolute;
+  bottom: -40%;
+  padding: 1rem;
+  right: 2rem;
+  cursor: pointer;
+}
+
+.divviewopen {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  cursor: pointer;
+}
+
+.bi-bus-front {
+  color: #0d6efd;
+}
+
+.durationdiv {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  width: 100px;
+}
+.passangerDiv {
+  width: 90%;
+  margin: 0 auto;
+}
+.info-box {
+  background-color: #fff3cd; /* Light yellow background */
+  border-left: 5px solid #f0ad4e; /* Bootstrap warning color */
+}
+
+.info-box ul li::before {
+  content: "";
+  color: #6c757d; /* Bootstrap muted */
+  font-weight: bold;
+  display: inline-block;
+  width: 1em;
+  margin-left: -1em;
+}
+.classokkaro {
+  margin-top: 2.2rem;
+}
+.innerpassangerDivFlex {
+  display: flex;
+  flex-direction: row;
+  border-bottom: 1px solid gray;
+  font-weight: bold;
+}
+
+.table-light {
+  background-color: #bbbb !important;
+}
+.plannicompany {
+  width: 200px;
+}
+.whatsappiocnn {
+  cursor: pointer;
+}
+@media screen and (max-width: 991px) {
+  .classokkaro {
+    /* margin-top: 15rem; */
+  }
+  .fs-24 {
+    font-size: 20px;
+  }
+  .responRow {
+    background-color: aqua;
+    width: 100%;
+    overflow-x: scroll;
+  }
+  .childcardd {
+    position: absolute;
+    bottom: -50%;
+    left: 50%;
+    transform: translateX(-50%);
+    padding: 1rem;
+    cursor: pointer;
+    width: 90%;
+  }
+  .childcardd2 {
+    position: absolute;
+    bottom: -140%;
+    left: 50%;
+    transform: translateX(-50%);
+    padding: 1rem;
+    cursor: pointer;
+    width: 90%;
+  }
+  .passangerDiv {
+    overflow: scroll !important;
+    max-width: 100%;
+    margin: 1rem auto;
+    /* background-color: black; */
+  }
+
+  .innerpassangerDiv {
+    overflow: scroll !important;
+    max-width: 100%;
+    margin: 1rem 0;
+    /* background-color: red; */
+  }
+
+  .innerpassangerDivFlex {
+    display: flex;
+    flex-direction: row;
+    flex-wrap: nowrap;
+    border-bottom: 1px solid red;
+    gap: 1.5rem;
+    font-weight: bold;
+    width: 100%;
+  }
+
+  .scrollable-container {
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+  }
+
+  .scrollable-inner {
+    min-width: 768px; /* Or as wide as needed to fit your desktop layout */
+    white-space: nowrap;
+  }
+}
+@media (max-width: 768px) {
+  .fs-3 {
+    font-size: 1.5rem !important;
+  }
+  .childcardd {
+    position: absolute;
+    bottom: -50%;
+    left: 50%;
+    transform: translateX(-50%);
+    padding: 1rem;
+    cursor: pointer;
+    width: 90%;
+  }
+}

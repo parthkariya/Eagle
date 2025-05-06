@@ -1,0 +1,364 @@
+.details-contt {
+  /* background-color: var(--color-background); */
+  background-color: #f0f3f5;
+}
+
+.bg-cont {
+  background-color: #fff;
+  padding: 2rem 1rem;
+  border-radius: 14px;
+  max-width: 1440px;
+  margin: 0 auto !important;
+}
+
+.genderSelect {
+  background-color: transparent;
+}
+.inpttticket {
+  /* background-color: var(--color-background); */
+  background-color: #fff;
+  text-align: start;
+}
+
+.pricee-tag {
+  background-color: #f0f3f5;
+  border-top-left-radius: 10px;
+  border-top-right-radius: 10px;
+  padding: 10px;
+  text-align: center;
+  vertical-align: middle;
+  height: 50px;
+}
+
+.pricee-tag h2 {
+  font-size: 25px;
+  font-weight: bold;
+  color: #e8381b;
+}
+
+.flight-box {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  column-gap: 2.5rem;
+}
+
+.booking_details_datepicker_padding {
+  padding: 0.6rem !important;
+  background-color: #fff !important;
+}
+
+.lito {
+  background-color: white;
+  width: 1px;
+  height: 100px;
+  padding: 0px;
+}
+
+.bottomlito {
+  background-color: white;
+  width: 100%;
+  margin: 1rem auto;
+  height: 1px;
+  align-self: center;
+}
+
+.sbmitbtn {
+  cursor: pointer;
+  background: linear-gradient(135deg, #ff690f 0%, #e8381b 100%);
+  padding: 10px;
+  font-weight: 800;
+  color: var(--color-white);
+  border-radius: 8px;
+  margin: 1.5rem 0;
+  /* align-self: center;
+  display: flex;
+  align-items: center; */
+}
+
+.confirmbtn {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  background: linear-gradient(135deg, #ff690f 0%, #e8381b 100%);
+  color: white;
+  border-radius: 10px;
+  width: 150px;
+  padding: 10px;
+  cursor: pointer;
+  font-weight: bold;
+  text-decoration: none;
+}
+
+.confirmbtn:hover {
+  background-color: green !important;
+  transition: all ease 0.5s;
+}
+.clsbtn {
+  background-color: #f0f3f5;
+  color: black;
+  border-radius: 10px;
+  width: 150px;
+  padding: 10px;
+  cursor: pointer;
+  font-weight: bold;
+  text-align: center;
+  text-decoration: none;
+}
+
+.table-responsive {
+  width: 100%;
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch; /* Smooth scrolling on iOS */
+}
+
+/* Keep table width intact */
+.table {
+  width: 100%;
+  min-width: 800px; /* Ensure table doesn't shrink */
+  border-collapse: collapse;
+  font-size: 14px;
+}
+
+/* Ensure text does not wrap inside table cells */
+.table th,
+.table td {
+  white-space: nowrap;
+  padding: 10px;
+  text-align: center;
+}
+
+/* Style the header */
+.table thead {
+  background-color: #f0f3f5;
+  color: white;
+}
+
+/* Add some spacing between rows */
+.table tbody tr {
+  border-bottom: 1px solid #ddd;
+}
+
+/* Airline logo styles */
+.airline_logo {
+  max-width: 50px;
+  height: auto;
+}
+
+.booking_details_airline_name_heading {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  padding-top: 1rem;
+  padding-bottom: 0.5rem;
+  border-bottom: 1px solid #fff;
+}
+
+.custom-checkbox {
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+}
+.custom-checkbox .checkmark {
+  width: 20px;
+  height: 20px;
+  border: 2px solid #ccc;
+  border-radius: 4px;
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.3s;
+}
+
+.custom-checkbox input:checked + .checkmark {
+  background-color: #fff;
+  border-color: red;
+}
+
+.custom-checkbox input:checked + .checkmark::after {
+  content: "✔";
+  color: #ff4500;
+  font-size: 14px;
+}
+
+.accordion {
+  border-radius: 10px;
+  /* background-color: var(--color-background); */
+  padding: 10px;
+  width: 100%;
+}
+.accordion-item {
+  border: none;
+  margin-bottom: 10px;
+  box-shadow: 0px 4px 6px rgba(0, 0, 0, 0.1);
+  border-radius: 8px;
+  overflow: hidden;
+}
+
+.accordion-button {
+  color: #dbb46b;
+  font-weight: bold;
+  font-size: 20px;
+  border: none;
+  transition: background-color 0.3s ease-in-out;
+}
+
+.accordion-button:hover {
+  /* background-color: #dbb46b; */
+  border: 1px solid #ff4500;
+  color: #fff;
+}
+
+.accordion-button:focus {
+  box-shadow: none;
+}
+
+.accordion-button:not(.collapsed) {
+  color: #dbb46b;
+  background-color: transparent;
+  border-bottom: 1px solid #dbb46b;
+}
+
+.accordion-body {
+  background-color: #ffffff;
+  padding: 15px;
+  font-size: 16px;
+}
+
+.accordion-collapse {
+  /* transition: max-height 0.3s ease-in-out; */
+}
+.accordion_select_div {
+  cursor: pointer;
+  transition: all 0.3s ease;
+  border-radius: 10px;
+  padding: 10px;
+}
+.accordion_select_div:hover {
+  background-color: #fff;
+}
+.accordion_select_div.selected {
+  /* background-color: var(--color-background); */
+  background-color: #fff;
+  border-color: var(--color-white) !important;
+}
+
+.react-tabs__tab-list {
+  border-bottom: 2px solid #ff4500 !important;
+}
+
+.tab-main {
+  padding: 10px;
+  /* background-color: var(--color-background); */
+  background-color: #f0f3f5;
+  border-radius: 10px;
+  width: 85%;
+  height: 300px;
+  overflow-y: scroll;
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+  padding-top: 0px;
+}
+.tab-main::-webkit-scrollbar {
+  display: none;
+}
+
+.fixed-tablist {
+  position: sticky;
+  top: 0;
+  /* background-color: var(--color-background); */
+  background-color: #f0f3f5;
+  z-index: 10;
+  padding: 10px 0;
+}
+
+.react-tabs__tab--selected {
+  background-color: #ff4500 !important;
+  color: #fff !important;
+  /* border: 1px solid var(--color-theme) !important; */
+  border: 1px solid #ff4500 !important;
+  background: transparent;
+  font-weight: bold;
+}
+
+@media screen and (max-width: 768px) {
+  .flight-box {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    column-gap: 0px;
+  }
+
+  .table-responsive {
+    overflow-x: auto;
+    display: block;
+  }
+  .table {
+    font-size: 14px;
+  }
+  .table th,
+  .table td {
+    padding: 8px;
+  }
+  .Confirm_Main h3 {
+    font-size: 18px;
+  }
+  .confirmbtn,
+  .clsbtn {
+    font-size: 14px;
+    padding: 8px 12px;
+  }
+  .airline_logo {
+    width: 40px;
+  }
+
+  .vimanimg {
+    width: 100px;
+  }
+  .durationtxt {
+    font-size: 13px;
+  }
+  .frmtxt {
+    font-size: 13px;
+  }
+  .flight-departure {
+    font-size: 13px;
+  }
+}
+
+@media screen and (max-width: 500px) {
+  .resp_booking_details_flight_img {
+    width: 115px;
+  }
+
+  .tab-main {
+    width: 100%;
+  }
+}
+
+.rs-calendar-table-cell {
+  border-radius: 5px;
+  padding: 3px;
+}
+
+/* Booked dates (Red) */
+.booked-date {
+  background-color: red !important;
+  color: white !important;
+  border-radius: 50%;
+}
+
+/* Hold dates (Yellow) */
+.hold-date {
+  background-color: yellow !important;
+  color: black !important;
+  border-radius: 50%;
+}
+
+/* Available dates (Green) */
+.available-date {
+  background-color: green !important;
+  color: white !important;
+  border-radius: 50%;
+}

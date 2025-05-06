@@ -1,0 +1,782 @@
+@import url("https://fonts.googleapis.com/css2?family=Montserrat:ital,wght@0,100..900;1,100..900&display=swap");
+
+.bookingsec {
+  background-color: var(--color-new-bg);
+  border-radius: 10px;
+  /* padding: 1rem; */
+  margin-bottom: 1rem;
+}
+.bkingtxt {
+  color: var(--color-theme);
+  font-size: 20px;
+  font-weight: 800;
+}
+.frmtxt {
+  color: var(--color-theme);
+  font-weight: 700;
+  font-size: 1rem;
+  width: 100px;
+}
+
+.text-warning2 {
+  color: #ff4500 !important;
+}
+.custom-date-picker .ant-picker {
+  /* background-color: var(--color-theme); */
+  height: 45px;
+  width: 100%;
+  border: none;
+  /* color: white; */
+  font-weight: 600;
+  width: 100%;
+}
+.airline_nm {
+  font-family: "Montserrat", sans-serif !important;
+  /* color: red; */
+}
+.booking_details_date_pickers .ant-picker {
+  background-color: var(--color-theme) !important;
+  color: #fff;
+}
+
+.booking_details_date_pickers input::placeholder {
+  color: white !important;
+}
+
+.txtinput_booking_details::placeholder {
+  color: white !important;
+}
+
+.disabledatepicker .ant-picker {
+  /* background-color: red; */
+  height: 45px;
+  width: 100%;
+  border: none;
+}
+
+.custom-date-picker .ant-picker:hover,
+.custom-date-picker .ant-picker-focused {
+  border-color: rebeccapurple; /* Border color when focused or hovered */
+}
+
+.custom-date-picker .ant-picker-clear {
+  color: white; /* Close icon color */
+}
+
+.custom-date-picker .ant-picker-suffix {
+  color: white; /* Calendar icon color */
+}
+
+.custom-date-picker .ant-picker-input > input::placeholder {
+  color: #000; /* Change placeholder text color to black */
+  opacity: 1; /* Ensure the color is not faded */
+}
+.txtinput {
+  background-color: var(--color-theme);
+  color: white;
+  font-weight: 600;
+  border: none;
+  height: 45px;
+  width: 100%;
+  padding: 0 1rem;
+  border-radius: 5px;
+  text-align: start;
+}
+
+.txtinput ::placeholder {
+  color: #fff;
+}
+.table-div {
+  /* margin-top: 1rem; */
+}
+.infobtn {
+  cursor: pointer;
+  transition: all 0.4s ease;
+  color: #fff;
+}
+
+.maindivbookinginfo {
+  padding: 2rem;
+  overflow: auto;
+  max-height: 580px;
+}
+
+.maindivbookinginfo::-webkit-scrollbar {
+  width: 0;
+  display: none;
+}
+
+.custom-table,
+.custom-table th,
+.custom-table td,
+.custom-table tr {
+  border: 1px solid #ddb46b !important;
+}
+
+.custom-table thead th {
+  background-color: #ddb46b; /* Optional: Light background for headers */
+}
+.custom-table thead tr th {
+  border-right: 1px solid white !important;
+}
+.custom-table thead tr th:last-child {
+  border-right: 1px solid #ddb46b !important;
+}
+.custom-table tbody tr {
+  border-bottom: 1px solid #ddb46b !important;
+}
+
+.ref_id_div {
+  font-weight: bold;
+  font-size: 20px;
+}
+.ref_id_Num_div {
+  color: black;
+  font-weight: 600;
+}
+
+.ticket_booking_details_table_border {
+  border-bottom: 1px solid #ddb46b;
+}
+
+.booking_details_baggage_head {
+  font-weight: 700;
+  /* margin-top: 1.2rem; */
+  font-size: 18px;
+}
+
+.booking_details_age_desc {
+  font-size: 14px;
+  color: #000;
+  font-weight: 600;
+}
+.card {
+  background: linear-gradient(135deg, #f6d365 0%, #f9b5a3 100%);
+  border: 1px solid #ddb46b;
+  border-radius: 10px;
+  padding: 20px;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+  color: #333;
+  font-family: Arial, sans-serif;
+}
+
+.card-header {
+  border-bottom: 1px solid #ddd;
+  padding-bottom: 10px;
+  margin-bottom: 15px;
+}
+
+.card-header h3 {
+  margin: 0;
+  font-size: 1.5rem;
+  font-weight: bold;
+}
+
+.card-body {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.user-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 10px 0;
+  border-bottom: 1px solid #eee;
+}
+
+.user-row div {
+  flex: 1;
+  text-align: left;
+  font-size: 1rem;
+}
+
+.user-row strong {
+  font-weight: bold;
+  margin-right: 5px;
+}
+
+.gradient-card {
+  /* background: linear-gradient(
+    120deg,
+    var(--color-background),
+    var(--color-theme)
+  ); */
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+.gradient-card:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.2);
+}
+
+.pagination {
+  display: flex;
+  justify-content: center; /* Centers horizontally */
+  align-items: center;
+  gap: 30px;
+  margin: 30px 0px;
+  padding: 30px;
+  /* background-color: red; */
+}
+
+.accordion-item {
+  border-radius: 0px !important;
+}
+
+.sharebtnhover {
+  cursor: pointer;
+  /* transition: all 0.4s ease; */
+  color: white;
+}
+
+.pagination button {
+  /* background-color: #f0ad4e; */
+  background-color: transparent;
+  color: black;
+  border: none;
+  /* padding: 8px 12px; */
+  /* border-radius: 5px; */
+  cursor: pointer;
+  width: 50px;
+  transition: 0.3s;
+  font-size: 16px;
+  font-weight: bold;
+}
+
+.pagination button:hover {
+  background-color: var(--color-theme);
+  color: white;
+}
+
+.pagination button:disabled {
+  /* background-color: #ccc; */
+  cursor: not-allowed;
+  color: #ccc;
+  font-weight: bold;
+}
+
+.pagination button.active {
+  background-color: #dbb46b;
+  font-weight: bold;
+  font-size: 17px;
+  color: #fff;
+}
+.accordion {
+  border-radius: 0px !important ;
+}
+.card-main {
+  padding: 20px;
+  background: #fff;
+  margin-bottom: 10px;
+  border-radius: 10px;
+  height: 420px;
+  border: 2px solid #dbb46b;
+  box-shadow: 0 0 15px rgba(0, 0, 0, 0.1);
+  position: relative;
+  transform: translate(0px, -15px);
+  transition: all 0.2s ease-in-out;
+  cursor: pointer;
+}
+.card-main:hover {
+  transform: translate(0px, -25px);
+  box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.1);
+}
+.airline_logo_card {
+  height: 75px;
+  width: 75px;
+  object-fit: contain;
+}
+.airline_logo_card_indigo {
+  height: 75px;
+  width: 75px;
+  object-fit: contain;
+  padding: 10px;
+}
+.accordion-button {
+  border-radius: 0px !important;
+  height: 42px !important;
+}
+.accordion-item {
+  border-radius: 0px !important;
+}
+.btn-circle {
+  display: flex;
+  height: 50px;
+  width: 50px;
+  border-radius: 25px;
+  justify-content: center;
+  align-items: center;
+  background-color: var(--color-theme);
+  cursor: pointer;
+}
+
+.ribbon {
+  width: 150px;
+  height: 150px;
+  overflow: hidden;
+  position: absolute;
+  pointer-events: none;
+  /* background-color: yellow; */
+}
+.ribbon::before,
+.ribbon::after {
+  position: absolute;
+  z-index: -1;
+  content: "";
+  display: block;
+  border: 5px solid #000;
+}
+.ribbon span {
+  position: absolute;
+  display: block;
+  width: 225px;
+  padding: 15px 0;
+  background-color: var(--color-theme);
+  box-shadow: 0 5px 10px rgba(0, 0, 0, 0.1);
+  color: #fff;
+  font: 700 18px/1 "Lato", sans-serif;
+  text-shadow: 0 1px 1px rgba(0, 0, 0, 0.2);
+  text-transform: uppercase;
+  text-align: center;
+  border: 1px solid var(--color-theme);
+  left: -25px;
+  bottom: 30px;
+  transform: rotate(-405deg);
+  transition: all 0.4s ease;
+}
+.ribbon-bottom-right {
+  bottom: -10px;
+  right: -10px;
+}
+.ribbon-bottom-right::before,
+.ribbon-bottom-right::after {
+  border-bottom-color: transparent;
+  border-right-color: transparent;
+}
+.ribbon-bottom-right::before {
+  bottom: 0;
+  left: 0;
+}
+.ribbon-bottom-right::after {
+  top: 0;
+  right: 0;
+}
+.ribbon-bottom-right span {
+  left: -25px;
+  bottom: 30px;
+  transform: rotate(-405deg);
+}
+
+.card-main:hover .ribbon span {
+  left: 50%;
+  bottom: 0px;
+  transform: translate(-50%, -50%) rotate(0deg);
+}
+.card-main:hover .ribbon::after {
+  position: absolute;
+  z-index: -1;
+  content: "";
+  display: none;
+  border: none;
+}
+.card-main:hover .ribbon::before {
+  position: absolute;
+  z-index: -1;
+  content: "";
+  display: none;
+  border: none;
+}
+.tabSec {
+  display: flex;
+  justify-content: start;
+  align-items: center;
+  gap: 40px;
+  /* padding: 1rem; */
+  border-top-left-radius: 10px;
+  border-top-right-radius: 10px;
+  height: 100px;
+  background-color: #fff;
+
+  border: 1px solid #ff4500;
+  /* margin-bottom: 3rem; */
+  /* width: 1300px; */
+}
+
+.tabFont {
+  font-size: 23px;
+  color: #ff4500;
+  font-weight: 700;
+}
+.tabDiv {
+  display: flex;
+  text-align: center;
+  flex-direction: row;
+  gap: 15px;
+  align-items: center;
+  cursor: pointer;
+  padding: 1rem;
+  height: 100%;
+  position: relative;
+  transition: all 0.3s ease;
+}
+
+.tabDiv::after {
+  content: "";
+  position: absolute;
+  bottom: 20px;
+  /* left: 20%; */
+  width: 100%;
+  height: 3px;
+  background-color: #ff4500;
+  opacity: 0;
+  transform: scaleX(0);
+  transition: all 0.3s ease-in-out;
+}
+
+.tabDiv.activeTab::after {
+  opacity: 1;
+  transform: scaleX(1);
+}
+
+.tabcancelledempty {
+  height: 200px;
+  width: 300px;
+  object-fit: contain;
+}
+.emptytxtboldbig {
+  font-size: 25px;
+  font-weight: 700;
+}
+.emptytxtregular {
+  font-size: 18px;
+  font-weight: 500;
+  margin-bottom: 1rem;
+}
+.plan-trip-btn {
+  text-decoration: none;
+  background-color: var(--color-theme);
+  color: white;
+  border-radius: 20px;
+  padding: 10px 20px;
+  font-weight: 700;
+  font-size: 18px;
+}
+
+.completedmaintab {
+  /* height: 200px; */
+  width: 1240px;
+  margin: 1rem auto;
+  background-color: #fff;
+  border-radius: 5px;
+  padding: 0;
+  box-shadow: rgba(0, 0, 0, 0.24) 0px 3px 8px;
+}
+.completeheader {
+  width: 100%;
+  padding: 20px 50px;
+  align-items: center;
+  background-color: white;
+  position: relative;
+  /* box-shadow: rgba(0, 0, 0, 0.24) 0px 3px 8px; */
+}
+.completeFrom {
+  font-weight: bold;
+  font-size: 22px;
+}
+.circlegol {
+  width: 60px;
+  height: 60px;
+  border-radius: 30px;
+  display: flex;
+  position: absolute;
+  align-items: center;
+  justify-content: center;
+  top: 50%;
+  left: 0;
+  background-color: #fff;
+  box-shadow: rgba(0, 0, 0, 0.24) 0px 3px 8px;
+  transform: translate(-50%, -50%);
+  overflow: hidden;
+}
+.complane {
+  height: 60px;
+  width: 60px;
+  object-fit: contain;
+}
+.completesection {
+  padding: 30px 75px;
+  display: flex;
+  width: 100%;
+  flex-direction: column;
+  row-gap: 2rem;
+}
+.completedDate {
+  font-weight: bold;
+  font-size: 20px;
+}
+.completedTime {
+  font-size: 14px;
+}
+.completeViewBokingbtn {
+  text-decoration: none;
+  background: linear-gradient(135deg, #ff690f 0%, #e8381b 100%);
+  padding: 10px 30px;
+  color: white;
+  font-weight: bold;
+  border-radius: 20px;
+}
+@media screen and (max-width: 992px) {
+  .table-div {
+    max-width: 100%;
+    overflow-x: auto;
+    scrollbar-width: 0px;
+  }
+  .dashboar_resp_gap {
+    gap: 1rem;
+  }
+
+  .resp_dashboard {
+    gap: 1rem !important;
+  }
+
+  .completesection {
+    padding: 30px 40px !important;
+  }
+
+  .resp_dashboard_inner_first {
+    flex-direction: row !important;
+    gap: 0.7rem !important;
+  }
+
+  .resp_dashboard_inner_first_part {
+    width: 100%;
+  }
+
+  .bookingsec {
+    max-width: 90%;
+    margin: 0 auto;
+  }
+
+  .resp_view_main_sec {
+    max-width: 90%;
+    margin: 0 auto;
+  }
+
+  .resp_dashboard_ticket_short_detail_main {
+    flex-direction: row !important;
+    justify-content: center;
+    gap: 1rem;
+    padding-right: 0px;
+  }
+
+  .resp_ticket_detail_dash {
+    gap: 0.7rem;
+    /* flex-direction: column-reverse !important; */
+  }
+
+  .resp_dashboard_ticket_short_detail_icon_flex {
+    flex-direction: row !important;
+    justify-content: center;
+    gap: 1.2rem;
+  }
+
+  .resp_justify_center {
+    justify-content: center;
+  }
+}
+
+@media screen and (max-width: 600px) {
+  .maindivbookinginfo {
+    padding: 1rem;
+  }
+
+  .tabFont {
+    font-size: 18px;
+  }
+
+  .resp_modal_main {
+    padding-left: 0px !important;
+    padding-right: 0px !important;
+  }
+
+  .pagination {
+    gap: 10px;
+  }
+  .pagination button {
+    width: 35px;
+    font-size: 12px;
+    padding: 5px;
+  }
+  .tabcancelledempty {
+    height: 150px;
+    width: 200px;
+    object-fit: contain;
+  }
+  .emptytxtboldbig {
+    font-size: 22px;
+    font-weight: 700;
+    text-align: center;
+  }
+  .emptytxtregular {
+    font-size: 18px;
+    font-weight: 500;
+    margin-bottom: 1rem;
+    text-align: center;
+    margin-top: 1rem;
+  }
+  .plan-trip-btn {
+    text-decoration: none;
+    background-color: var(--color-theme);
+    color: white;
+    border-radius: 20px;
+    padding: 10px 20px;
+    font-weight: 700;
+    font-size: 18px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+}
+
+/* Add New */
+
+/* Flight Booking Styles */
+
+/* Custom Flight Booking Styles */
+.flight-container {
+  max-width: 800px;
+  margin: auto;
+  padding: 20px;
+  background: #ffffff;
+  border-radius: 12px;
+  box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.1);
+}
+
+.flight-section {
+  background: #f8fafc;
+  padding: 15px;
+  margin-top: 15px;
+  border-radius: 8px;
+  border: 1px solid #e2e8f0;
+}
+
+.flight-header {
+  text-align: center;
+  font-size: 24px;
+  font-weight: 600;
+  color: #1e293b;
+}
+
+.flight-info p {
+  font-size: 16px;
+  color: #334155;
+  margin-bottom: 5px;
+}
+
+.airline-logo {
+  width: 60px;
+  height: auto;
+  margin-top: 10px;
+}
+
+.traveler-info {
+  background: #eef2ff;
+  padding: 10px;
+  border-radius: 6px;
+  margin-top: 10px;
+}
+
+.contact-info {
+  background: #fef9c3;
+  padding: 10px;
+  border-radius: 6px;
+  margin-top: 10px;
+}
+
+.baggage-info {
+  background: #dcfce7;
+  padding: 10px;
+  border-radius: 6px;
+  margin-top: 10px;
+}
+
+.seller-info {
+  background: #e0f2fe;
+  padding: 10px;
+  border-radius: 6px;
+  margin-top: 10px;
+}
+
+@media (max-width: 768px) {
+  .tabSec {
+    /* max-width: 600px; */
+    max-width: 100%;
+    overflow-x: scroll;
+    height: 80px;
+  }
+  .flight-info {
+    text-align: center;
+  }
+
+  .airline-logo {
+    display: block;
+    margin: auto;
+  }
+  .pagination {
+    gap: 15px; /* Reduce spacing */
+  }
+  .pagination button {
+    width: 40px; /* Smaller buttons */
+    font-size: 14px;
+  }
+  .dashboar_resp_gap {
+    padding: 1rem;
+  }
+  .tabFont {
+    font-size: 18px;
+  }
+  .completesection {
+    padding: 20px;
+  }
+  .completeheader {
+    padding: 10px;
+    /* overflow-x: scroll; */
+  }
+  .circlegol {
+    display: none;
+  }
+  .completeViewBokingbtn {
+    margin-top: 1rem;
+  }
+
+  .resp_view_main_sec {
+    max-width: 95% !important;
+    margin: 0 auto;
+  }
+
+  .completesection {
+    padding: 30px 12px !important;
+  }
+}
+
+@media screen and (max-width: 575px) {
+  .resp_dashboard_inner_first {
+    flex-direction: column !important;
+  }
+}
+
+@media screen and (max-width: 420px) {
+  .completedDate {
+    font-size: 16px !important;
+  }
+}
+
+.dot_flex {
+  display: flex;
+  align-items: center;
+}
+
+.from_min_width {
+  min-width: 40px;
+}

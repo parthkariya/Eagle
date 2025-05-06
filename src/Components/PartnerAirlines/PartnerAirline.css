@@ -1,0 +1,53 @@
+.parallex {
+  position: relative; /* Required for positioning the pseudo-element */
+  background-image: url("../../Assets/AeroPlane.jpg");
+  min-height: 450px;
+  background-attachment: fixed;
+  background-position: center;
+  background-repeat: no-repeat;
+  background-size: cover;
+  /* max-width: 100%;
+  width: 100%; */
+}
+
+.parallex::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-color: rgba(0, 0, 0, 0.5); /* Black overlay with 50% opacity */
+  z-index: 1; /* Place the overlay above the background */
+}
+
+.parallex > * {
+  position: relative; /* Place child elements above the overlay */
+  z-index: 2;
+}
+
+.paheading {
+  font-weight: 800;
+  color: var(--color-white);
+}
+
+.airlineimages {
+  width: 150px; /* Set a fixed width for all images */
+  height: 100px; /* Set a fixed height for all images */
+  object-fit: contain; /* Ensure images fit within the box without distortion */
+  margin: 0 15px; /* Add horizontal spacing between images */
+  display: flex;
+  align-items: center;
+}
+
+.marquee-container {
+  display: flex;
+  align-items: center; /* Vertically center the images */
+  justify-content: center;
+  gap: 15px; /* Add spacing between items if needed */
+}
+
+.headingrowpa {
+  /* background-color: red; */
+  padding-top: 8rem;
+}

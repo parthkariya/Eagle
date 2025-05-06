@@ -1,0 +1,11 @@
+.profile_con{
+    max-width: 1140px;
+    margin: 2rem auto;
+}
+
+@media screen and (max-width:1140px) {
+    .profile_con{
+        margin-left: 1rem;
+        margin-right: 1rem;
+    }
+}

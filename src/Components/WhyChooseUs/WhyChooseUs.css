@@ -1,0 +1,73 @@
+.whychoosmain {
+  /* background-color: var(--color-background); */
+  background-color: var(--color-white);
+  /* margin-top: -130px !important; */
+}
+.innnerdiv {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  /* padding-top: 200px; */
+}
+
+.innnerdiv h1 {
+  /* color: var(--color-theme); */
+  color: #192024;
+  font-weight: 800;
+}
+.ok {
+  justify-content: space-between;
+}
+
+.carddiv {
+  background-color: var(--color-white);
+  /* width: auto; */
+  border-radius: 140px;
+  display: flex !important;
+  flex-direction: column;
+  gap: 1rem;
+  align-items: center;
+  justify-content: center;
+  /* border: 8px solid var(--color-theme); */
+  border: 5px solid #f97316;
+  overflow: hidden;
+  height: 55vh;
+}
+
+.icondiv {
+  /* color: var(--color-theme); */
+  color: #f97316;
+}
+
+.hdingdiv {
+  font-weight: 700;
+  color: var(--color-white);
+  font-size: 23px;
+  text-align: center;
+}
+.txtdiv {
+  text-align: center;
+  color: #fff;
+}
+.whychoseuppara {
+  /* font-size: 1px; */
+  font-weight: 500;
+  color: var(--color-black);
+}
+
+@media screen and (max-width: 1000px) {
+  .hdingdiv {
+    font-size: 18px;
+  }
+}
+
+@media screen and (max-width: 768px) {
+  .carddiv {
+    height: 50vh;
+    width: 80%;
+    margin: 0 auto;
+  }
+  .hdingdiv {
+    font-size: 18px;
+  }
+}
