@@ -1,20 +1,29 @@
 {
   "files": {
-    "main.css": "/airlineticketapi/static/css/main.3d8f65ac.css",
-    "main.js": "/airlineticketapi/static/js/main.99cb8b8f.js",
+    "main.css": "/airlineticketapi/static/css/main.dcbfa4cf.css",
+    "main.js": "/airlineticketapi/static/js/main.3e10a0e4.js",
     "static/js/977.89001b81.chunk.js": "/airlineticketapi/static/js/977.89001b81.chunk.js",
-    "static/js/667.8ec6fa65.chunk.js": "/airlineticketapi/static/js/667.8ec6fa65.chunk.js",
+    "static/js/667.fdcdc330.chunk.js": "/airlineticketapi/static/js/667.fdcdc330.chunk.js",
+    "static/media/flight-0.png": "/airlineticketapi/static/media/flight-0.2d61c4f3980907ddda61.png",
     "static/media/AeroPlane.jpg": "/airlineticketapi/static/media/AeroPlane.bd3d61cc6a0478c3ac0c.jpg",
     "static/media/planwindow.webp": "/airlineticketapi/static/media/planwindow.ccbcfa7a976442471c3d.webp",
+    "static/media/header_bg.jpg": "/airlineticketapi/static/media/header_bg.49e50d7c50c1d0f05780.jpg",
     "static/media/Akasa_Air_logo.png": "/airlineticketapi/static/media/Akasa_Air_logo.4f318976e0e24b953b4f.png",
+    "static/media/Air_India_Express_logo.png": "/airlineticketapi/static/media/Air_India_Express_logo.61d56ba3ad829fc00009.png",
+    "static/media/Generic_02_2x.png": "/airlineticketapi/static/media/Generic_02_2x.d69e29023acf5879f089.png",
+    "static/media/Flights_04_2x.png": "/airlineticketapi/static/media/Flights_04_2x.28a53efe4358c3f2e026.png",
     "static/media/title-banner-2.png": "/airlineticketapi/static/media/title-banner-2.5cb49ae974364a9e2a94.png",
     "static/media/AirAsia_new.png": "/airlineticketapi/static/media/AirAsia_new.6cec60bc1bbe5a55cbb0.png",
     "static/media/cpicejetlogo.png": "/airlineticketapi/static/media/cpicejetlogo.db6ff1205cdd9fa1cd5a.png",
+    "static/media/Flights_02_2x.png": "/airlineticketapi/static/media/Flights_02_2x.7c1cce0c1b5206093fb3.png",
     "static/media/airindiaicon.png": "/airlineticketapi/static/media/airindiaicon.d16ec66b3fa01ab1dcdb.png",
+    "static/media/Flights_01_2x.png": "/airlineticketapi/static/media/Flights_01_2x.063db19773ce9b8a9474.png",
+    "static/media/Flights_03_2x.png": "/airlineticketapi/static/media/Flights_03_2x.547cdd6dcd22b8267bc1.png",
     "static/media/Vistara-Logo.png": "/airlineticketapi/static/media/Vistara-Logo.9e076750d515b7ce24bd.png",
     "static/media/spicejet-logo.png": "/airlineticketapi/static/media/spicejet-logo.7ebe463a51b36cc03b2e.png",
     "static/media/plane.png": "/airlineticketapi/static/media/plane.ab5d155a36b27880d63a.png",
     "static/media/Etihad-Airways-Logo.png": "/airlineticketapi/static/media/Etihad-Airways-Logo.4bff7bfc30df7d8ceadd.png",
+    "static/media/Generic_01_1_5x.png": "/airlineticketapi/static/media/Generic_01_1_5x.9f7d5577fdd4ee8eaa7e.png",
     "static/media/planecompleted.png": "/airlineticketapi/static/media/planecompleted.29dfb9d327992044ea33.png",
     "static/media/airasiaX.png": "/airlineticketapi/static/media/airasiaX.ad7b65aef3d169c6f559.png",
     "static/media/luaggage.png": "/airlineticketapi/static/media/luaggage.27dfe52df56aee0011ba.png",
@@ -32,6 +41,7 @@
     "static/media/8.webp": "/airlineticketapi/static/media/8.e7f6dfe971f2ea989ee5.webp",
     "static/media/wmremove-transformed.png": "/airlineticketapi/static/media/wmremove-transformed.a5ec314cd92d16e2f610.png",
     "static/media/7.webp": "/airlineticketapi/static/media/7.6514360c294c68baf210.webp",
+    "static/media/header_bg.avif": "/airlineticketapi/static/media/header_bg.429c2adde0a3af52a51a.avif",
     "static/media/4.webp": "/airlineticketapi/static/media/4.00fad0a42d6afea0a232.webp",
     "static/media/9.webp": "/airlineticketapi/static/media/9.9eb6ba8fea88f0d7ad17.webp",
     "static/media/5.webp": "/airlineticketapi/static/media/5.5f1db92fba6b55cdfee0.webp",
@@ -43,12 +53,12 @@
     "static/media/completed-empty.avif": "/airlineticketapi/static/media/completed-empty.ab3b5a4c36b00ad41e1d.avif",
     "static/media/upcoming-empty.avif": "/airlineticketapi/static/media/upcoming-empty.812da1f80302a7935850.avif",
     "index.html": "/airlineticketapi/index.html",
-    "main.3d8f65ac.css.map": "/airlineticketapi/static/css/main.3d8f65ac.css.map",
-    "main.99cb8b8f.js.map": "/airlineticketapi/static/js/main.99cb8b8f.js.map",
-    "667.8ec6fa65.chunk.js.map": "/airlineticketapi/static/js/667.8ec6fa65.chunk.js.map"
+    "main.dcbfa4cf.css.map": "/airlineticketapi/static/css/main.dcbfa4cf.css.map",
+    "main.3e10a0e4.js.map": "/airlineticketapi/static/js/main.3e10a0e4.js.map",
+    "667.fdcdc330.chunk.js.map": "/airlineticketapi/static/js/667.fdcdc330.chunk.js.map"
   },
   "entrypoints": [
-    "static/css/main.3d8f65ac.css",
-    "static/js/main.99cb8b8f.js"
+    "static/css/main.dcbfa4cf.css",
+    "static/js/main.3e10a0e4.js"
   ]
 }

@@ -2,7 +2,7 @@
   margin: 0 auto;
   /* background-color: red; */
   /* padding-top: 1.5rem; */
-  padding-bottom: 1.5rem;
+  /* padding-bottom: 1.5rem; */
   max-width: 1480px;
 }
 
@@ -27,7 +27,7 @@
 .E9width40 {
   width: 33%;
   margin-left: 30px;
-  /* overflow: hidden; */
+  overflow: hidden;
   /* z-index: -10; */
 }
 

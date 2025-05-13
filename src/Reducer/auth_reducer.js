@@ -11,6 +11,9 @@ import {
     FORGOT_PASSWORD_OTP_BEGIN,
     FORGOT_PASSWORD_OTP_SUCCESS,
     FORGOT_PASSWORD_OTP_FAIL,
+    LOGIN_BEGIN_AIR_LIVE,
+    LOGIN_SUCCESS_AIR_LIVE,
+    LOGIN_FAIL_AIR_LIVE,
   } from "../Actions";
   
   const auth_reducer = (state, action) => {
@@ -50,6 +53,25 @@ import {
     }
   
     if (action.type === LOGIN_FAIL) {
+      return { ...state, login_loading: false, login_error: true };
+    }
+
+
+    // User login api
+    if (action.type === LOGIN_BEGIN_AIR_LIVE) {
+      return { ...state, login_loading: true };
+    }
+  
+    if (action.type === LOGIN_SUCCESS_AIR_LIVE) {
+      return {
+        ...state,
+        login_loading: false,
+        login_data_air_live: action.payload.data,
+        is_token_air_live: action.payload.Token,
+      };
+    }
+  
+    if (action.type === LOGIN_FAIL_AIR_LIVE) {
       return { ...state, login_loading: false, login_error: true };
     }
 

@@ -25,8 +25,8 @@ import { SiGmail } from "react-icons/si";
 const ViewBooking = () => {
   const location = useLocation();
   const [data, setData] = useState(location?.state?.item);
-  const [viewopen, setViewopen] = useState(false);
-  const [viewopen2, setViewopen2] = useState(false);
+  const [viewopen, setViewopen] = useState(true);
+  const [viewopen2, setViewopen2] = useState(true);
   const invoiceRef = useRef(null);
   const [data2, setData2] = useState(null);
   const [loading2, setLoading2] = useState(false);
@@ -46,41 +46,68 @@ const ViewBooking = () => {
     setViewopen2(!viewopen2);
   };
 
+  // const handleDownload = async () => {
+  //   const element = invoiceRef.current;
+  //   if (!element) {
+  //     return;
+  //   }
+
+  //   const canvas = await html2canvas(element);
+  //   const data = canvas.toDataURL("image/png");
+
+  //   const pdf = new jsPDF({
+  //     orientation: "portrait",
+  //     unit: "px",
+  //     format: "a4",
+  //   });
+
+  //   const imgProperties = pdf.getImageProperties(data);
+  //   const pdfWidth = pdf.internal.pageSize.getWidth();
+  //   const pdfHeight = (imgProperties.height * pdfWidth) / imgProperties.width;
+
+  //   pdf.addImage(data, "PNG", 0, 0, pdfWidth, pdfHeight);
+  //   pdf.save("Ticket.pdf");
+
+  //   // const opt = {
+  //   //   margin: 0.5,
+  //   //   filename: "invoice.pdf",
+  //   //   image: { type: "jpeg", quality: 0.98 },
+  //   //   html2canvas: { scale: 3 },
+  //   //   jsPDF: { unit: "in", format: "letter", orientation: "portrait" },
+  //   // };
+
+  //   // setTimeout(() => {
+  //   //   html2pdf().set(opt).from(element).save();
+  //   // }, 100); // small delay
+  // };
+
   const handleDownload = async () => {
     const element = invoiceRef.current;
-    if (!element) {
-      return;
-    }
-
-    const canvas = await html2canvas(element);
+    if (!element) return;
+  
+    const canvas = await html2canvas(element, {
+      scale: 2,
+      useCORS: true,
+      scrollY: 0,
+    });
+  
     const data = canvas.toDataURL("image/png");
-
+  
     const pdf = new jsPDF({
       orientation: "portrait",
-      unit: "px",
+      unit: "mm",
       format: "a4",
     });
-
-    const imgProperties = pdf.getImageProperties(data);
+  
+    const imgProps = pdf.getImageProperties(data);
     const pdfWidth = pdf.internal.pageSize.getWidth();
-    const pdfHeight = (imgProperties.height * pdfWidth) / imgProperties.width;
-
+    const pdfHeight = (imgProps.height * pdfWidth) / imgProps.width;
+  
     pdf.addImage(data, "PNG", 0, 0, pdfWidth, pdfHeight);
     pdf.save("Ticket.pdf");
-
-    // const opt = {
-    //   margin: 0.5,
-    //   filename: "invoice.pdf",
-    //   image: { type: "jpeg", quality: 0.98 },
-    //   html2canvas: { scale: 3 },
-    //   jsPDF: { unit: "in", format: "letter", orientation: "portrait" },
-    // };
-
-    // setTimeout(() => {
-    //   html2pdf().set(opt).from(element).save();
-    // }, 100); // small delay
   };
 
+  
   console.log("DATOOO", data);
 
   const isLocalhost = window.location.hostname === "localhost";
@@ -130,7 +157,7 @@ const ViewBooking = () => {
           <div className="row">
             {/* Left Side */}
             <div className="col-lg-8 col-md-7 col-12 mb-3">
-              <div className="d-flex flex-column flex-lg-row justify-content-start justify-content-lg-between align-items-center  p-2">
+              <div className="d-flex flex-column flex-lg-row justify-content-start justify-content-lg-between align-items-center">
                 <div className="fs-6 text-muted fw-bold align-self-start align-self-lg-center">
                   BOOKING ID -{" "}
                   {data.get_con === 0 ? (
@@ -867,17 +894,6 @@ const ViewBooking = () => {
               </div>
 
               <div className="cardd mt-3 shadow-sm p-3">
-                <div>
-                  <strong className="fs-5 fs-lg-4 fw-bold">CANCELLATION</strong>
-                </div>
-                <div>
-                  Your Flight has already departed, online cancellation is not
-                  allowed
-                </div>
-              </div>
-
-              {/* <hr /> */}
-              <div className="cardd mt-3 shadow-sm p-3">
                 <h6>
                   <strong className="fs-5 fs-lg-4 fw-bold">
                     CONTACT INFORMATION
@@ -910,6 +926,19 @@ const ViewBooking = () => {
                   </p>
                 </div>
               </div>
+
+              <div className="cardd mt-3 shadow-sm p-3">
+                <div>
+                  <strong className="fs-5 fs-lg-4 fw-bold">CANCELLATION</strong>
+                </div>
+                <div>
+                  Your Flight has already departed, online cancellation is not
+                  allowed
+                </div>
+              </div>
+
+              {/* <hr /> */}
+              
             </div>
 
             {/* Right Side */}

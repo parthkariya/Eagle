@@ -16,13 +16,20 @@ import {
   FaExchangeAlt,
   FaSearch,
   FaRupeeSign,
+  FaSort,
 } from "react-icons/fa";
 import Select from "react-select";
 import makeAnimated from "react-select/animated";
 import {
   ACCEPT_HEADER,
+  ACCEPT_HEADER1,
+  availabilitycurl,
   get_recent_search,
   recent_search,
+  searchcurl,
+  sectorscurl,
+  supplieravailabilitycurl,
+  suppliersearchcurl,
 } from "../../Utils/Constant";
 import axios from "axios";
 import Notification from "../../Utils/Notification";
@@ -119,15 +126,34 @@ const HomeHero = () => {
 
   // console.log("SELECTED", selected);
 
-  const swapLocations = () => {
-    setIsSwapping(true);
-    const temp = from;
-    setFrom(to);
-    setTo(temp);
+  // const swapLocations = () => {
+  //   setIsSwapping(true);
+  //   const temp = from;
+  //   setFrom(to);
+  //   setTo(temp);
 
-    // Reset animation class after animation completes
-    setTimeout(() => setIsSwapping(false), 500); // Match with CSS duration
-  };
+  //   console.log("from",temp);
+  //   console.log("to",to);    
+
+  //   // Reset animation class after animation completes
+  //   setTimeout(() => setIsSwapping(false), 500); // Match with CSS duration
+  // };
+
+  const swapLocations = () => {
+  const newFrom = to;
+  const newTo = from;
+
+  setFrom(newFrom);
+  setTo(newTo);
+
+  ArrivalCityList(newFrom.city_code); // use swapped `from` value
+
+  // Use new values directly instead of waiting for state update
+  getOnwardDate(newFrom.city_code, newTo.city_code);
+  dateAvailability(newFrom.city_code, newTo.city_code);
+};
+
+
 
   const handleScroll = (id) => {
     const element = document.getElementById(id);
@@ -171,6 +197,26 @@ const HomeHero = () => {
     indicatorSeparator: () => ({
       display: "none",
     }),
+  };
+
+  const customStyles2 = {
+    control: (base, state) => ({
+      ...base,
+      backgroundColor: "#f7f7f7",
+      border: "none",
+      boxShadow: "none",
+      padding: "5px 10px",
+      cursor: "pointer",
+      borderRadius: "10px",
+      border: "1px solid #ddd",
+      width: "175px",
+    }),
+    menu: (base) => ({
+      ...base,
+      zIndex: 9999,
+    }),
+    dropdownIndicator: () => null,
+    indicatorSeparator: () => null,
   };
 
   const [selectedClass, setSelectedClass] = useState("Economy");
@@ -242,6 +288,9 @@ const HomeHero = () => {
   const [recentSearchCondition, setRecentSearchCondition] = useState(false);
   const [depcitylistload, setdepcitylistload] = useState(false);
   const [arrcitylistload, setarrcitylistload] = useState(false);
+  const [hasSwappedOnce, setHasSwappedOnce] = useState(false);
+
+
   const monthMap = {
     Jan: "01",
     Feb: "02",
@@ -260,9 +309,18 @@ const HomeHero = () => {
   const dropdownRef = useRef(null);
   const dropdownRef2 = useRef(null);
 
+  const optionss = [
+    { value: "cheapest-price", label: "Cheapest Price" },
+    { value: "early-departure", label: "Early Departure" },
+    { value: "late-departure", label: "Late Departure" },
+    { value: "early-arrival", label: "Early Arrival" },
+    { value: "late-arrival", label: "Late Arrival" },
+  ];
+
   console.log("getSectorListTo2", getSectorListTo2);
   // console.log("getSearchFlightListDataCheap", getSearchFlightListDataCheap);
   console.log("mergedData", mergedData);
+  console.log("getSearchFlightListData", getSearchFlightListData);
   // console.log("from",from);
 
   const [traveller, setTraveller] = useState("");
@@ -270,11 +328,16 @@ const HomeHero = () => {
   const [date2, setDate2] = useState("");
 
   // Determine which price field to use based on getCondition
-const sortKey = getCondition ? 'price' : 'per_adult_child_price';
+  const sortKey = getCondition ? "price" : "per_adult_child_price";
 
-// Make a copy of each array and sort it by the chosen key in ascending order
-const sortedFlights      = [...getSearchFlightListData].sort((a, b) => a[sortKey] - b[sortKey]);
-const sortedCheapFlights = [...getSearchFlightListDataCheap].sort((a, b) => a[sortKey] - b[sortKey]);
+  // Make a copy of each array and sort it by the chosen key in ascending order
+  const sortedFlights = [...getSearchFlightListData].sort(
+    (a, b) => a[sortKey] - b[sortKey]
+  );
+
+  const sortedCheapFlights = [...getSearchFlightListDataCheap].sort(
+    (a, b) => a[sortKey] - b[sortKey]
+  );
 
   // console.log("selectedxxx", selectedIndex);
 
@@ -301,26 +364,374 @@ const sortedCheapFlights = [...getSearchFlightListDataCheap].sort((a, b) => a[so
     setIsViewOpen3(!isViewOpen3);
   };
 
+  const [getfiltercondation, setfiltercondation] = useState(false);
+  const [getfilerdata, setfilterData] = useState([]);
+  const [getfilerdata2, setfilterData2] = useState([]);
+
+
+  console.log("getfilerdata", getfilerdata);
+  console.log("getfilerdata2", getfilerdata2);
+
+
+  // const handleChanges = (item) => {
+  //   console.log('sorted', sortedFlights);
+
+
+  //   if (item.value === "early-departure") {
+  //     setfiltercondation(true);
+  //     const sortedByDeparture = sortedFlights.sort((a, b) => {
+  //       const timeA = new Date(`${a.departure_date} ${a.departure_time}`);
+  //       const timeB = new Date(`${b.departure_date} ${b.departure_time}`);
+  //       return timeA - timeB;
+  //     });
+  //     setfilterData(sortedByDeparture);
+  //   }else if(item.value === 'late-departure'){
+  //     setfiltercondation(true);
+  //     const sortedByDeparture = sortedFlights.sort((a, b) => {
+  //       const timeA = new Date(`${a.departure_date} ${a.departure_time}`);
+  //       const timeB = new Date(`${b.departure_date} ${b.departure_time}`);
+  //       return timeB - timeA;
+  //     });
+  //     setfilterData(sortedByDeparture);
+  //   }else if(item.value === 'early-arrival'){
+  //     setfiltercondation(true);
+  //     const sortedByDeparture = sortedFlights.sort((a, b) => {
+  //       const timeA = new Date(`${a.arival_date} ${a.arival_time}`);
+  //       const timeB = new Date(`${b.arival_date} ${b.arival_time}`);
+  //       return timeA - timeB;
+  //     });
+  //     setfilterData(sortedByDeparture);
+  //   }else if(item.value === 'late-arrival'){
+  //     setfiltercondation(true);
+  //     const sortedByDeparture = sortedFlights.sort((a, b) => {
+  //       const timeA = new Date(`${a.arival_date} ${a.arival_time}`);
+  //       const timeB = new Date(`${b.arival_date} ${b.arival_time}`);
+  //       return timeB - timeA;
+  //     });
+  //     setfilterData(sortedByDeparture);
+  //   }else {
+  //     setfiltercondation(false);
+  //   }
+  // };
+
   // console.log("getSectorListTo", getSectorListTo);
 
-  const handleSelect = async (item) => {
+  const handleChanges = (item) => {
+    console.log("sorted", sortedFlights);
+
+    const sortFlights = (data, type, isSecondArray = false) => {
+      const depDateKey = isSecondArray ? "onward_date" : "departure_date";
+      const depTimeKey = isSecondArray ? "dep_time" : "departure_time";
+      const arrDateKey = isSecondArray ? "arr_date" : "arival_date";
+      const arrTimeKey = isSecondArray ? "arr_time" : "arival_time";
+
+      return [...data].sort((a, b) => {
+        let timeA, timeB;
+
+        if (type === "early-departure" || type === "late-departure") {
+          timeA = new Date(`${a[depDateKey]} ${a[depTimeKey]}`);
+          timeB = new Date(`${b[depDateKey]} ${b[depTimeKey]}`);
+        } else if (type === "early-arrival" || type === "late-arrival") {
+          timeA = new Date(`${a[arrDateKey]} ${a[arrTimeKey]}`);
+          timeB = new Date(`${b[arrDateKey]} ${b[arrTimeKey]}`);
+        }
+
+        return type.startsWith("early") ? timeA - timeB : timeB - timeA;
+      });
+    };
+
+    if (
+      item.value === "early-departure" ||
+      item.value === "late-departure" ||
+      item.value === "early-arrival" ||
+      item.value === "late-arrival"
+    ) {
+      setfiltercondation(true);
+
+      // First array sorting
+      const sortedMain = sortFlights(sortedFlights, item.value, false);
+      setfilterData(sortedMain);
+
+      // Optional: If you have a second array to sort (e.g., sortedCheapFlights)
+      const sortedCheap = sortFlights(sortedCheapFlights, item.value, true);
+      setfilterData2(sortedCheap); // Assuming you store it in another state
+    } else {
+      setfiltercondation(false);
+    }
+  };
+
+
+  // const handleSelect = async (item) => {
+  //   if (!item) {
+  //     setFrom(null);
+  //     return;
+  //   } else {
+  //     // if (item.source === "getSectorListNew") {
+  //     //   setCondition(0);
+  //     const selectedCity = item.city_name;
+  //     const airportCode = item.airport_code;
+
+  //     console.log("selectedCity", selectedCity);
+
+  //     setDepCityCode(airportCode ? airportCode : item.city_code);
+  //     setSelectedValue(`${selectedCity} (${airportCode})`);
+  //     setIsDropdownOpen(false);
+  //     setSelectedValue2("");
+  //     setTo("");
+  //     setSearchTerm("");
+  //     setSearchTerm2("");
+  //     setSelectedDate(null);
+  //     setDate1("");
+  //     setSearchFlightListData([]);
+  //     setSearchFlightListDataCheap([]);
+  //     setDefaultMonth("");
+  //     setSelectedIndex(null);
+
+  //     console.log("getSectorListNew", getSectorListNew);
+
+  //     // const filteredSectors = getSectorListNew
+  //     //   .filter((sector) => sector.Sector.startsWith(selectedCity + " //"))
+  //     //   .map((sector) => ({
+  //     //     destination: sector.Sector.split(" // ")[1].trim(),
+  //     //     DestinationCode: sector.Destination,
+  //     //   }))
+  //     //   .sort((a, b) => a.destination.localeCompare(b.destination));
+
+  //     // setSectorListTo(filteredSectors);
+  //     // console.log("filteredSectors", filteredSectors);
+
+  //     const filteredSectors = getSectorListNew
+  //       .filter((sector) => {
+  //         const [originCity] = sector.Sector.split(" // ");
+  //         return originCity.trim() === selectedCity;
+  //       })
+  //       .map((sector) => ({
+  //         destination: sector.Sector.split(" // ")[1].trim(),
+  //         DestinationCode: sector.Destination,
+  //       }))
+  //       .sort((a, b) => a.destination.localeCompare(b.destination));
+
+  //     console.log("Filtered Sectors", filteredSectors);
+  //     setSectorListTo(filteredSectors);
+
+  //     // } else if (item.source === "getDepatureCityList") {
+  //     console.log("123", item);
+  //     setCondition(1);
+  //     setSelectedValue(`${item.city_name} (${item.airport_code})`);
+  //     // setSearchTerm("");
+  //     // ArrivalCityList(item.city_code);
+  //     const data = await ArrivalCityList(item.airport_code);
+  //     console.log("data-->", data);
+
+  //     SectorList(item.city_code);
+  //     // setDepCityCode(item.city_code);
+  //     // setIsDropdownOpen(false);
+  //     // setDefaultMonth("");
+  //     setDefaultMonth2("");
+  //     // setSelectedDate(null);
+  //     setSelectedDate2(null);
+  //     setSelectedValue2("");
+  //     // setSearchFlightListData([]);
+  //     // setSearchFlightListDataCheap([]);
+  //     // setSelectedIndex(null);
+  //     // }
+
+  //     // Normalize `sortedCities` to match structure of `filteredSectors`
+  //     const mappedSortedCities = data.map((city) => ({
+  //       destination: city.city_name,
+  //       DestinationCode: city.city_code,
+  //     }));
+
+  //     // Combine both arrays
+  //     const combinedList = [...filteredSectors, ...mappedSortedCities];
+
+  //     const groupedTo = groupBy2(combinedList, "destination");
+
+  //     console.log("groupedTo", groupedTo);
+
+  //     var arr2 = [];
+  //     arr2.push(groupedTo);
+
+  //     const formattedGroupedCitiesTo = Object.entries(groupedTo).map(
+  //       ([cityName, cityArray]) => {
+  //         const item = cityArray[0]; // just take the first item per city
+  //         return {
+  //           value: item.DestinationCode,
+  //           label:
+  //             `${item.destination} ${item.DestinationCode} ${item.airport_name}`.trim(),
+  //           ...item,
+  //         };
+  //       }
+  //     );
+
+  //     console.log("formattedGroupedCitiesTo", formattedGroupedCitiesTo);
+
+  //     setSectorListTo(formattedGroupedCitiesTo);
+
+  //     // // Remove duplicates based on destination name
+  //     // const uniqueCombinedList = combinedList.filter(
+  //     //   (item, index, self) =>
+  //     //     index === self.findIndex((i) => i.destination === item.destination)
+  //     // );
+
+  //     // Set to state
+  //     // setSectorListTo(uniqueCombinedList);
+
+  //     // console.log("combinedList",combinedList);
+
+  //     // finally set 'from' value for react-select
+  //     setFrom(item);
+  //   }
+  // };
+
+  //   const handleSelect = async (item) => {
+  //   if (!item) {
+  //     setFrom(null);
+  //     return;
+  //   } else {
+  //     // if (item.source === "getSectorListNew") {
+  //     //   setCondition(0);
+  //     const selectedCity = item.city_name;
+  //     const airportCode = item.airport_code;
+
+  //     console.log("selectedCity", selectedCity);
+
+  //     setDepCityCode(airportCode ? airportCode : item.city_code);
+  //     setSelectedValue(`${selectedCity} (${airportCode})`);
+  //     setIsDropdownOpen(false);
+  //     setSelectedValue2("");
+  //     setTo("");
+  //     setSearchTerm("");
+  //     setSearchTerm2("");
+  //     setSelectedDate(null);
+  //     setDate1("");
+  //     setSearchFlightListData([]);
+  //     setSearchFlightListDataCheap([]);
+  //     setDefaultMonth("");
+  //     setSelectedIndex(null);
+
+  //     console.log("getSectorListNew", getSectorListNew);
+
+  //     // const filteredSectors = getSectorListNew
+  //     //   .filter((sector) => sector.Sector.startsWith(selectedCity + " //"))
+  //     //   .map((sector) => ({
+  //     //     destination: sector.Sector.split(" // ")[1].trim(),
+  //     //     DestinationCode: sector.Destination,
+  //     //   }))
+  //     //   .sort((a, b) => a.destination.localeCompare(b.destination));
+
+  //     // setSectorListTo(filteredSectors);
+  //     // console.log("filteredSectors", filteredSectors);
+
+  //     const filteredSectors = getSectorListNew
+  //       .filter((sector) => {
+  //         const [originCity] = sector.Sector.split(" // ");
+  //         return originCity.trim() === selectedCity;
+  //       })
+  //       .map((sector) => ({
+  //         city_name: sector.Sector.split(" // ")[1].trim(),
+  //         city_code: sector.Destination,
+  //         airport_code:airportCode,
+  //         airport_name:"",
+  //       }))
+  //       .sort((a, b) => a.city_name.localeCompare(b.city_name));
+
+  //     console.log("Filtered Sectors", filteredSectors);
+  //     setSectorListTo(filteredSectors);
+
+  //     // } else if (item.source === "getDepatureCityList") {
+  //     console.log("123", item);
+  //     setCondition(1);
+  //     setSelectedValue(`${item.city_name} (${item.airport_code})`);
+  //     // setSearchTerm("");
+  //     // ArrivalCityList(item.city_code);
+  //     const data = await ArrivalCityList(item.airport_code);
+  //     console.log("data-->", data);
+
+  //     SectorList(item.city_code);
+  //     // setDepCityCode(item.city_code);
+  //     // setIsDropdownOpen(false);
+  //     // setDefaultMonth("");
+  //     setDefaultMonth2("");
+  //     // setSelectedDate(null);
+  //     setSelectedDate2(null);
+  //     setSelectedValue2("");
+  //     // setSearchFlightListData([]);
+  //     // setSearchFlightListDataCheap([]);
+  //     // setSelectedIndex(null);
+  //     // }
+
+  //     // Normalize `sortedCities` to match structure of `filteredSectors`
+  //     const mappedSortedCities = data.map((city) => ({
+  //       city_name: city.city_name,
+  //       city_code: city.city_code,
+  //       airport_code:airportCode,
+  //       airport_name:"",
+  //     }));
+
+  //     // Combine both arrays
+  //     const combinedList = [...filteredSectors, ...mappedSortedCities];
+
+  //     const groupedTo = groupBy2(combinedList, "city_name");
+
+  //     console.log("groupedTo", groupedTo);
+
+  //     var arr2 = [];
+  //     arr2.push(groupedTo);
+
+  //     const formattedGroupedCitiesTo = Object.entries(groupedTo).map(
+  //       ([cityName, cityArray]) => {
+  //         const item = cityArray[0]; // just take the first item per city
+  //         return {
+  //           value: item.city_code,
+  //           label:
+  //             `${item.destination} ${item.city_code} ${item.airport_name}`.trim(),
+  //           ...item,
+  //         };
+  //       }
+  //     );
+
+  //     console.log("formattedGroupedCitiesTo", formattedGroupedCitiesTo);
+
+  //     setSectorListTo(formattedGroupedCitiesTo);
+
+  //     // // Remove duplicates based on destination name
+  //     // const uniqueCombinedList = combinedList.filter(
+  //     //   (item, index, self) =>
+  //     //     index === self.findIndex((i) => i.destination === item.destination)
+  //     // );
+
+  //     // Set to state
+  //     // setSectorListTo(uniqueCombinedList);
+
+  //     // console.log("combinedList",combinedList);
+
+  //     // finally set 'from' value for react-select
+  //     setFrom(item);
+  //   }
+  // };
+
+  const handleSelect = async (item, skipToReset = false) => {
+    console.log('parth-1', JSON.stringify(item, null , 2));
+    
     if (!item) {
       setFrom(null);
       return;
-    } else {
-      // if (item.source === "getSectorListNew") {
-      //   setCondition(0);
-      const selectedCity = item.city_name;
-      const airportCode = item.airport_code;
+    }
 
-      console.log("selectedCity", selectedCity);
+    // if (from?.city_code === item.city_code) return;
 
-      setDepCityCode(airportCode ? airportCode : item.city_code);
-      setSelectedValue(`${selectedCity} (${airportCode})`);
-      setIsDropdownOpen(false);
-      setSelectedValue2("");
-      setTo("");
-      setSearchTerm("");
+    const selectedCity = item.city_name;
+    const airportCode = item.airport_code ?? item.city_code;
+    // const airportCode = from ? from.city_code : (item.airport_code ?? item.city_code);
+    setDepCityCode(item.airport_code ?? item.city_code);
+    setSelectedValue(`${selectedCity} (${airportCode})`);
+    setIsDropdownOpen(false);
+
+    // if (!skipToReset) {
+      
+      setSelectedValue2("");   // only reset "To" if not skipping
+      setTo(null);
       setSearchTerm2("");
       setSelectedDate(null);
       setDate1("");
@@ -328,103 +739,57 @@ const sortedCheapFlights = [...getSearchFlightListDataCheap].sort((a, b) => a[so
       setSearchFlightListDataCheap([]);
       setDefaultMonth("");
       setSelectedIndex(null);
+    // }
 
-      console.log("getSectorListNew", getSectorListNew);
+    const filteredSectors = getSectorListNew
+      .filter((sector) => {
+        const [originCity] = sector.Sector.split(" // ");
+        return originCity.trim() === selectedCity;
+      })
+      .map((sector) => ({
+        city_name: sector.Sector.split(" // ")[1].trim(),
+        city_code: sector.Destination,
+        airport_code: sector.Destination,
+        airport_name: "",
+      }))
+      .sort((a, b) => a.city_name.localeCompare(b.city_name));
 
-      // const filteredSectors = getSectorListNew
-      //   .filter((sector) => sector.Sector.startsWith(selectedCity + " //"))
-      //   .map((sector) => ({
-      //     destination: sector.Sector.split(" // ")[1].trim(),
-      //     DestinationCode: sector.Destination,
-      //   }))
-      //   .sort((a, b) => a.destination.localeCompare(b.destination));
+    setSectorListTo(filteredSectors);
+    setCondition(1);
 
-      // setSectorListTo(filteredSectors);
-      // console.log("filteredSectors", filteredSectors);
+    const arrivalData = await ArrivalCityList(airportCode);
+    SectorList(item.city_code);
+    setDefaultMonth2("");
+    setSelectedDate2(null);
+    // if (!skipToReset) {
+      setSelectedValue2("");  // again, only clear this if not skipping
+    // }
 
-      const filteredSectors = getSectorListNew
-        .filter((sector) => {
-          const [originCity] = sector.Sector.split(" // ");
-          return originCity.trim() === selectedCity;
-        })
-        .map((sector) => ({
-          destination: sector.Sector.split(" // ")[1].trim(),
-          DestinationCode: sector.Destination,
-        }))
-        .sort((a, b) => a.destination.localeCompare(b.destination));
+    const mappedSortedCities = arrivalData.map((city) => ({
+      city_name: city.city_name,
+      city_code: city.city_code,
+      airport_code: city.city_code,
+      airport_name: "",
+    }));
 
-      console.log("Filtered Sectors", filteredSectors);
-      setSectorListTo(filteredSectors);
+    const combinedList = [...filteredSectors, ...mappedSortedCities];
+    const groupedTo = groupBy2(combinedList, "city_name");
 
-      // } else if (item.source === "getDepatureCityList") {
-      console.log("123", item);
-      setCondition(1);
-      setSelectedValue(`${item.city_name} (${item.airport_code})`);
-      // setSearchTerm("");
-      // ArrivalCityList(item.city_code);
-      const data = await ArrivalCityList(item.airport_code);
-      console.log("data-->", data);
-
-      SectorList(item.city_code);
-      // setDepCityCode(item.city_code);
-      // setIsDropdownOpen(false);
-      // setDefaultMonth("");
-      setDefaultMonth2("");
-      // setSelectedDate(null);
-      setSelectedDate2(null);
-      setSelectedValue2("");
-      // setSearchFlightListData([]);
-      // setSearchFlightListDataCheap([]);
-      // setSelectedIndex(null);
-      // }
-
-      // Normalize `sortedCities` to match structure of `filteredSectors`
-      const mappedSortedCities = data.map((city) => ({
-        destination: city.city_name,
-        DestinationCode: city.city_code,
-      }));
-
-      // Combine both arrays
-      const combinedList = [...filteredSectors, ...mappedSortedCities];
-
-      const groupedTo = groupBy2(combinedList, "destination");
-
-      console.log("groupedTo", groupedTo);
-
-      var arr2 = [];
-      arr2.push(groupedTo);
-
-      const formattedGroupedCitiesTo = Object.entries(groupedTo).map(
-        ([cityName, cityArray]) => {
-          const item = cityArray[0]; // just take the first item per city
-          return {
-            value: item.DestinationCode,
-            label:
-              `${item.destination} ${item.DestinationCode} ${item.airport_name}`.trim(),
-            ...item,
-          };
-        }
-      );
-
-      console.log("formattedGroupedCitiesTo", formattedGroupedCitiesTo);
-
-      setSectorListTo(formattedGroupedCitiesTo);
-
-      // // Remove duplicates based on destination name
-      // const uniqueCombinedList = combinedList.filter(
-      //   (item, index, self) =>
-      //     index === self.findIndex((i) => i.destination === item.destination)
-      // );
-
-      // Set to state
-      // setSectorListTo(uniqueCombinedList);
-
-      // console.log("combinedList",combinedList);
-
-      // finally set 'from' value for react-select
-      setFrom(item);
-    }
+    const formattedGroupedCitiesTo = Object.entries(groupedTo).map(
+      ([cityName, cityArray]) => {
+        const item = cityArray[0];
+        return {
+          value: item.city_code,
+          label: `${item.city_name} ${item.city_code} ${item.airport_name}`.trim(),
+          ...item,
+        };
+      }
+    );
+    setFrom(item);
+    setSectorListTo(formattedGroupedCitiesTo);
   };
+
+
 
   const groupBy2 = (array, key) => {
     return array.reduce((result, currentItem) => {
@@ -544,39 +909,76 @@ const sortedCheapFlights = [...getSearchFlightListDataCheap].sort((a, b) => a[so
     setFilteredToData(newData); // Update the filtered list
   };
 
+  // const handleSelect2 = (item) => {
+  //   if (!item) {
+  //     setTo(null);
+  //     return;
+  //   } else {
+  //     setDate1("");
+  //     setSelectedDate(null);
+  //     setDefaultMonth(null);
+
+  //     // if (getCondition === 0) {
+  //     // setSelectedValue2(`${item.destination} (${item.DestinationCode})`);
+  //     setSelectedValue2(item.city_name);
+  //     setSearchTerm2("");
+  //     setArrCityCode(item.city_code);
+  //     setIsDropdownOpen2(false);
+  //     getOnwardDate(item.city_code);
+  //     if (userRole === "2") {
+  //       dateAvailability(item.city_code);
+  //     } else if (userRole === "3") {
+  //       dateAvailabilitySupplier(item.city_code);
+  //     }
+  //     // } else if (getCondition === 1) {
+  //     // setSelectedValue2(`${item.city_name} (${item.airport_code})`);
+  //     setSearchTerm2("");
+  //     ArrivalCityList(getDepCityCode);
+  //     setArrCityCode(item.city_code);
+
+  //     setIsDropdownOpen2(false);
+  //     // }
+
+  //     setTo(item); // set the selected option in state      
+  //   }
+  // };
+
+
   const handleSelect2 = (item) => {
+     console.log('parth-2', JSON.stringify(item, null , 2));
     if (!item) {
       setTo(null);
       return;
-    } else {
-      setDate1("");
-      setSelectedDate(null);
-      setDefaultMonth(null);
-
-      // if (getCondition === 0) {
-      // setSelectedValue2(`${item.destination} (${item.DestinationCode})`);
-      setSelectedValue2(item.destination);
-      setSearchTerm2("");
-      setArrCityCode(item.DestinationCode);
-      setIsDropdownOpen2(false);
-      getOnwardDate(item.DestinationCode);
-      if (userRole === "2") {
-        dateAvailability(item.DestinationCode);
-      } else if (userRole === "3") {
-        dateAvailabilitySupplier(item.DestinationCode);
-      }
-      // } else if (getCondition === 1) {
-      // setSelectedValue2(`${item.city_name} (${item.airport_code})`);
-      setSearchTerm2("");
-      ArrivalCityList(getDepCityCode);
-      setArrCityCode(item.DestinationCode);
-
-      setIsDropdownOpen2(false);
-      // }
-
-      setTo(item); // set the selected option in state
     }
+
+    // Avoid unnecessary resets if selecting the same city
+    if (to?.city_code === item.city_code) return;
+
+    setTo(item); // Set early
+
+    setDate1("");
+    setSelectedDate(null);
+    setDefaultMonth(null);
+    setSelectedValue2(item.city_name);
+    setSearchTerm2("");
+    setArrCityCode(item.city_code);
+    setIsDropdownOpen2(false);
+
+    getOnwardDate(from?.city_code || getDepCityCode, item.city_code);
+
+    if (userRole === "2") {
+      // dateAvailability(item.city_code);
+      dateAvailability(from?.city_code || getDepCityCode, item.city_code);
+
+    } else if (userRole === "3") {
+      dateAvailabilitySupplier(item.city_code);
+    }
+
+    // ArrivalCityList(getDepCityCode); // to refresh options possibly
+    ArrivalCityList(from?.city_code || getDepCityCode); // use updated 'from' directly if available
+
   };
+
 
   const onChange = (date, dateString) => {
     console.log("dateString", dateString);
@@ -779,13 +1181,13 @@ const sortedCheapFlights = [...getSearchFlightListDataCheap].sort((a, b) => a[so
     const token = JSON.parse(localStorage.getItem("is_token_airiq"));
     setdepcitylistload(true);
     try {
-      const response = await axios.get(
-        proxy + "https://omairiq.azurewebsites.net/sectors",
+      const response = await axios.get(sectorscurl,
+        // proxy + "https://omairiq.azurewebsites.net/sectors",
         {
           headers: {
             "api-key": API_KEY,
             Authorization: token,
-            "Content-Type": "application/json",
+            Accept: ACCEPT_HEADER,
           },
         }
       );
@@ -1011,7 +1413,10 @@ const sortedCheapFlights = [...getSearchFlightListDataCheap].sort((a, b) => a[so
     }
   };
 
-  const getOnwardDate = async (citycode) => {
+  const getOnwardDate = async (dep_city_code,citycode) => {
+   
+    
+
     const token = "4-2-3721-KRAZY-389-xnewkncBUI8";
     const publicIP = await getPublicIP();
 
@@ -1025,7 +1430,8 @@ const sortedCheapFlights = [...getSearchFlightListDataCheap].sort((a, b) => a[so
       trip_type: selected,
       end_user_ip: publicIP,
       token: token,
-      dep_city_code: getDepCityCode,
+      // dep_city_code: getDepCityCode,
+      dep_city_code: dep_city_code,
       arr_city_code: citycode,
     };
 
@@ -1125,7 +1531,7 @@ const sortedCheapFlights = [...getSearchFlightListDataCheap].sort((a, b) => a[so
   const searchFlight = async (isRecentClick = false, recentItem = null) => {
     setSearchCondition(false);
     setSearchFlightListDataCheap([]);
-    setSearchFlightListData([]);
+    // setSearchFlightListData([]);
     const formattedDate = moment(date1, "DD-MM-YYYY").format("YYYY-MM-DD");
     console.log("formattedDate", date1);
 
@@ -1186,13 +1592,13 @@ const sortedCheapFlights = [...getSearchFlightListDataCheap].sort((a, b) => a[so
           onward_date: recentItem
             ? recentItem.departure_date
             : formattedDate == "Invalid date"
-            ? defaultMonth._i
-            : date1,
+              ? defaultMonth._i
+              : date1,
           return_date: recentItem
             ? recentItem.return_departure_date
             : formateddate == "Invalid date"
-            ? defaultMonth2._i
-            : formateddate,
+              ? defaultMonth2._i
+              : formateddate,
           adult: recentItem
             ? Number(recentItem.adult_travelers)
             : travellers?.adult,
@@ -1267,7 +1673,7 @@ const sortedCheapFlights = [...getSearchFlightListDataCheap].sort((a, b) => a[so
               data.message || data.errorMessage || "Something went wrong"
             );
             setSearchFlightListLoading(false);
-            setSearchFlightListData([]);
+            // setSearchFlightListData([]);
           }
         } catch (error) {
           setSearchFlightListLoading(false);
@@ -1305,13 +1711,13 @@ const sortedCheapFlights = [...getSearchFlightListDataCheap].sort((a, b) => a[so
           onward_date: recentItem
             ? recentItem.departure_date
             : formattedDate == "Invalid date"
-            ? defaultMonth._i
-            : date1,
+              ? defaultMonth._i
+              : date1,
           return_date: recentItem
             ? recentItem.return_departure_date
             : formateddate == "Invalid date"
-            ? defaultMonth2._i
-            : formateddate,
+              ? defaultMonth2._i
+              : formateddate,
           adult: recentItem
             ? Number(recentItem.adult_travelers)
             : travellers?.adult,
@@ -1378,7 +1784,7 @@ const sortedCheapFlights = [...getSearchFlightListDataCheap].sort((a, b) => a[so
             }
           } else if (data.errorCode == 1) {
             setSearchCondition(true);
-            setSearchFlightListData([]);
+            // setSearchFlightListData([]);
             setSearchFlightListMsg(data.errorMessage);
             setSearchFlightListLoading(false);
           } else {
@@ -1414,7 +1820,7 @@ const sortedCheapFlights = [...getSearchFlightListDataCheap].sort((a, b) => a[so
     returndate,
     lowestPrice
   ) => {
-    console.log("selected", selected);
+    // console.log("selected", selected);
 
     const token = JSON.parse(localStorage.getItem("is_token"));
 
@@ -1561,26 +1967,29 @@ const sortedCheapFlights = [...getSearchFlightListDataCheap].sort((a, b) => a[so
     // }
   };
 
-  const dateAvailability = async (destinationcode) => {
+  const dateAvailability = async (originCode,destinationcode) => {
     const token = JSON.parse(localStorage.getItem("is_token_airiq"));
+    const headers = new Headers(ACCEPT_HEADER1);
+  headers.append("Authorization",token);
+
+    console.log("getDepCityCode",originCode);
+    
 
     const payload = {
-      origin: getDepCityCode,
+      // origin: getDepCityCode,
+      origin: originCode,
       destination: destinationcode,
     };
 
     try {
-      const response = await fetch(
-        proxy + "https://omairiq.azurewebsites.net/availability",
+      const response = await fetch(availabilitycurl,
+       
         {
           method: "POST",
-          headers: {
-            "Access-Control-Allow-Origin": "*",
-            "Content-Type": "application/json",
-            "api-key": API_KEY,
-            Authorization: token,
-          },
+          headers: headers,
+          Authorization: token,
           body: JSON.stringify(payload),
+          redirect: "follow"
         }
       );
 
@@ -1623,6 +2032,8 @@ const sortedCheapFlights = [...getSearchFlightListDataCheap].sort((a, b) => a[so
 
   const dateAvailabilitySupplier = async (destinationcode) => {
     const token = JSON.parse(localStorage.getItem("is_token_airiq"));
+    const headers = new Headers(ACCEPT_HEADER1);
+    headers.append("Authorization",token);
 
     const payload = {
       origin: getDepCityCode,
@@ -1630,18 +2041,28 @@ const sortedCheapFlights = [...getSearchFlightListDataCheap].sort((a, b) => a[so
     };
 
     try {
-      const response = await fetch(
-        proxy + "https://omairiq.azurewebsites.net/supplieravailability",
-        {
+      const response = await fetch(supplieravailabilitycurl,
+        // proxy + "https://omairiq.azurewebsites.net/supplieravailability",
+        
+        // {
+        //   method: "POST",
+        //   headers: {
+        //     "Access-Control-Allow-Origin": "*",
+        //     "Content-Type": "application/json",
+        //     "api-key": API_KEY,
+        //     Authorization: token,
+        //   },
+        //   body: JSON.stringify(payload),
+        // }
+
+         {
           method: "POST",
-          headers: {
-            "Access-Control-Allow-Origin": "*",
-            "Content-Type": "application/json",
-            "api-key": API_KEY,
-            Authorization: token,
-          },
+          headers: headers,
+          Authorization: token,
           body: JSON.stringify(payload),
+          redirect: "follow"
         }
+        
       );
 
       const data = await response.json();
@@ -1685,6 +2106,9 @@ const sortedCheapFlights = [...getSearchFlightListDataCheap].sort((a, b) => a[so
     console.log("1111111111111");
 
     const token = JSON.parse(localStorage.getItem("is_token_airiq"));
+    const headers = new Headers(ACCEPT_HEADER1);
+    headers.append("Authorization",token);
+
     setSearchCondition2(false);
 
     const formattedDate =
@@ -1740,9 +2164,11 @@ const sortedCheapFlights = [...getSearchFlightListDataCheap].sort((a, b) => a[so
       let apiUrl = "";
 
       if (userRole === "2") {
-        apiUrl = proxy + "https://omairiq.azurewebsites.net/search";
+        // apiUrl = proxy + "https://omairiq.azurewebsites.net/search";
+        apiUrl = searchcurl;
       } else if (userRole === "3") {
-        apiUrl = proxy + "https://omairiq.azurewebsites.net/suppliersearch";
+        // apiUrl = proxy + "https://omairiq.azurewebsites.net/suppliersearch";
+        apiUrl = suppliersearchcurl;
       } else {
         console.error("Invalid selection value");
         return;
@@ -1754,14 +2180,13 @@ const sortedCheapFlights = [...getSearchFlightListDataCheap].sort((a, b) => a[so
           apiUrl,
           {
             method: "POST",
-            headers: {
-              "Access-Control-Allow-Origin": "*",
-              "Content-Type": "application/json",
-              "api-key": API_KEY,
-              Authorization: token,
-            },
+            headers: headers,
+            Authorization: token,
             body: JSON.stringify(payload),
-          }
+            redirect: "follow"
+            },
+           
+
         );
 
         // Parse the JSON response
@@ -1822,6 +2247,7 @@ const sortedCheapFlights = [...getSearchFlightListDataCheap].sort((a, b) => a[so
             .filter((price) => price !== undefined && price !== null);
 
           const minPrice = Math.min(...prices);
+          
 
           setSearchFlightListData(data.data);
           setbookingtokenid(data.booking_token_id);
@@ -2032,9 +2458,8 @@ const sortedCheapFlights = [...getSearchFlightListDataCheap].sort((a, b) => a[so
                   onClick={() => setSelectedtab(tab.key)}
                 >
                   <div
-                    className={`tab-icon-box ${
-                      selectedtab === tab.key ? "active" : ""
-                    }`}
+                    className={`tab-icon-box ${selectedtab === tab.key ? "active" : ""
+                      }`}
                   >
                     {tab.icon}
                   </div>
@@ -2058,9 +2483,8 @@ const sortedCheapFlights = [...getSearchFlightListDataCheap].sort((a, b) => a[so
                     {options.map((opt) => (
                       <div
                         key={opt}
-                        className={`dropdown-option ${
-                          opt === selectedOption ? "active" : ""
-                        } ${opt === "Multi-city" ? "disabled" : ""}`}
+                        className={`dropdown-option ${opt === selectedOption ? "active" : ""
+                          } ${opt === "Multi-city" ? "disabled" : ""}`}
                         onClick={() => handleSelecttripoption(opt)}
                         style={
                           opt === "Multi-city"
@@ -2195,11 +2619,10 @@ const sortedCheapFlights = [...getSearchFlightListDataCheap].sort((a, b) => a[so
               {getCondition === 0 ||
                 (selected === 1 && (
                   <div
-                    className={`${
-                      selected === 0 && getCondition === 1
-                        ? "disabledatepicker"
-                        : "custom-date-picker"
-                    }`}
+                    className={`${selected === 0 && getCondition === 1
+                      ? "disabledatepicker"
+                      : "custom-date-picker"
+                      }`}
                   >
                     <DatePicker
                       disabled={selected == 0 ? true : false}
@@ -2318,9 +2741,8 @@ const sortedCheapFlights = [...getSearchFlightListDataCheap].sort((a, b) => a[so
                       {classes.map((classOption) => (
                         <div
                           key={classOption}
-                          className={`classselekt ${
-                            selectedClass === classOption ? "selected" : ""
-                          }`}
+                          className={`classselekt ${selectedClass === classOption ? "selected" : ""
+                            }`}
                           onClick={() => setSelectedClass(classOption)}
                         >
                           {classOption}
@@ -2463,33 +2885,57 @@ const sortedCheapFlights = [...getSearchFlightListDataCheap].sort((a, b) => a[so
 
               {(getSearchFlightListData?.length > 0 ||
                 getSearchFlightListDataCheap?.length > 0) && (
-                <>
-                  <div className="flightcounter2">
-                    <h5 className="hero_ticket_book_resp_font_size2">
-                      We have{" "}
-                      <span>
-                        {getSearchFlightListData?.length
-                          ? getSearchFlightListData.length
-                          : getSearchFlightListDataCheap.length}{" "}
-                        Flight
-                      </span>{" "}
-                      from{" "}
-                      <span>
-                        {getSearchFlightListDataCheap[0]?.dep_city_code
-                          ? getSearchFlightListDataCheap[0].dep_city_code
-                          : getSearchFlightListData[0]?.origin}
-                      </span>{" "}
-                      to{" "}
-                      <span>
-                        {getSearchFlightListDataCheap[0]?.arr_city_code
-                          ? getSearchFlightListDataCheap[0].arr_city_code
-                          : getSearchFlightListData[0]?.destination}
-                      </span>{" "}
-                      {totalTravellers} Traveller
-                    </h5>
-                  </div>
-                </>
-              )}
+                  <>
+                    <div
+                      className="flightcounter2"
+                      style={{
+                        display: "flex",
+                        alignItems: "center",
+                        justifyContent: "space-between",
+                      }}
+                    >
+                      <h5 className="hero_ticket_book_resp_font_size2">
+                        We have{" "}
+                        <span>
+                          {getSearchFlightListData?.length
+                            ? getSearchFlightListData.length
+                            : getSearchFlightListDataCheap.length}{" "}
+                          Flight
+                        </span>{" "}
+                        from{" "}
+                        <span>
+                          {getSearchFlightListDataCheap[0]?.dep_city_code
+                            ? getSearchFlightListDataCheap[0].dep_city_code
+                            : getSearchFlightListData[0]?.origin}
+                        </span>{" "}
+                        to{" "}
+                        <span>
+                          {getSearchFlightListDataCheap[0]?.arr_city_code
+                            ? getSearchFlightListDataCheap[0].arr_city_code
+                            : getSearchFlightListData[0]?.destination}
+                        </span>{" "}
+                        {totalTravellers} Traveller
+                      </h5>
+                      <Select
+                        options={optionss}
+                        onChange={handleChanges}
+                        placeholder={
+                          <div
+                            style={{
+                              display: "flex",
+                              alignItems: "center",
+                              gap: "8px",
+                            }}
+                          >
+                            <FaSort /> Flight Sort
+                          </div>
+                        }
+                        styles={customStyles2}
+                        isSearchable={false}
+                      />
+                    </div>
+                  </>
+                )}
 
               {/* {getSeachCondition === true ? (
                 <>
@@ -2497,9 +2943,640 @@ const sortedCheapFlights = [...getSearchFlightListDataCheap].sort((a, b) => a[so
                 </>
               ) : ( */}
               <>
-                <>
-                  {[...sortedFlights]
-                    .map((item, index) => {
+                {getfiltercondation ? (
+
+                  <>
+                    {[...getfilerdata].map((item, index) => {
+                      const calculateDuration = (departure, arrival) => {
+                        const depTime = moment(departure, "HH:mm");
+                        const arrTime = moment(arrival, "HH:mm");
+                        const duration = moment.duration(arrTime.diff(depTime));
+                        return `${Math.floor(
+                          duration.asHours()
+                        )}h ${duration.minutes()}m`;
+                      };
+                      return (
+                        <>
+                          <div className="flightsavailable2">
+                            <div className="row">
+                              <div className="col-12 col-lg-9 justify-content-space-between">
+                                <div className="align-items-center justify-content-around d-flex flex-column gap-5 gap-lg-0 flex-lg-row p-3">
+                                  <div className="airlinename col-12 col-lg-3">
+                                    <div>
+                                      {(() => {
+                                        const airline = item.airline;
+
+                                        {
+                                          /* getCondition === 1
+                                            ? item.airline_name
+                                            : item.airline; */
+                                        }
+
+                                        return airline === "IndiGo Airlines" ||
+                                          airline === "IndiGo" ? (
+                                          <img
+                                            src={images.IndiGoAirlines_logo}
+                                            className="airline_logo2"
+                                          />
+                                        ) : airline === "Neos" ? (
+                                          <img
+                                            src={images.neoslogo}
+                                            className="airline_logo2"
+                                          />
+                                        ) : airline === "SpiceJet" ? (
+                                          <img
+                                            src={images.spicejet}
+                                            className="airline_logo2"
+                                          />
+                                        ) : airline === "Air India" ? (
+                                          <img
+                                            src={images.airindialogo}
+                                            className="airline_logo2"
+                                          />
+                                        ) : airline === "Akasa Air" ? (
+                                          <img
+                                            src={images.akasalogo}
+                                            className="airline_logo2"
+                                          />
+                                        ) : airline === "Etihad" ? (
+                                          <img
+                                            src={images.etihadlogo}
+                                            style={{
+                                              backgroundColor: "#fff",
+                                              padding: "5px",
+                                              borderRadius: "5px",
+                                            }}
+                                            className="airline_logo2"
+                                          />
+                                        ) : airline === "Vistara" ? (
+                                          <img
+                                            src={images.vistaralogo}
+                                            className="airline_logo2"
+                                          />
+                                        ) : airline === "AirAsia X" ? (
+                                          <img
+                                            src={images.airasiax}
+                                            className="airline_logo2"
+                                          />
+                                        ) : airline === "AirAsia" ? (
+                                          <img
+                                            src={images.airasia}
+                                            className="airline_logo2"
+                                          />
+                                        ) : airline === "Azul" ? (
+                                          <img
+                                            src={images.azul}
+                                            className="airline_logo2"
+                                          />
+                                        ) : airline === "Air India Express" ? (
+                                          <img
+                                            src={images.Air_India_Express_logo}
+                                            className="airline_logo2"
+                                          />
+                                        ) : (
+                                          <IoAirplaneSharp
+                                            size={40}
+                                            color="black"
+                                          />
+                                        );
+                                      })()}
+                                    </div>
+
+                                    <div className="planecomp2">
+                                      {/* {getCondition == 0 ? (
+                                        <>{item?.airline}</>
+                                      ) : (
+                                        <>{item?.airline_name}</>
+                                      )} */}
+
+                                      {item?.airline}
+                                    </div>
+                                  </div>
+                                  <div className="flight-details2 col-12 col-lg-6 justify-content-center">
+                                    <div className="flight-departure text-center">
+                                      <h5 className="flighttime2">
+                                        {/* {getCondition == 0 ? (
+                                          <>{item?.departure_time}</>
+                                        ) : (
+                                          <>{item?.dep_time}</>
+                                        )} */}
+                                        {item?.departure_time}
+                                      </h5>
+                                      <h5 className="airportname2">
+                                        {/* {getCondition == 0 ? (
+                                          <>{item?.origin}</>
+                                        ) : (
+                                          <>{item?.dep_city_name}</>
+                                        )} */}
+                                        {item?.origin}
+                                      </h5>
+
+                                      <p className="alldate2">
+                                        {/* {getCondition == 0 ? (
+                                          <>
+                                            {moment(
+                                              item?.departure_date
+                                            ).format("DD-MM-YYYY")}{" "}
+                                          </>
+                                        ) : (
+                                          <>
+                                            {moment(item?.onward_date).format(
+                                              "DD-MM-YYYY"
+                                            )}{" "}
+                                          </>
+                                        )} */}
+                                        {moment(item?.departure_date).format(
+                                          "DD-MM-YYYY"
+                                        )}{" "}
+                                      </p>
+                                    </div>
+                                    <div className="d-flex align-items-center gap-2 gap-lg-3">
+                                      <span className="text-dark">From</span>
+                                      <div className="from-to text-center">
+                                        <h6 className="text-dark">
+                                          {/* {getCondition == 0 ? (
+                                            <>
+                                              {calculateDuration(
+                                                item?.departure_time,
+                                                item?.arival_time
+                                              )}
+                                            </>
+                                          ) : (
+                                            <>
+                                              {item?.duration &&
+                                                `${item.duration.split(":")[0]
+                                                }h ${item.duration.split(":")[1]
+                                                }min`}
+                                            </>
+                                          )} */}
+                                          {calculateDuration(
+                                            item?.departure_time,
+                                            item?.arival_time
+                                          )}
+                                        </h6>
+                                        <img
+                                          src={images.invertedviman}
+                                          alt=""
+                                          className="imagerouteplane"
+                                        />
+                                        <h6 className="text-dark">
+                                          {/* {getCondition == 0 ? (
+                                            <>{item?.flight_route}</>
+                                          ) : (
+                                            <>{item?.no_of_stop} stop</>
+                                          )} */}
+                                          {item?.flight_route}
+                                        </h6>
+                                      </div>
+                                      <span className="text-dark">To</span>
+                                    </div>
+                                    <div className="flight-departure text-center">
+                                      <h5 className="flighttime2">
+                                        {/* {getCondition == 0 ? (
+                                          <>{item?.arival_time}</>
+                                        ) : (
+                                          <>{item?.arr_time}</>
+                                        )} */}
+                                        {item?.arival_time}
+                                      </h5>
+                                      <h5 className="airportname2">
+                                        {/* {getCondition == 0 ? (
+                                          <>{item?.destination}</>
+                                        ) : (
+                                          <>{item?.arr_city_name}</>
+                                        )} */}
+                                        {item?.destination}
+                                      </h5>
+                                      <p className="alldate2">
+                                        {/* {getCondition == 0 ? (
+                                          <>
+                                            {moment(item?.arival_date).format(
+                                              "DD-MM-YYYY"
+                                            )}
+                                          </>
+                                        ) : (
+                                          <>
+                                            {moment(item?.arr_date).format(
+                                              "DD-MM-YYYY"
+                                            )}
+                                          </>
+                                        )} */}
+                                        {moment(item?.arival_date).format(
+                                          "DD-MM-YYYY"
+                                        )}
+                                      </p>
+                                    </div>
+                                  </div>
+                                </div>
+                                {item?.return_flight_data ? (
+                                  <>
+                                    <div className="align-items-center justify-content-around d-flex flex-column gap-5 gap-lg-0 flex-lg-row p-3">
+                                      <div className="airlinename col-12 col-lg-3">
+                                        <div>
+                                          {(() => {
+                                            const airline =
+                                              getCondition === 1
+                                                ? item.airline_name
+                                                : item.airline;
+
+                                            return airline ===
+                                              "IndiGo Airlines" ||
+                                              airline === "IndiGo" ? (
+                                              <img
+                                                src={images.IndiGoAirlines_logo}
+                                                className="airline_logo"
+                                              />
+                                            ) : airline === "Neos" ? (
+                                              <img
+                                                src={images.neoslogo}
+                                                className="airline_logo"
+                                              />
+                                            ) : airline === "SpiceJet" ? (
+                                              <img
+                                                src={images.spicejet}
+                                                className="airline_logo"
+                                              />
+                                            ) : airline === "Air India" ? (
+                                              <img
+                                                src={images.airindialogo}
+                                                className="airline_logo"
+                                              />
+                                            ) : airline === "Akasa Air" ? (
+                                              <img
+                                                src={images.akasalogo}
+                                                className="airline_logo"
+                                              />
+                                            ) : airline === "Etihad" ? (
+                                              <img
+                                                src={images.etihadlogo}
+                                                style={{
+                                                  backgroundColor: "#fffbdb",
+                                                  padding: "5px",
+                                                  borderRadius: "5px",
+                                                }}
+                                                className="airline_logo"
+                                              />
+                                            ) : airline === "Vistara" ? (
+                                              <img
+                                                src={images.vistaralogo}
+                                                className="airline_logo"
+                                              />
+                                            ) : airline === "AirAsia X" ? (
+                                              <img
+                                                src={images.airasiax}
+                                                className="airline_logo"
+                                              />
+                                            ) : airline ===
+                                              "Air India Express" ? (
+                                              <img
+                                                src={
+                                                  images.Air_India_Express_logo
+                                                }
+                                                className="airline_logo"
+                                              />
+                                            ) : (
+                                              <IoAirplaneSharp
+                                                size={40}
+                                                color="white"
+                                              />
+                                            );
+                                          })()}
+                                        </div>
+
+                                        <div className="planecomp2">
+                                          {getCondition == 0 ? (
+                                            <>{item?.airline}</>
+                                          ) : (
+                                            <>{item?.airline_name}</>
+                                          )}
+                                        </div>
+                                      </div>
+                                      <div className="flight-details col-12 col-lg-6 justify-content-center">
+                                        <div className="flight-departure text-center">
+                                          <h5 className="flighttime2">
+                                            {
+                                              item?.return_flight_data
+                                                ?.return_dep_time
+                                            }
+                                          </h5>
+                                          <h5 className="airportname2">
+                                            {
+                                              item?.return_flight_data
+                                                ?.return_dep_city_name
+                                            }
+                                          </h5>
+                                          <p className="alldate2">
+                                            {moment(
+                                              item?.return_flight_data
+                                                ?.return_dep_date
+                                            ).format("DD-MM-YYYY")}
+                                          </p>
+                                        </div>
+                                        <div className="d-flex align-items-center gap-2 gap-lg-3">
+                                          <span className="text-dark">
+                                            From
+                                          </span>
+                                          <div className="from-to text-center">
+                                            <h6 className="text-dark">
+                                              {`${item?.return_flight_data?.return_trip_duration}h`}
+                                            </h6>
+                                            <img
+                                              src={images.invertedviman}
+                                              alt=""
+                                              className="imagerouteplane"
+                                            />
+                                            <h6 className="text-dark">
+                                              {item?.return_no_of_stop} Stop
+                                            </h6>
+                                          </div>
+                                          <span className="text-dark">To</span>
+                                        </div>
+                                        <div className="flight-departure text-center">
+                                          <h5 className="flighttime2">
+                                            {
+                                              item?.return_flight_data
+                                                ?.return_arr_time
+                                            }
+                                          </h5>
+                                          <h5 className="airportname2">
+                                            {
+                                              item?.return_flight_data
+                                                ?.return_arr_city_name
+                                            }
+                                          </h5>
+                                          <p className="alldate2">
+                                            {moment(
+                                              item?.return_flight_data
+                                                ?.return_arr_date
+                                            ).format("DD-MM-YYYY")}
+                                          </p>
+                                        </div>
+                                      </div>
+                                    </div>
+                                  </>
+                                ) : (
+                                  <></>
+                                )}
+                              </div>
+                              <div className="col-12 col-lg-3 nanolito2 d-flex justify-content-center">
+                                <div className="pricediv col-lg-3 mb-3 mb-lg-0">
+                                  <div className="d-flex align-items-center">
+                                    <FaRupeeSign size={20} color="#000" />
+                                    <h4 className="text-dark fw-bold dijit">
+                                      {/* {getCondition == 0 ? (
+                                        <>{item?.price}</>
+                                      ) : (
+                                        <>{item?.per_adult_child_price}</>
+                                      )} */}
+
+                                      {item?.price}
+                                    </h4>
+                                  </div>
+
+                                  {login ? (
+                                    <Link
+                                      to={"/TicketBookingDetails"}
+                                      state={{
+                                        item: item,
+                                        totaltraveller: totalTravellers,
+                                        adulttraveler: travellers.adult,
+                                        childtraveler: travellers.child,
+                                        infanttraveler: travellers.infant,
+                                        bookingtokenid: bookingtokenid,
+                                        ticket_id: item?.ticket_id,
+                                        selected: selected,
+                                        getCondition: item?.airline ? 0 : 1,
+                                      }}
+                                      className="bookBtn2"
+                                    >
+                                      Book
+                                    </Link>
+                                  ) : (
+                                    <Link
+                                      onClick={() =>
+                                        alert(
+                                          "Please log in to proceed with booking."
+                                        )
+                                      }
+                                      className="bookBtn2"
+                                    >
+                                      Book
+                                    </Link>
+                                  )}
+                                </div>
+                              </div>
+                            </div>
+                          </div>
+
+                          <div className="flights_available_mobile">
+                            <div className="d-flex justify-content-between">
+                              <div className="mobile_row">
+                                <div>
+                                  {(() => {
+                                    const airline =
+                                      getCondition === 1
+                                        ? item.airline_name
+                                        : item.airline;
+
+                                    return airline === "IndiGo Airlines" ||
+                                      airline === "IndiGo" ? (
+                                      <img
+                                        src={images.IndiGoAirlines_logo}
+                                        className="airline_logo2_mob"
+                                      />
+                                    ) : airline === "Neos" ? (
+                                      <img
+                                        src={images.neoslogo}
+                                        className="airline_logo2_mob"
+                                      />
+                                    ) : airline === "SpiceJet" ? (
+                                      <img
+                                        src={images.spicejet}
+                                        className="airline_logo2_mob"
+                                      />
+                                    ) : airline === "Air India" ? (
+                                      <img
+                                        src={images.airindialogo}
+                                        className="airline_logo2_mob"
+                                      />
+                                    ) : airline === "Akasa Air" ? (
+                                      <img
+                                        src={images.akasalogo}
+                                        className="airline_logo2_mob"
+                                      />
+                                    ) : airline === "Etihad" ? (
+                                      <img
+                                        src={images.etihadlogo}
+                                        style={{
+                                          backgroundColor: "#fff",
+                                          padding: "5px",
+                                          borderRadius: "5px",
+                                        }}
+                                        className="airline_logo2_mob"
+                                      />
+                                    ) : airline === "Vistara" ? (
+                                      <img
+                                        src={images.vistaralogo}
+                                        className="airline_logo2_mob"
+                                      />
+                                    ) : airline === "AirAsia X" ? (
+                                      <img
+                                        src={images.airasiax}
+                                        className="airline_logo2_mob"
+                                      />
+                                    ) : airline === "AirAsia" ? (
+                                      <img
+                                        src={images.airasia}
+                                        className="airline_logo2_mob"
+                                      />
+                                    ) : airline === "Azul" ? (
+                                      <img
+                                        src={images.azul}
+                                        className="airline_logo2_mob"
+                                      />
+                                    ) : airline === "Air India Express" ? (
+                                      <img
+                                        src={images.Air_India_Express_logo}
+                                        className="airline_logo2"
+                                      />
+                                    ) : (
+                                      <IoAirplaneSharp
+                                        size={40}
+                                        color="white"
+                                      />
+                                    );
+                                  })()}
+                                </div>
+                                <div className="mob_time_cont">
+                                  <div className="mob_time_row">
+                                    <div className="mob_time">
+                                      {getCondition == 0 ? (
+                                        <>{item?.departure_time}</>
+                                      ) : (
+                                        <>{item?.dep_time}</>
+                                      )}
+                                    </div>
+                                    <div
+                                      style={{
+                                        width: "50px",
+                                      }}
+                                    >
+                                      -------
+                                    </div>
+                                    <div className="mob_time">
+                                      {getCondition == 0 ? (
+                                        <>{item?.arival_time}</>
+                                      ) : (
+                                        <>{item?.arr_time}</>
+                                      )}
+                                    </div>
+                                  </div>
+                                  <div className="mob_time_row justify-content-between">
+                                    <div className="mob_city_kode">
+                                      {getCondition == 0 ? (
+                                        <>{item?.departure_time}</>
+                                      ) : (
+                                        <>{item?.dep_airport_code}</>
+                                      )}
+                                    </div>
+                                    <div className="mob_duration">
+                                      {getCondition == 0 ? (
+                                        <>
+                                          {calculateDuration(
+                                            item?.departure_time,
+                                            item?.arival_time
+                                          )}
+                                        </>
+                                      ) : (
+                                        <>
+                                          {item?.duration &&
+                                            `${item.duration.split(":")[0]}h ${item.duration.split(":")[1]
+                                            }m`}
+                                        </>
+                                      )}
+                                    </div>
+                                    <div className="mob_city_kode">
+                                      {getCondition == 0 ? (
+                                        <>{item?.destination}</>
+                                      ) : (
+                                        <>{item?.arr_city_code}</>
+                                      )}
+                                    </div>
+                                  </div>
+                                </div>
+                              </div>
+
+                              <div className="mob_Amount">
+                                <div className="mob_rupi_icon">
+                                  <div>
+                                    <FaIndianRupeeSign size={20} />
+                                  </div>
+                                  <div className="mob_amount">
+                                    {getCondition == 0 ? (
+                                      <>{item?.price}</>
+                                    ) : (
+                                      <>{item?.per_adult_child_price}</>
+                                    )}
+                                  </div>
+                                </div>
+                              </div>
+                            </div>
+                            <div
+                              style={{
+                                borderTop: "1px solid #ccc",
+                                marginTop: "1rem",
+                              }}
+                            />
+                            <div className="mob_book_btn_main">
+                              <div className="mob_book_airlineNm">
+                                {getCondition == 0 ? (
+                                  <>{item?.airline}</>
+                                ) : (
+                                  <>{item?.airline_name}</>
+                                )}
+                              </div>
+                              <div>
+                                {login ? (
+                                  <Link
+                                    to={"/TicketBookingDetails"}
+                                    state={{
+                                      item: item,
+                                      totaltraveller: totalTravellers,
+                                      adulttraveler: travellers.adult,
+                                      childtraveler: travellers.child,
+                                      infanttraveler: travellers.infant,
+                                      bookingtokenid: bookingtokenid,
+                                      ticket_id: item?.ticket_id,
+                                      selected: selected,
+                                      getCondition: getCondition,
+                                    }}
+                                    className="bookBtn2_mob"
+                                  >
+                                    Book
+                                  </Link>
+                                ) : (
+                                  <Link
+                                    onClick={() =>
+                                      alert(
+                                        "Please log in to proceed with booking."
+                                      )
+                                    }
+                                    className="bookBtn2_mob"
+                                  >
+                                    Book
+                                  </Link>
+                                )}
+                              </div>
+                            </div>
+                          </div>
+                        </>
+                      );
+                    })}
+                  </>
+
+                ) : (
+                  <>
+                    {[...sortedFlights].map((item, index) => {
                       const calculateDuration = (departure, arrival) => {
                         const depTime = moment(departure, "HH:mm");
                         const arrTime = moment(arrival, "HH:mm");
@@ -3048,8 +4125,7 @@ const sortedCheapFlights = [...getSearchFlightListDataCheap].sort((a, b) => a[so
                                       ) : (
                                         <>
                                           {item?.duration &&
-                                            `${item.duration.split(":")[0]}h ${
-                                              item.duration.split(":")[1]
+                                            `${item.duration.split(":")[0]}h ${item.duration.split(":")[1]
                                             }m`}
                                         </>
                                       )}
@@ -3131,581 +4207,373 @@ const sortedCheapFlights = [...getSearchFlightListDataCheap].sort((a, b) => a[so
                         </>
                       );
                     })}
-                </>
+                  </>
+                )}
 
                 <>
-                  {[...sortedCheapFlights]
-                    .map((item, index) => {
-                      const calculateDuration = (departure, arrival) => {
-                        const depTime = moment(departure, "HH:mm");
-                        const arrTime = moment(arrival, "HH:mm");
-                        const duration = moment.duration(arrTime.diff(depTime));
-                        return `${Math.floor(
-                          duration.asHours()
-                        )}h ${duration.minutes()}m`;
-                      };
-                      return (
-                        <>
-                          <div className="flightsavailable2">
-                            <div className="row">
-                              <div className="col-12 col-lg-9 justify-content-space-between">
-                                <div className="align-items-center justify-content-around d-flex flex-column gap-5 gap-lg-0 flex-lg-row p-3">
-                                  <div className="airlinename col-12 col-lg-3">
-                                    <div>
-                                      {(() => {
-                                        const airline =
-                                          getCondition === 1
-                                            ? item.airline_name
-                                            : item.airline;
+                  {[...sortedCheapFlights].map((item, index) => {
+                    const calculateDuration = (departure, arrival) => {
+                      const depTime = moment(departure, "HH:mm");
+                      const arrTime = moment(arrival, "HH:mm");
+                      const duration = moment.duration(arrTime.diff(depTime));
+                      return `${Math.floor(
+                        duration.asHours()
+                      )}h ${duration.minutes()}m`;
+                    };
+                    return (
+                      <>
+                        <div className="flightsavailable2">
+                          <div className="row">
+                            <div className="col-12 col-lg-9 justify-content-space-between">
+                              <div className="align-items-center justify-content-around d-flex flex-column gap-5 gap-lg-0 flex-lg-row p-3">
+                                <div className="airlinename col-12 col-lg-3">
+                                  <div>
+                                    {(() => {
+                                      const airline =
+                                        getCondition === 1
+                                          ? item.airline_name
+                                          : item.airline;
 
-                                        return airline === "IndiGo Airlines" ||
-                                          airline === "IndiGo" ? (
-                                          <img
-                                            src={images.IndiGoAirlines_logo}
-                                            className="airline_logo2"
-                                          />
-                                        ) : airline === "Neos" ? (
-                                          <img
-                                            src={images.neoslogo}
-                                            className="airline_logo2"
-                                          />
-                                        ) : airline === "SpiceJet" ? (
-                                          <img
-                                            src={images.spicejet}
-                                            className="airline_logo2"
-                                          />
-                                        ) : airline === "Air India" ? (
-                                          <img
-                                            src={images.airindialogo}
-                                            className="airline_logo2"
-                                          />
-                                        ) : airline === "Akasa Air" ? (
-                                          <img
-                                            src={images.akasalogo}
-                                            className="airline_logo2"
-                                          />
-                                        ) : airline === "Etihad" ? (
-                                          <img
-                                            src={images.etihadlogo}
-                                            style={{
-                                              backgroundColor: "#fff",
-                                              padding: "5px",
-                                              borderRadius: "5px",
-                                            }}
-                                            className="airline_logo2"
-                                          />
-                                        ) : airline === "Vistara" ? (
-                                          <img
-                                            src={images.vistaralogo}
-                                            className="airline_logo2"
-                                          />
-                                        ) : airline === "AirAsia X" ? (
-                                          <img
-                                            src={images.airasiax}
-                                            className="airline_logo2"
-                                          />
-                                        ) : airline === "AirAsia" ? (
-                                          <img
-                                            src={images.airasia}
-                                            className="airline_logo2"
-                                          />
-                                        ) : airline === "Azul" ? (
-                                          <img
-                                            src={images.azul}
-                                            className="airline_logo2"
-                                          />
-                                        ) : airline === "Air India Express" ? (
-                                          <img
-                                            src={images.Air_India_Express_logo}
-                                            className="airline_logo2"
-                                          />
-                                        ) : (
-                                          <IoAirplaneSharp
-                                            size={40}
-                                            color="white"
-                                          />
-                                        );
-                                      })()}
-                                    </div>
-
-                                    <div className="planecomp2">
-                                      {getCondition == 0 ? (
-                                        <>{item?.airline}</>
-                                      ) : (
-                                        <>{item?.airline_name}</>
-                                      )}
-                                    </div>
-                                  </div>
-                                  <div className="flight-details2 col-12 col-lg-6 justify-content-center">
-                                    <div className="flight-departure text-center">
-                                      <h5 className="flighttime2">
-                                        {getCondition == 0 ? (
-                                          <>{item?.departure_time}</>
-                                        ) : (
-                                          <>{item?.dep_time}</>
-                                        )}
-                                      </h5>
-                                      <h5 className="airportname2">
-                                        {getCondition == 0 ? (
-                                          <>{item?.origin}</>
-                                        ) : (
-                                          <>{item?.dep_city_name}</>
-                                        )}
-                                      </h5>
-
-                                      <p className="alldate2">
-                                        {getCondition == 0 ? (
-                                          <>
-                                            {moment(
-                                              item?.departure_date
-                                            ).format("DD-MM-YYYY")}{" "}
-                                          </>
-                                        ) : (
-                                          <>
-                                            {moment(item?.onward_date).format(
-                                              "DD-MM-YYYY"
-                                            )}{" "}
-                                          </>
-                                        )}
-                                      </p>
-                                    </div>
-                                    <div className="d-flex align-items-center gap-2 gap-lg-3">
-                                      <span className="text-dark">From</span>
-                                      <div className="from-to text-center">
-                                        <h6 className="text-dark">
-                                          {getCondition == 0 ? (
-                                            <>
-                                              {calculateDuration(
-                                                item?.departure_time,
-                                                item?.arival_time
-                                              )}
-                                            </>
-                                          ) : (
-                                            <>
-                                              {item?.duration &&
-                                                `${
-                                                  item.duration.split(":")[0]
-                                                }h ${
-                                                  item.duration.split(":")[1]
-                                                }min`}
-                                            </>
-                                          )}
-                                        </h6>
+                                      return airline === "IndiGo Airlines" ||
+                                        airline === "IndiGo" ? (
                                         <img
-                                          src={images.invertedviman}
-                                          alt=""
-                                          className="imagerouteplane"
+                                          src={images.IndiGoAirlines_logo}
+                                          className="airline_logo2"
                                         />
-                                        <h6 className="text-dark">
-                                          {getCondition == 0 ? (
-                                            <>{item?.flight_route}</>
-                                          ) : (
-                                            <>{item?.no_of_stop} stop</>
-                                          )}
-                                        </h6>
-                                      </div>
-                                      <span className="text-dark">To</span>
-                                    </div>
-                                    <div className="flight-departure text-center">
-                                      <h5 className="flighttime2">
-                                        {getCondition == 0 ? (
-                                          <>{item?.arival_time}</>
-                                        ) : (
-                                          <>{item?.arr_time}</>
-                                        )}
-                                      </h5>
-                                      <h5 className="airportname2">
-                                        {getCondition == 0 ? (
-                                          <>{item?.destination}</>
-                                        ) : (
-                                          <>{item?.arr_city_name}</>
-                                        )}
-                                      </h5>
-                                      <p className="alldate2">
-                                        {getCondition == 0 ? (
-                                          <>
-                                            {moment(item?.arival_date).format(
-                                              "DD-MM-YYYY"
-                                            )}
-                                          </>
-                                        ) : (
-                                          <>
-                                            {moment(item?.arr_date).format(
-                                              "DD-MM-YYYY"
-                                            )}
-                                          </>
-                                        )}
-                                      </p>
-                                    </div>
-                                  </div>
-                                </div>
-                                {item?.return_flight_data ? (
-                                  <>
-                                    <div className="align-items-center justify-content-around d-flex flex-column gap-5 gap-lg-0 flex-lg-row p-3">
-                                      <div className="airlinename col-12 col-lg-3">
-                                        <div>
-                                          {(() => {
-                                            const airline =
-                                              getCondition === 1
-                                                ? item.airline_name
-                                                : item.airline;
-
-                                            return airline ===
-                                              "IndiGo Airlines" ||
-                                              airline === "IndiGo" ? (
-                                              <img
-                                                src={images.IndiGoAirlines_logo}
-                                                className="airline_logo"
-                                              />
-                                            ) : airline === "Neos" ? (
-                                              <img
-                                                src={images.neoslogo}
-                                                className="airline_logo"
-                                              />
-                                            ) : airline === "SpiceJet" ? (
-                                              <img
-                                                src={images.spicejet}
-                                                className="airline_logo"
-                                              />
-                                            ) : airline === "Air India" ? (
-                                              <img
-                                                src={images.airindialogo}
-                                                className="airline_logo"
-                                              />
-                                            ) : airline === "Akasa Air" ? (
-                                              <img
-                                                src={images.akasalogo}
-                                                className="airline_logo"
-                                              />
-                                            ) : airline === "Etihad" ? (
-                                              <img
-                                                src={images.etihadlogo}
-                                                style={{
-                                                  backgroundColor: "#fffbdb",
-                                                  padding: "5px",
-                                                  borderRadius: "5px",
-                                                }}
-                                                className="airline_logo"
-                                              />
-                                            ) : airline === "Vistara" ? (
-                                              <img
-                                                src={images.vistaralogo}
-                                                className="airline_logo"
-                                              />
-                                            ) : airline === "AirAsia X" ? (
-                                              <img
-                                                src={images.airasiax}
-                                                className="airline_logo"
-                                              />
-                                            ) : airline ===
-                                              "Air India Express" ? (
-                                              <img
-                                                src={
-                                                  images.Air_India_Express_logo
-                                                }
-                                                className="airline_logo"
-                                              />
-                                            ) : (
-                                              <IoAirplaneSharp
-                                                size={40}
-                                                color="white"
-                                              />
-                                            );
-                                          })()}
-                                        </div>
-
-                                        <div className="planecomp2">
-                                          {getCondition == 0 ? (
-                                            <>{item?.airline}</>
-                                          ) : (
-                                            <>{item?.airline_name}</>
-                                          )}
-                                        </div>
-                                      </div>
-                                      <div className="flight-details col-12 col-lg-6 justify-content-center">
-                                        <div className="flight-departure text-center">
-                                          <h5 className="flighttime2">
-                                            {
-                                              item?.return_flight_data
-                                                ?.return_dep_time
-                                            }
-                                          </h5>
-                                          <h5 className="airportname2">
-                                            {
-                                              item?.return_flight_data
-                                                ?.return_dep_city_name
-                                            }
-                                          </h5>
-                                          <p className="alldate2">
-                                            {moment(
-                                              item?.return_flight_data
-                                                ?.return_dep_date
-                                            ).format("DD-MM-YYYY")}
-                                          </p>
-                                        </div>
-                                        <div className="d-flex align-items-center gap-2 gap-lg-3">
-                                          <span className="text-dark">
-                                            From
-                                          </span>
-                                          <div className="from-to text-center">
-                                            <h6 className="text-dark">
-                                              {`${item?.return_flight_data?.return_trip_duration}h`}
-                                            </h6>
-                                            <img
-                                              src={images.invertedviman}
-                                              alt=""
-                                              className="imagerouteplane"
-                                            />
-                                            <h6 className="text-dark">
-                                              {item?.return_no_of_stop} Stop
-                                            </h6>
-                                          </div>
-                                          <span className="text-dark">To</span>
-                                        </div>
-                                        <div className="flight-departure text-center">
-                                          <h5 className="flighttime2">
-                                            {
-                                              item?.return_flight_data
-                                                ?.return_arr_time
-                                            }
-                                          </h5>
-                                          <h5 className="airportname2">
-                                            {
-                                              item?.return_flight_data
-                                                ?.return_arr_city_name
-                                            }
-                                          </h5>
-                                          <p className="alldate2">
-                                            {moment(
-                                              item?.return_flight_data
-                                                ?.return_arr_date
-                                            ).format("DD-MM-YYYY")}
-                                          </p>
-                                        </div>
-                                      </div>
-                                    </div>
-                                  </>
-                                ) : (
-                                  <></>
-                                )}
-                              </div>
-                              <div className="col-12 col-lg-3 nanolito2 d-flex justify-content-center">
-                                <div className="pricediv col-lg-3 mb-3 mb-lg-0">
-                                  <div className="d-flex align-items-center">
-                                    <FaRupeeSign size={20} color="#000" />
-                                    <h4 className="text-dark fw-bold dijit">
-                                      {getCondition == 0 ? (
-                                        <>{item?.price}</>
+                                      ) : airline === "Neos" ? (
+                                        <img
+                                          src={images.neoslogo}
+                                          className="airline_logo2"
+                                        />
+                                      ) : airline === "SpiceJet" ? (
+                                        <img
+                                          src={images.spicejet}
+                                          className="airline_logo2"
+                                        />
+                                      ) : airline === "Air India" ? (
+                                        <img
+                                          src={images.airindialogo}
+                                          className="airline_logo2"
+                                        />
+                                      ) : airline === "Akasa Air" ? (
+                                        <img
+                                          src={images.akasalogo}
+                                          className="airline_logo2"
+                                        />
+                                      ) : airline === "Etihad" ? (
+                                        <img
+                                          src={images.etihadlogo}
+                                          style={{
+                                            backgroundColor: "#fff",
+                                            padding: "5px",
+                                            borderRadius: "5px",
+                                          }}
+                                          className="airline_logo2"
+                                        />
+                                      ) : airline === "Vistara" ? (
+                                        <img
+                                          src={images.vistaralogo}
+                                          className="airline_logo2"
+                                        />
+                                      ) : airline === "AirAsia X" ? (
+                                        <img
+                                          src={images.airasiax}
+                                          className="airline_logo2"
+                                        />
+                                      ) : airline === "AirAsia" ? (
+                                        <img
+                                          src={images.airasia}
+                                          className="airline_logo2"
+                                        />
+                                      ) : airline === "Azul" ? (
+                                        <img
+                                          src={images.azul}
+                                          className="airline_logo2"
+                                        />
+                                      ) : airline === "Air India Express" ? (
+                                        <img
+                                          src={images.Air_India_Express_logo}
+                                          className="airline_logo2"
+                                        />
                                       ) : (
-                                        <>{item?.per_adult_child_price}</>
-                                      )}
-                                    </h4>
+                                        <IoAirplaneSharp
+                                          size={40}
+                                          color="white"
+                                        />
+                                      );
+                                    })()}
                                   </div>
 
-                                  {login ? (
-                                    <Link
-                                      to={"/TicketBookingDetails"}
-                                      state={{
-                                        item: item,
-                                        totaltraveller: totalTravellers,
-                                        adulttraveler: travellers.adult,
-                                        childtraveler: travellers.child,
-                                        infanttraveler: travellers.infant,
-                                        bookingtokenid: bookingtokenid,
-                                        ticket_id: item?.ticket_id,
-                                        selected: selected,
-                                        getCondition: getCondition,
-                                      }}
-                                      className="bookBtn2"
-                                    >
-                                      Book
-                                    </Link>
-                                  ) : (
-                                    <Link
-                                      onClick={() =>
-                                        alert(
-                                          "Please log in to proceed with booking."
-                                        )
-                                      }
-                                      className="bookBtn2"
-                                    >
-                                      Book
-                                    </Link>
-                                  )}
-                                </div>
-                              </div>
-                            </div>
-                          </div>
-
-                          <div className="flights_available_mobile">
-                            <div className="d-flex justify-content-between">
-                              <div className="mobile_row">
-                                <div>
-                                  {(() => {
-                                    const airline =
-                                      getCondition === 1
-                                        ? item.airline_name
-                                        : item.airline;
-
-                                    return airline === "IndiGo Airlines" ||
-                                      airline === "IndiGo" ? (
-                                      <img
-                                        src={images.IndiGoAirlines_logo}
-                                        className="airline_logo2_mob"
-                                      />
-                                    ) : airline === "Neos" ? (
-                                      <img
-                                        src={images.neoslogo}
-                                        className="airline_logo2_mob"
-                                      />
-                                    ) : airline === "SpiceJet" ? (
-                                      <img
-                                        src={images.spicejet}
-                                        className="airline_logo2_mob"
-                                      />
-                                    ) : airline === "Air India" ? (
-                                      <img
-                                        src={images.airindialogo}
-                                        className="airline_logo2_mob"
-                                      />
-                                    ) : airline === "Akasa Air" ? (
-                                      <img
-                                        src={images.akasalogo}
-                                        className="airline_logo2_mob"
-                                      />
-                                    ) : airline === "Etihad" ? (
-                                      <img
-                                        src={images.etihadlogo}
-                                        style={{
-                                          backgroundColor: "#fff",
-                                          padding: "5px",
-                                          borderRadius: "5px",
-                                        }}
-                                        className="airline_logo2_mob"
-                                      />
-                                    ) : airline === "Vistara" ? (
-                                      <img
-                                        src={images.vistaralogo}
-                                        className="airline_logo2_mob"
-                                      />
-                                    ) : airline === "AirAsia X" ? (
-                                      <img
-                                        src={images.airasiax}
-                                        className="airline_logo2_mob"
-                                      />
-                                    ) : airline === "AirAsia" ? (
-                                      <img
-                                        src={images.airasia}
-                                        className="airline_logo2_mob"
-                                      />
-                                    ) : airline === "Azul" ? (
-                                      <img
-                                        src={images.azul}
-                                        className="airline_logo2_mob"
-                                      />
-                                    ) : airline === "Air India Express" ? (
-                                      <img
-                                        src={images.Air_India_Express_logo}
-                                        className="airline_logo2_mob"
-                                      />
+                                  <div className="planecomp2">
+                                    {getCondition == 0 ? (
+                                      <>{item?.airline}</>
                                     ) : (
-                                      <IoAirplaneSharp
-                                        size={40}
-                                        color="white"
-                                      />
-                                    );
-                                  })()}
+                                      <>{item?.airline_name}</>
+                                    )}
+                                  </div>
                                 </div>
-                                <div className="mob_time_cont">
-                                  <div className="mob_time_row">
-                                    <div className="mob_time">
+                                <div className="flight-details2 col-12 col-lg-6 justify-content-center">
+                                  <div className="flight-departure text-center">
+                                    <h5 className="flighttime2">
                                       {getCondition == 0 ? (
                                         <>{item?.departure_time}</>
                                       ) : (
                                         <>{item?.dep_time}</>
                                       )}
+                                    </h5>
+                                    <h5 className="airportname2">
+                                      {getCondition == 0 ? (
+                                        <>{item?.origin}</>
+                                      ) : (
+                                        <>{item?.dep_city_name}</>
+                                      )}
+                                    </h5>
+
+                                    <p className="alldate2">
+                                      {getCondition == 0 ? (
+                                        <>
+                                          {moment(item?.departure_date).format(
+                                            "DD-MM-YYYY"
+                                          )}{" "}
+                                        </>
+                                      ) : (
+                                        <>
+                                          {moment(item?.onward_date).format(
+                                            "DD-MM-YYYY"
+                                          )}{" "}
+                                        </>
+                                      )}
+                                    </p>
+                                  </div>
+                                  <div className="d-flex align-items-center gap-2 gap-lg-3">
+                                    <span className="text-dark">From</span>
+                                    <div className="from-to text-center">
+                                      <h6 className="text-dark">
+                                        {getCondition == 0 ? (
+                                          <>
+                                            {calculateDuration(
+                                              item?.departure_time,
+                                              item?.arival_time
+                                            )}
+                                          </>
+                                        ) : (
+                                          <>
+                                            {item?.duration &&
+                                              `${item.duration.split(":")[0]
+                                              }h ${item.duration.split(":")[1]
+                                              }min`}
+                                          </>
+                                        )}
+                                      </h6>
+                                      <img
+                                        src={images.invertedviman}
+                                        alt=""
+                                        className="imagerouteplane"
+                                      />
+                                      <h6 className="text-dark">
+                                        {getCondition == 0 ? (
+                                          <>{item?.flight_route}</>
+                                        ) : (
+                                          <>{item?.no_of_stop} stop</>
+                                        )}
+                                      </h6>
                                     </div>
-                                    <div
-                                      style={{
-                                        width: "50px",
-                                      }}
-                                    >
-                                      -------
-                                    </div>
-                                    <div className="mob_time">
+                                    <span className="text-dark">To</span>
+                                  </div>
+                                  <div className="flight-departure text-center">
+                                    <h5 className="flighttime2">
                                       {getCondition == 0 ? (
                                         <>{item?.arival_time}</>
                                       ) : (
                                         <>{item?.arr_time}</>
                                       )}
-                                    </div>
-                                  </div>
-                                  <div className="mob_time_row justify-content-between">
-                                    <div className="mob_city_kode">
+                                    </h5>
+                                    <h5 className="airportname2">
                                       {getCondition == 0 ? (
-                                        <>{item?.departure_time}</>
+                                        <>{item?.destination}</>
                                       ) : (
-                                        <>{item?.dep_airport_code}</>
+                                        <>{item?.arr_city_name}</>
                                       )}
-                                    </div>
-                                    <div className="mob_duration">
+                                    </h5>
+                                    <p className="alldate2">
                                       {getCondition == 0 ? (
                                         <>
-                                          {calculateDuration(
-                                            item?.departure_time,
-                                            item?.arival_time
+                                          {moment(item?.arival_date).format(
+                                            "DD-MM-YYYY"
                                           )}
                                         </>
                                       ) : (
                                         <>
-                                          {item?.duration &&
-                                            `${item.duration.split(":")[0]}h ${
-                                              item.duration.split(":")[1]
-                                            }m`}
+                                          {moment(item?.arr_date).format(
+                                            "DD-MM-YYYY"
+                                          )}
                                         </>
                                       )}
-                                    </div>
-                                    <div className="mob_city_kode">
-                                      {getCondition == 0 ? (
-                                        <>{item?.destination}</>
-                                      ) : (
-                                        <>{item?.arr_city_code}</>
-                                      )}
-                                    </div>
+                                    </p>
                                   </div>
                                 </div>
                               </div>
+                              {item?.return_flight_data ? (
+                                <>
+                                  <div className="align-items-center justify-content-around d-flex flex-column gap-5 gap-lg-0 flex-lg-row p-3">
+                                    <div className="airlinename col-12 col-lg-3">
+                                      <div>
+                                        {(() => {
+                                          const airline =
+                                            getCondition === 1
+                                              ? item.airline_name
+                                              : item.airline;
 
-                              <div className="mob_Amount">
-                                <div className="mob_rupi_icon">
-                                  <div>
-                                    <FaIndianRupeeSign size={20} />
+                                          return airline ===
+                                            "IndiGo Airlines" ||
+                                            airline === "IndiGo" ? (
+                                            <img
+                                              src={images.IndiGoAirlines_logo}
+                                              className="airline_logo"
+                                            />
+                                          ) : airline === "Neos" ? (
+                                            <img
+                                              src={images.neoslogo}
+                                              className="airline_logo"
+                                            />
+                                          ) : airline === "SpiceJet" ? (
+                                            <img
+                                              src={images.spicejet}
+                                              className="airline_logo"
+                                            />
+                                          ) : airline === "Air India" ? (
+                                            <img
+                                              src={images.airindialogo}
+                                              className="airline_logo"
+                                            />
+                                          ) : airline === "Akasa Air" ? (
+                                            <img
+                                              src={images.akasalogo}
+                                              className="airline_logo"
+                                            />
+                                          ) : airline === "Etihad" ? (
+                                            <img
+                                              src={images.etihadlogo}
+                                              style={{
+                                                backgroundColor: "#fffbdb",
+                                                padding: "5px",
+                                                borderRadius: "5px",
+                                              }}
+                                              className="airline_logo"
+                                            />
+                                          ) : airline === "Vistara" ? (
+                                            <img
+                                              src={images.vistaralogo}
+                                              className="airline_logo"
+                                            />
+                                          ) : airline === "AirAsia X" ? (
+                                            <img
+                                              src={images.airasiax}
+                                              className="airline_logo"
+                                            />
+                                          ) : airline ===
+                                            "Air India Express" ? (
+                                            <img
+                                              src={
+                                                images.Air_India_Express_logo
+                                              }
+                                              className="airline_logo"
+                                            />
+                                          ) : (
+                                            <IoAirplaneSharp
+                                              size={40}
+                                              color="white"
+                                            />
+                                          );
+                                        })()}
+                                      </div>
+
+                                      <div className="planecomp2">
+                                        {getCondition == 0 ? (
+                                          <>{item?.airline}</>
+                                        ) : (
+                                          <>{item?.airline_name}</>
+                                        )}
+                                      </div>
+                                    </div>
+                                    <div className="flight-details col-12 col-lg-6 justify-content-center">
+                                      <div className="flight-departure text-center">
+                                        <h5 className="flighttime2">
+                                          {
+                                            item?.return_flight_data
+                                              ?.return_dep_time
+                                          }
+                                        </h5>
+                                        <h5 className="airportname2">
+                                          {
+                                            item?.return_flight_data
+                                              ?.return_dep_city_name
+                                          }
+                                        </h5>
+                                        <p className="alldate2">
+                                          {moment(
+                                            item?.return_flight_data
+                                              ?.return_dep_date
+                                          ).format("DD-MM-YYYY")}
+                                        </p>
+                                      </div>
+                                      <div className="d-flex align-items-center gap-2 gap-lg-3">
+                                        <span className="text-dark">From</span>
+                                        <div className="from-to text-center">
+                                          <h6 className="text-dark">
+                                            {`${item?.return_flight_data?.return_trip_duration}h`}
+                                          </h6>
+                                          <img
+                                            src={images.invertedviman}
+                                            alt=""
+                                            className="imagerouteplane"
+                                          />
+                                          <h6 className="text-dark">
+                                            {item?.return_no_of_stop} Stop
+                                          </h6>
+                                        </div>
+                                        <span className="text-dark">To</span>
+                                      </div>
+                                      <div className="flight-departure text-center">
+                                        <h5 className="flighttime2">
+                                          {
+                                            item?.return_flight_data
+                                              ?.return_arr_time
+                                          }
+                                        </h5>
+                                        <h5 className="airportname2">
+                                          {
+                                            item?.return_flight_data
+                                              ?.return_arr_city_name
+                                          }
+                                        </h5>
+                                        <p className="alldate2">
+                                          {moment(
+                                            item?.return_flight_data
+                                              ?.return_arr_date
+                                          ).format("DD-MM-YYYY")}
+                                        </p>
+                                      </div>
+                                    </div>
                                   </div>
-                                  <div className="mob_amount">
+                                </>
+                              ) : (
+                                <></>
+                              )}
+                            </div>
+                            <div className="col-12 col-lg-3 nanolito2 d-flex justify-content-center">
+                              <div className="pricediv col-lg-3 mb-3 mb-lg-0">
+                                <div className="d-flex align-items-center">
+                                  <FaRupeeSign size={20} color="#000" />
+                                  <h4 className="text-dark fw-bold dijit">
                                     {getCondition == 0 ? (
                                       <>{item?.price}</>
                                     ) : (
                                       <>{item?.per_adult_child_price}</>
                                     )}
-                                  </div>
+                                  </h4>
                                 </div>
-                              </div>
-                            </div>
-                            <div
-                              style={{
-                                borderTop: "1px solid #ccc",
-                                marginTop: "1rem",
-                              }}
-                            />
-                            <div className="mob_book_btn_main">
-                              <div className="mob_book_airlineNm">
-                                {getCondition == 0 ? (
-                                  <>{item?.airline}</>
-                                ) : (
-                                  <>{item?.airline_name}</>
-                                )}
-                              </div>
-                              <div>
+
                                 {login ? (
                                   <Link
                                     to={"/TicketBookingDetails"}
@@ -3720,7 +4588,7 @@ const sortedCheapFlights = [...getSearchFlightListDataCheap].sort((a, b) => a[so
                                       selected: selected,
                                       getCondition: getCondition,
                                     }}
-                                    className="bookBtn2_mob"
+                                    className="bookBtn2"
                                   >
                                     Book
                                   </Link>
@@ -3731,7 +4599,7 @@ const sortedCheapFlights = [...getSearchFlightListDataCheap].sort((a, b) => a[so
                                         "Please log in to proceed with booking."
                                       )
                                     }
-                                    className="bookBtn2_mob"
+                                    className="bookBtn2"
                                   >
                                     Book
                                   </Link>
@@ -3739,9 +4607,209 @@ const sortedCheapFlights = [...getSearchFlightListDataCheap].sort((a, b) => a[so
                               </div>
                             </div>
                           </div>
-                        </>
-                      );
-                    })}
+                        </div>
+
+                        <div className="flights_available_mobile">
+                          <div className="d-flex justify-content-between">
+                            <div className="mobile_row">
+                              <div>
+                                {(() => {
+                                  const airline =
+                                    getCondition === 1
+                                      ? item.airline_name
+                                      : item.airline;
+
+                                  return airline === "IndiGo Airlines" ||
+                                    airline === "IndiGo" ? (
+                                    <img
+                                      src={images.IndiGoAirlines_logo}
+                                      className="airline_logo2_mob"
+                                    />
+                                  ) : airline === "Neos" ? (
+                                    <img
+                                      src={images.neoslogo}
+                                      className="airline_logo2_mob"
+                                    />
+                                  ) : airline === "SpiceJet" ? (
+                                    <img
+                                      src={images.spicejet}
+                                      className="airline_logo2_mob"
+                                    />
+                                  ) : airline === "Air India" ? (
+                                    <img
+                                      src={images.airindialogo}
+                                      className="airline_logo2_mob"
+                                    />
+                                  ) : airline === "Akasa Air" ? (
+                                    <img
+                                      src={images.akasalogo}
+                                      className="airline_logo2_mob"
+                                    />
+                                  ) : airline === "Etihad" ? (
+                                    <img
+                                      src={images.etihadlogo}
+                                      style={{
+                                        backgroundColor: "#fff",
+                                        padding: "5px",
+                                        borderRadius: "5px",
+                                      }}
+                                      className="airline_logo2_mob"
+                                    />
+                                  ) : airline === "Vistara" ? (
+                                    <img
+                                      src={images.vistaralogo}
+                                      className="airline_logo2_mob"
+                                    />
+                                  ) : airline === "AirAsia X" ? (
+                                    <img
+                                      src={images.airasiax}
+                                      className="airline_logo2_mob"
+                                    />
+                                  ) : airline === "AirAsia" ? (
+                                    <img
+                                      src={images.airasia}
+                                      className="airline_logo2_mob"
+                                    />
+                                  ) : airline === "Azul" ? (
+                                    <img
+                                      src={images.azul}
+                                      className="airline_logo2_mob"
+                                    />
+                                  ) : airline === "Air India Express" ? (
+                                    <img
+                                      src={images.Air_India_Express_logo}
+                                      className="airline_logo2_mob"
+                                    />
+                                  ) : (
+                                    <IoAirplaneSharp size={40} color="white" />
+                                  );
+                                })()}
+                              </div>
+                              <div className="mob_time_cont">
+                                <div className="mob_time_row">
+                                  <div className="mob_time">
+                                    {getCondition == 0 ? (
+                                      <>{item?.departure_time}</>
+                                    ) : (
+                                      <>{item?.dep_time}</>
+                                    )}
+                                  </div>
+                                  <div
+                                    style={{
+                                      width: "50px",
+                                    }}
+                                  >
+                                    -------
+                                  </div>
+                                  <div className="mob_time">
+                                    {getCondition == 0 ? (
+                                      <>{item?.arival_time}</>
+                                    ) : (
+                                      <>{item?.arr_time}</>
+                                    )}
+                                  </div>
+                                </div>
+                                <div className="mob_time_row justify-content-between">
+                                  <div className="mob_city_kode">
+                                    {getCondition == 0 ? (
+                                      <>{item?.departure_time}</>
+                                    ) : (
+                                      <>{item?.dep_airport_code}</>
+                                    )}
+                                  </div>
+                                  <div className="mob_duration">
+                                    {getCondition == 0 ? (
+                                      <>
+                                        {calculateDuration(
+                                          item?.departure_time,
+                                          item?.arival_time
+                                        )}
+                                      </>
+                                    ) : (
+                                      <>
+                                        {item?.duration &&
+                                          `${item.duration.split(":")[0]}h ${item.duration.split(":")[1]
+                                          }m`}
+                                      </>
+                                    )}
+                                  </div>
+                                  <div className="mob_city_kode">
+                                    {getCondition == 0 ? (
+                                      <>{item?.destination}</>
+                                    ) : (
+                                      <>{item?.arr_city_code}</>
+                                    )}
+                                  </div>
+                                </div>
+                              </div>
+                            </div>
+
+                            <div className="mob_Amount">
+                              <div className="mob_rupi_icon">
+                                <div>
+                                  <FaIndianRupeeSign size={20} />
+                                </div>
+                                <div className="mob_amount">
+                                  {getCondition == 0 ? (
+                                    <>{item?.price}</>
+                                  ) : (
+                                    <>{item?.per_adult_child_price}</>
+                                  )}
+                                </div>
+                              </div>
+                            </div>
+                          </div>
+                          <div
+                            style={{
+                              borderTop: "1px solid #ccc",
+                              marginTop: "1rem",
+                            }}
+                          />
+                          <div className="mob_book_btn_main">
+                            <div className="mob_book_airlineNm">
+                              {getCondition == 0 ? (
+                                <>{item?.airline}</>
+                              ) : (
+                                <>{item?.airline_name}</>
+                              )}
+                            </div>
+                            <div>
+                              {login ? (
+                                <Link
+                                  to={"/TicketBookingDetails"}
+                                  state={{
+                                    item: item,
+                                    totaltraveller: totalTravellers,
+                                    adulttraveler: travellers.adult,
+                                    childtraveler: travellers.child,
+                                    infanttraveler: travellers.infant,
+                                    bookingtokenid: bookingtokenid,
+                                    ticket_id: item?.ticket_id,
+                                    selected: selected,
+                                    getCondition: getCondition,
+                                  }}
+                                  className="bookBtn2_mob"
+                                >
+                                  Book
+                                </Link>
+                              ) : (
+                                <Link
+                                  onClick={() =>
+                                    alert(
+                                      "Please log in to proceed with booking."
+                                    )
+                                  }
+                                  className="bookBtn2_mob"
+                                >
+                                  Book
+                                </Link>
+                              )}
+                            </div>
+                          </div>
+                        </div>
+                      </>
+                    );
+                  })}
                 </>
               </>
 
@@ -3754,9 +4822,9 @@ const sortedCheapFlights = [...getSearchFlightListDataCheap].sort((a, b) => a[so
               <div className="recent-searches-wrapper">
                 <h2 className="recent_search_head">Recent Searches</h2>
                 {RecentSelection.length > 0 &&
-                RecentSelection.filter((item) =>
-                  selected == 1 ? item?.is_return == 1 : item?.is_return == 0
-                ).length > 0 ? (
+                  RecentSelection.filter((item) =>
+                    selected == 1 ? item?.is_return == 1 : item?.is_return == 0
+                  ).length > 0 ? (
                   <Swiper
                     modules={[Navigation]}
                     navigation
@@ -3844,7 +4912,7 @@ const sortedCheapFlights = [...getSearchFlightListDataCheap].sort((a, b) => a[so
                       ))}
                   </Swiper>
                 ) : (
-                  <div className="mt-4 text-center text-white fw-semibold">
+                  <div className="mt-4 text-center text-black fw-semibold">
                     {selected == 1
                       ? "Uh Oh! No Recent Searches Found for Return Trips."
                       : "Uh Oh! No Recent Searches Found for One-Way Trips."}

@@ -11,6 +11,7 @@ import { IoCloseCircle } from "react-icons/io5";
 import { FaInfoCircle } from "react-icons/fa";
 import axios from "axios";
 import moment from "moment";
+import { ACCEPT_HEADER, supplierticketcurl, ticketcurl } from "../../Utils/Constant";
 
 const HomePage = () => {
   const [modalWidth, setModalWidth] = useState("90%");
@@ -50,8 +51,25 @@ const HomePage = () => {
 
   const [modalOpen, setModalOpen] = useState(false);
   const [bookingid, setBookingId] = useState(null);
+  const [login, SetLogin] = useState("");
   const [loading, setLoading] = useState(false);
   const [data, setData] = useState(null);
+    const [userRole, setUserRole] = useState("");
+
+
+      useEffect(() => {
+        var islogin = localStorage.getItem("is_login");
+        SetLogin(islogin);
+    
+        var role = localStorage.getItem("is_role");
+        if (islogin) {
+          setUserRole(JSON.parse(role));
+        }
+    
+      }, []);
+  
+      console.log("loading",loading);
+      
 
   const API_KEY =
     "NTMzNDUwMDpBSVJJUSBURVNUIEFQSToxODkxOTMwMDM1OTk2OmpTMm0vUU1HVmQvelovZi81dFdwTEE9PQ==";
@@ -78,16 +96,33 @@ const HomePage = () => {
   const BookingDetails = async (bookingid) => {
     const token = JSON.parse(localStorage.getItem("is_token_airiq"));
     setLoading(true);
+    let apiUrl = "";
+    
+          if (userRole === "2") {
+            // apiUrl = proxy + "https://omairiq.azurewebsites.net/search";
+            apiUrl = `${ticketcurl}/${bookingid}`;
+          } else if (userRole === "3") {
+            // apiUrl = proxy + "https://omairiq.azurewebsites.net/suppliersearch";
+            apiUrl = `${supplierticketcurl}/${bookingid}`;
+          } else {
+            console.error("Invalid selection value");
+            return;
+          }
     try {
-      const res = await axios.get(
-        proxy +
-          `https://omairiq.azurewebsites.net/ticket?booking_id=${bookingid}`,
+      // const res = await axios.get(`${ticketcurl}/${bookingid}`,
+      const res = await axios.get(apiUrl,
+        // proxy +
+        //   `https://omairiq.azurewebsites.net/ticket?booking_id=${bookingid}`,
+        
         {
           headers: {
+            // "api-key": API_KEY,
+            // "x-cors-api-key": "temp_e35dd3b63f82139abededcd2891cb340",
+            // Authorization: token,
+            // "Content-Type": "application/json",
             "api-key": API_KEY,
-            "x-cors-api-key": "temp_e35dd3b63f82139abededcd2891cb340",
             Authorization: token,
-            "Content-Type": "application/json",
+            Accept: ACCEPT_HEADER,
           },
         }
       );
@@ -128,7 +163,7 @@ const HomePage = () => {
       >
         <div className="home_model_4wrappp home_model_4wrapp_resp_padding">
           <button className="login_modal_close" onClick={handleClose}>
-            <IoCloseCircle color="#dbb46b" size={30} />
+            <IoCloseCircle color="#e8381b" size={30} />
           </button>
 
           {loading ? (
@@ -162,8 +197,8 @@ const HomePage = () => {
                 <thead>
                   <tr>
                     {/* <th className="text-white">S.No</th> */}
-                    <th className="text-white">Airline</th>
-                    <th className="text-white">Booking Date</th>
+                    <th className="text-black">Airline</th>
+                    <th className="text-black" >Booking Date</th>
                   </tr>
                 </thead>
                 <tbody>
@@ -199,8 +234,8 @@ const HomePage = () => {
               <table className="table table-bordered">
                 <thead>
                   <tr>
-                    <th className="w-50 text-white">Origin</th>
-                    <th className="w-50 text-white">Destination</th>
+                    <th className="w-50 text-black">Origin</th>
+                    <th className="w-50 text-black">Destination</th>
                   </tr>
                 </thead>
                 <tbody>
@@ -227,7 +262,7 @@ const HomePage = () => {
                     <>
                       <thead>
                         <tr>
-                          <th colSpan={4} className="text-white">
+                          <th colSpan={4} className="text-black" style={{textAlign:"left"}}>
                             Adult (12+ Years)
                           </th>
                         </tr>
@@ -256,7 +291,7 @@ const HomePage = () => {
                     <>
                       <thead>
                         <tr>
-                          <th colSpan={4} className="text-white">
+                          <th colSpan={4} className="text-black">
                             Child (2-12 Years)
                           </th>
                         </tr>

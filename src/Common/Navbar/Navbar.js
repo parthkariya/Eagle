@@ -18,6 +18,7 @@ import { GrGoogle } from "react-icons/gr";
 import { jwtDecode } from "jwt-decode";
 import { LoginSocialFacebook } from "reactjs-social-login";
 import { SiFacebook } from "react-icons/si";
+import { LOGIN_BEGIN_AIR_LIVE } from "../../Actions";
 
 const customStyles = {
   content: {
@@ -158,6 +159,7 @@ const Navbar = () => {
     register_customer_loading,
     forgot_password_loading,
     forgot_password_otp_loading,
+    LoginnAirLive,
   } = useAuthContext();
 
   let navigate = useNavigate();
@@ -188,19 +190,43 @@ const Navbar = () => {
   const Login = async (e) => {
     // Create JSON object (Raw Data format)
     const params = {
-      Username: 9555202202,
-      Password: 1122333,
+      Username: "9555202202",
+      Password: "1122333",
     };
 
     // Call API with JSON data
     const data = await setLogin(params);
     if (data) {
       console.log("data", data);
+      // LoginAirLive();
       // if (data.success === 1) {
       // setIsModalOpen(false);
       // setEmail("");
       // setPassword("");
       window.location.reload(false);
+      // }
+    }
+  };
+
+  // Login Air Live api
+
+  const LoginAirLive = async (e) => {
+    // Create JSON object (Raw Data format)
+    const params = {
+      AgentID: "AQAG053817",
+      Username: "9898322222",
+      Password: "9898322222",
+    };
+
+    // Call API with JSON data
+    const data = await LoginnAirLive(params);
+    if (data) {
+      console.log("data", data);
+      // if (data.success === 1) {
+      // setIsModalOpen(false);
+      // setEmail("");
+      // setPassword("");
+      // window.location.reload(false);
       // }
     }
   };

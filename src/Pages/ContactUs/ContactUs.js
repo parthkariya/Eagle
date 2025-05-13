@@ -139,7 +139,7 @@ const ContactUs = () => {
         <form onSubmit={sendEmail}>
           <div className="row align-items-center justify-content-center z-3">
             <div className="col-12 col-lg-8 text-center mb-3">
-              <p className="fw-bold fs-4" style={{ color: "#ffa500" }}>
+              <p className="fw-bold fs-4" style={{ color: "#ff4500" }}>
                 Please Fill Out This Form and We Will Reach You Out
               </p>
             </div>

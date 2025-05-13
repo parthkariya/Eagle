@@ -16,9 +16,12 @@ import ReactModal from "react-modal";
 import { IoAirplaneSharp } from "react-icons/io5";
 import {
   ACCEPT_HEADER,
+  ACCEPT_HEADER1,
+  bookcurl,
   Booking,
   booking,
   get_booking,
+  supplierbookcurl,
 } from "../../Utils/Constant";
 import { Tab, Tabs, TabList, TabPanel } from "react-tabs";
 import "react-tabs/style/react-tabs.css";
@@ -256,8 +259,8 @@ const TicketBookingDetails = () => {
       member.gender === 1
         ? genderOptions.find((option) => option.value === "male")
         : member.gender === 2
-        ? genderOptions.find((option) => option.value === "female")
-        : genderOptions.find((option) => option.value === "other");
+          ? genderOptions.find((option) => option.value === "female")
+          : genderOptions.find((option) => option.value === "other");
 
     const calculateAge = (dob) => {
       if (!dob) return "";
@@ -422,8 +425,7 @@ const TicketBookingDetails = () => {
       if (getCondition == 1) {
         if (!traveler.number || traveler.number.length !== 10) {
           alert(
-            `Please enter a valid 10-digit phone number for Adult Traveler ${
-              i + 1
+            `Please enter a valid 10-digit phone number for Adult Traveler ${i + 1
             }.`
           );
           return;
@@ -449,8 +451,7 @@ const TicketBookingDetails = () => {
       if (getCondition == 1) {
         if (!childtraveler.number || childtraveler.number.length !== 10) {
           alert(
-            `Please enter a valid 10-digit phone number for Child Traveler ${
-              j + 1
+            `Please enter a valid 10-digit phone number for Child Traveler ${j + 1
             }.`
           );
           return;
@@ -482,8 +483,7 @@ const TicketBookingDetails = () => {
       if (getCondition == 1) {
         if (!infatraveler.number || infatraveler.number.length !== 10) {
           alert(
-            `Please enter a valid 10-digit phone number for Child Traveler ${
-              k + 1
+            `Please enter a valid 10-digit phone number for Child Traveler ${k + 1
             }.`
           );
           return;
@@ -642,6 +642,8 @@ const TicketBookingDetails = () => {
 
   const handleSubmit = async () => {
     const token = JSON.parse(localStorage.getItem("is_token_airiq"));
+    const headers = new Headers(ACCEPT_HEADER1);
+    headers.append("Authorization", token);
 
     if (!login || login === "null") {
       alert("Please Login first before booking the flight.");
@@ -742,8 +744,8 @@ const TicketBookingDetails = () => {
         traveler.gender.value === "male"
           ? "Mr."
           : traveler.gender.value === "female"
-          ? "Miss"
-          : "",
+            ? "Miss"
+            : "",
       first_name: traveler.fname,
       // middle_name: "",
       last_name: traveler.lname,
@@ -757,8 +759,8 @@ const TicketBookingDetails = () => {
         traveler.gender.value === "male"
           ? "Mstr."
           : traveler.gender.value === "female"
-          ? "Miss"
-          : "",
+            ? "Miss"
+            : "",
       first_name: traveler.fname,
       // middle_name: "",
       last_name: traveler.lname,
@@ -772,8 +774,8 @@ const TicketBookingDetails = () => {
         traveler.gender.value === "male"
           ? "Mstr."
           : traveler.gender.value === "female"
-          ? "Miss"
-          : "",
+            ? "Miss"
+            : "",
       first_name: traveler.fname,
       // middle_name: "",
       last_name: traveler.lname,
@@ -800,24 +802,34 @@ const TicketBookingDetails = () => {
     let apiUrl = "";
     //   this whole func. is for getCondition == 0
     if (userRole == "2") {
-      apiUrl = proxy + "https://omairiq.azurewebsites.net/book";
+      // apiUrl = proxy + "https://omairiq.azurewebsites.net/book";
+      apiUrl = bookcurl;
     } else if (userRole == "3") {
-      apiUrl = proxy + "https://omairiq.azurewebsites.net/supplierbook";
+      // apiUrl = proxy + "https://omairiq.azurewebsites.net/supplierbook";
+      apiUrl = supplierbookcurl;
     } else {
       console.error("Invalid selection value");
       setLoading(false);
       return;
     }
     try {
+      // const response = await fetch(apiUrl, {
+      //   method: "POST",
+      //   headers: {
+      //     "Access-Control-Allow-Origin": "*",
+      //     "Content-Type": "application/json",
+      //     "api-key": API_KEY,
+      //     Authorization: token,
+      //   },
+      //   body: JSON.stringify(payload),
+      // });
       const response = await fetch(apiUrl, {
         method: "POST",
-        headers: {
-          "Access-Control-Allow-Origin": "*",
-          "Content-Type": "application/json",
-          "api-key": API_KEY,
-          Authorization: token,
-        },
+        headers: headers,
+        Authorization: token,
         body: JSON.stringify(payload),
+        redirect: "follow"
+
       });
       const data = await response.json();
       if (data.status === "success") {
@@ -954,8 +966,8 @@ const TicketBookingDetails = () => {
         traveler.gender.value === "male"
           ? "Mr"
           : traveler.gender.value === "female"
-          ? "Miss"
-          : "",
+            ? "Miss"
+            : "",
 
       first_name: traveler.fname,
       middle_name: "",
@@ -1151,14 +1163,33 @@ const TicketBookingDetails = () => {
       "airline_code",
       getCondition === 0 ? item?.flight_number : item?.flight_number
     );
+    // formdata.append(
+    //   "departure_date",
+    //   moment(getCondition === 0 ? item?.departure_date : item?.onward_date, "YYYY/MM/DD").format("YYYY-MM-DD")
+    // );
+
     formdata.append(
       "departure_date",
-      getCondition === 0 ? item?.departure_date : item?.onward_date
+      moment(
+        getCondition === 0 ? item?.departure_date : item?.onward_date,
+        "YYYY/MM/DD"
+      ).format("YYYY/MM/DD")
     );
+
+    // formdata.append(
+    //   "arrival_date",
+    //   moment(getCondition === 0 ? item?.arival_date : item?.arr_date, "YYYY/MM/DD").format("YYYY-MM-DD")
+    // );
+
     formdata.append(
       "arrival_date",
-      getCondition === 0 ? item?.arival_date : item?.arr_date
+      moment(
+        getCondition === 0 ? item?.arival_date : item?.arr_date,
+        "YYYY/MM/DD" // use the correct input format if needed
+      ).format("YYYY/MM/DD")
     );
+
+
     formdata.append(
       "departure_time",
       getCondition === 0 ? item?.departure_time : item?.dep_time
@@ -1196,7 +1227,7 @@ const TicketBookingDetails = () => {
     formdata.append(
       "stop",
       getCondition === 0
-        ? item?.flight_route === "Non - Stop"
+        ? item?.flight_route === "Non-Stop" || "Non - Stop"
           ? 0
           : item?.flight_route
         : item?.no_of_stop
@@ -1335,14 +1366,14 @@ const TicketBookingDetails = () => {
       "total_amount",
       getCondition == 0
         ? item?.price * ((adulttraveler || 0) + (childtraveler || 0)) +
-            item?.infant_price * (infanttraveler || 0)
+        item?.infant_price * (infanttraveler || 0)
         : item?.total_payable_price
     );
     formdata.append(
       "base_fare",
       getCondition == 0
         ? item?.price * ((adulttraveler || 0) + (childtraveler || 0)) +
-            item?.infant_price * (infanttraveler || 0)
+        item?.infant_price * (infanttraveler || 0)
         : item?.total_payable_price
     );
     formdata.append(
@@ -1362,10 +1393,10 @@ const TicketBookingDetails = () => {
       getCondition == 0
         ? 0
         : item?.international_flight_staus == 0
-        ? "0"
-        : item?.international_flight_staus == 1
-        ? "1"
-        : ""
+          ? "0"
+          : item?.international_flight_staus == 1
+            ? "1"
+            : ""
     );
 
     // Loop over Adult travelers
@@ -1379,10 +1410,10 @@ const TicketBookingDetails = () => {
         traveler.gender?.value === "male"
           ? 1
           : traveler.gender?.value === "female"
-          ? 2
-          : traveler.gender?.value === "other"
-          ? 3
-          : ""
+            ? 2
+            : traveler.gender?.value === "other"
+              ? 3
+              : ""
       );
 
       formdata.append(`dob[${i}]`, getCondition == 0 ? "" : traveler.dob);
@@ -1416,10 +1447,10 @@ const TicketBookingDetails = () => {
         traveler.gender?.value === "male"
           ? 1
           : traveler.gender?.value === "female"
-          ? 2
-          : traveler.gender?.value === "other"
-          ? 3
-          : ""
+            ? 2
+            : traveler.gender?.value === "other"
+              ? 3
+              : ""
       );
       formdata.append(
         `dob[${offset + i}]`,
@@ -1462,10 +1493,10 @@ const TicketBookingDetails = () => {
         traveler.gender?.value === "male"
           ? 1
           : traveler.gender?.value === "female"
-          ? 2
-          : traveler.gender?.value === "other"
-          ? 3
-          : ""
+            ? 2
+            : traveler.gender?.value === "other"
+              ? 3
+              : ""
       );
       formdata.append(
         `dob[${offset + i}]`,
@@ -1549,9 +1580,8 @@ const TicketBookingDetails = () => {
 
   const TravelerCard = ({ member, category, index }) => (
     <div
-      className={`d-flex flex-column flex-md-row mb-3 gap-md-4 justify-content-start accordion_select_div ${
-        selectedMembers.includes(member.id) ? "selected" : ""
-      }`}
+      className={`d-flex flex-column flex-md-row mb-3 gap-md-4 justify-content-start accordion_select_div ${selectedMembers.includes(member.id) ? "selected" : ""
+        }`}
       onClick={() => handleMemberSelect(member, member.id, category, index)}
       style={{ cursor: "pointer" }}
     >
@@ -1570,8 +1600,8 @@ const TicketBookingDetails = () => {
           {member.gender === 1
             ? "Male"
             : member.gender === 2
-            ? "Female"
-            : "Other"}
+              ? "Female"
+              : "Other"}
         </div>
         {member?.dob === null ? (
           <></>
@@ -2475,7 +2505,7 @@ const TicketBookingDetails = () => {
                                           e.target.value
                                         )
                                       }
-                                      // readOnly
+                                    // readOnly
                                     />
                                   </div>
                                 </>
@@ -2642,8 +2672,7 @@ const TicketBookingDetails = () => {
                             ) : (
                               <>
                                 {item?.duration &&
-                                  `${item.duration.split(":")[0]}h ${
-                                    item.duration.split(":")[1]
+                                  `${item.duration.split(":")[0]}h ${item.duration.split(":")[1]
                                   }min`}
                               </>
                             )}
@@ -2720,8 +2749,7 @@ const TicketBookingDetails = () => {
                             <div className="text-center">
                               <p className="text-dark durationtxt">
                                 {item?.duration &&
-                                  `${item.duration.split(":")[0]}h ${
-                                    item.duration.split(":")[1]
+                                  `${item.duration.split(":")[0]}h ${item.duration.split(":")[1]
                                   }min`}
                               </p>
                               <img
@@ -2924,7 +2952,7 @@ const TicketBookingDetails = () => {
                     "linear-gradient(135deg, #ff690f 0%, #e8381b 100%)",
                 }}
               >
-                <h3 className="fw-bold" style={{ color: "#fff" }}>
+                <h3 className="fw-bold" style={{ color: "#fff", marginBottom: "0px" }}>
                   Confirm Booking
                 </h3>
               </div>
@@ -3015,8 +3043,8 @@ const TicketBookingDetails = () => {
                         {getCondition == 1
                           ? moment(item?.dep_date).format("DD-MM-YYYY")
                           : moment(item?.departure_date).format(
-                              "DD-MM-YYYY"
-                            )}{" "}
+                            "DD-MM-YYYY"
+                          )}{" "}
                         <br />
                         {getCondition == 1
                           ? item.dep_time
@@ -3025,9 +3053,9 @@ const TicketBookingDetails = () => {
                       <td>
                         {getCondition == 0
                           ? calculateDuration(
-                              item?.departure_time,
-                              item?.arival_time
-                            )
+                            item?.departure_time,
+                            item?.arival_time
+                          )
                           : calculateDuration(item?.dep_time, item?.arr_time)}
 
                         <br />
@@ -3053,11 +3081,10 @@ const TicketBookingDetails = () => {
                       <td>
                         {getCondition == 1
                           ? `₹ ${item?.total_payable_price}`
-                          : `₹ ${
-                              item?.price *
-                                ((adulttraveler || 0) + (childtraveler || 0)) +
-                              item?.infant_price * (infanttraveler || 0)
-                            }`}
+                          : `₹ ${item?.price *
+                          ((adulttraveler || 0) + (childtraveler || 0)) +
+                          item?.infant_price * (infanttraveler || 0)
+                          }`}
                       </td>
                     </tr>
                   </tbody>

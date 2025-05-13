@@ -16,14 +16,20 @@ import {
   FORGOT_PASSWORD_OTP_BEGIN,
   FORGOT_PASSWORD_OTP_SUCCESS,
   FORGOT_PASSWORD_OTP_FAIL,
+  LOGIN_BEGIN_AIR_LIVE,
+  LOGIN_FAIL_AIR_LIVE,
+  LOGIN_SUCCESS_AIR_LIVE,
 } from "../Actions";
 
 import {
   ACCEPT_HEADER,
+  ACCEPT_HEADER1,
   change_password,
   forgot_password,
   login,
   login2,
+  login_airiq_live,
+  logincurl,
   register,
   verify_otp,
 } from "../Utils/Constant";
@@ -37,6 +43,8 @@ const initialState = {
   login_loading: false,
   login_data: {},
   is_token: "",
+  login_data_air_live: {},
+  is_token_air_live: "",
 };
 
 const AuthContext = React.createContext();
@@ -126,21 +134,81 @@ export const AuthProvider = ({ children }) => {
 
   const proxy = isLocalhost ? "https://cors-anywhere.herokuapp.com/" : "";
 
+  const proxy2 = isLocalhost ? "https://cors-anywhere.herokuapp.com/" : "";
+
+  // const setLogin = async (params) => {
+  //   console.log("params", params);
+
+  //   dispatch({ type: LOGIN_BEGIN });
+
+  //   try {
+  //     const response = await fetch(logincurl,
+  //               // proxy + "https://omairiq.azurewebsites.net/login",
+
+  //       {
+  //         method: "POST",
+  //         headers: {
+  //           "api-key": API_KEY,
+  //           Accept: ACCEPT_HEADER,
+  //         },
+  //         body: JSON.stringify(params),
+  //       }
+  //     );
+
+  //     const responseData = await response.json(); // Parse response JSON
+
+  //     if (!response.ok) {
+  //       throw new Error(
+  //         responseData.message || `HTTP error! Status: ${response.status}`
+  //       );
+  //     }
+  //     if (responseData.status !== "failed") {
+  //       dispatch({ type: LOGIN_SUCCESS, payload: responseData });
+
+  //       localStorage.setItem("is_login_airiq", JSON.stringify(true));
+  //       localStorage.setItem("logindata_airiq", JSON.stringify(responseData));
+  //       localStorage.setItem(
+  //         "is_token_airiq",
+  //         JSON.stringify(responseData.token)
+  //       );
+  //       localStorage.setItem(
+  //         "is_id_airiq",
+  //         JSON.stringify(responseData.user.id)
+  //       );
+  //       localStorage.setItem(
+  //         "is_user_airiq",
+  //         JSON.stringify(responseData.user)
+  //       );
+  //       localStorage.setItem(
+  //         "is_role_airiq",
+  //         JSON.stringify(responseData.user.role)
+  //       );
+  //     } else {
+  //       alert(responseData.message); // Show error message from API
+  //       dispatch({ type: LOGIN_FAIL });
+  //     }
+
+  //     return responseData;
+  //   } catch (err) {
+  //     alert(err.message);
+  //     dispatch({ type: LOGIN_FAIL });
+  //     localStorage.setItem("is_login_airiq", JSON.stringify(false));
+  //     console.log("Login error:", err.message);
+  //     return null;
+  //   }
+  // };
+
   const setLogin = async (params) => {
     console.log("params", params);
-
-    dispatch({ type: LOGIN_BEGIN });
-
+  dispatch({ type: LOGIN_BEGIN });
+    // proxy + "https://omairiq.azurewebsites.net/login",
     try {
-      const response = await fetch(
-        proxy + "https://omairiq.azurewebsites.net/login",
+      const response = await fetch(logincurl,
         {
           method: "POST",
-          headers: {
-            "api-key": API_KEY,
-            "Content-Type": "application/json",
-          },
+          headers: ACCEPT_HEADER1,
           body: JSON.stringify(params),
+          redirect: "follow"
         }
       );
 
@@ -207,6 +275,36 @@ export const AuthProvider = ({ children }) => {
       return loginData;
     } catch (error) {
       dispatch({ type: LOGIN_FAIL });
+      localStorage.setItem("is_login", JSON.stringify(false));
+      console.error("Login error:", error);
+      return null;
+    }
+  };
+
+  const LoginnAirLive = async (params) => {
+    dispatch({ type: LOGIN_BEGIN_AIR_LIVE });
+
+    try {
+      const resp = await axios.post(`${proxy2}${login_airiq_live}`, params, {
+        headers: {
+          // Accept: ACCEPT_HEADER,
+        },
+      });
+      const loginData = resp.data;
+      console.log("loginData", loginData);
+
+      if (loginData.success == 1) {
+        dispatch({ type: LOGIN_SUCCESS_AIR_LIVE, payload: loginData });
+        localStorage.setItem("is_login_airiq", JSON.stringify(true));
+        localStorage.setItem("logindata_airiq", JSON.stringify(loginData.Token));
+        // Notification("success", "Success!", loginData.message);
+      } else {
+        // alert(loginData.message);
+        dispatch({ type: LOGIN_FAIL_AIR_LIVE });
+      }
+      return loginData;
+    } catch (error) {
+      dispatch({ type: LOGIN_FAIL_AIR_LIVE });
       localStorage.setItem("is_login", JSON.stringify(false));
       console.error("Login error:", error);
       return null;
@@ -319,6 +417,7 @@ export const AuthProvider = ({ children }) => {
         RegisterCustomer,
         forgotPassword,
         forgotPasswordOtp,
+        LoginnAirLive,
       }}
     >
       {children}

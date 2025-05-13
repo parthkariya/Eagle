@@ -1,18 +1,43 @@
 .about_main {
-  background: url("../../Assets/title-banner-2.png");
+  background: url("../../Assets/header_bg.jpg");
   background-repeat: no-repeat;
   background-size: cover;
   text-align: center;
+  background-position: center;
+  padding: 0px;
 }
 .banner-area {
   display: flex;
   align-items: center;
   justify-content: space-between;
   /* position: relative; */
-  padding: 80px 16px !important;
+  padding: 150px 16px !important;
 }
 .content-box {
   text-align: center;
+}
+
+.content-box2{
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.box_inner_flex{
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.header_link{
+  color: var(--color-white);
+  text-decoration: none;
+}
+
+.header_link_current{
+  color: #ff4500;
+  text-decoration: none;
+
 }
 
 .left-imge {
@@ -29,6 +54,10 @@
 .videodiv {
   border-radius: 10px;
   overflow: hidden;
+}
+
+.bg_color{
+  background-color:rgba(0,0,0,.603);
 }
 
 @media screen and (max-width: 768px) {
