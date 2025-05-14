@@ -67,9 +67,7 @@ const HomePage = () => {
         }
     
       }, []);
-  
-      console.log("loading",loading);
-      
+        
 
   const API_KEY =
     "NTMzNDUwMDpBSVJJUSBURVNUIEFQSToxODkxOTMwMDM1OTk2OmpTMm0vUU1HVmQvelovZi81dFdwTEE9PQ==";
@@ -85,15 +83,21 @@ const HomePage = () => {
     setBookingId(bookingid);
     if (bookingid !== null) {
       setModalOpen(true);
+      // BookingDetails(bookingid);
+          setTimeout(() => {
       BookingDetails(bookingid);
+    }, 1000);
     }
 
     const token = JSON.parse(localStorage.getItem("is_token"));
 
     // console.log("HomePage Ma Token No Log aapni api no", token);
-  }, []);
+  }, [userRole]);
 
   const BookingDetails = async (bookingid) => {
+
+    console.log("111111111111111111111111111111111111");
+    
     const token = JSON.parse(localStorage.getItem("is_token_airiq"));
     setLoading(true);
     let apiUrl = "";
@@ -109,6 +113,8 @@ const HomePage = () => {
             return;
           }
     try {
+      console.log("2222222222222222222");
+      
       // const res = await axios.get(`${ticketcurl}/${bookingid}`,
       const res = await axios.get(apiUrl,
         // proxy +

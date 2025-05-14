@@ -8,7 +8,7 @@ import images from "../../Constants/images";
 
 const WhyChooseUs = () => {
   return (
-    <div className="container-fluid whychoosmain my-lg-5 my-0 py-5">
+    <div className="container-fluid whychoosmain my-lg-5 my-0 py-5" style={{marginTop:"0px !important"}}>
       <div className="innnerdiv pb-4">
         <h1>Why Choose Us</h1>
       </div>

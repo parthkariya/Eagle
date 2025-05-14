@@ -21,6 +21,7 @@ import axios from "axios";
 import { BsCalendarDate } from "react-icons/bs";
 import { IoLogoWhatsapp } from "react-icons/io";
 import { SiGmail } from "react-icons/si";
+import { ACCEPT_HEADER, ticketcurl } from "../../Utils/Constant";
 
 const ViewBooking = () => {
   const location = useLocation();
@@ -84,31 +85,31 @@ const ViewBooking = () => {
   const handleDownload = async () => {
     const element = invoiceRef.current;
     if (!element) return;
-  
+
     const canvas = await html2canvas(element, {
       scale: 2,
       useCORS: true,
       scrollY: 0,
     });
-  
+
     const data = canvas.toDataURL("image/png");
-  
+
     const pdf = new jsPDF({
       orientation: "portrait",
       unit: "mm",
       format: "a4",
     });
-  
+
     const imgProps = pdf.getImageProperties(data);
     const pdfWidth = pdf.internal.pageSize.getWidth();
     const pdfHeight = (imgProps.height * pdfWidth) / imgProps.width;
-  
+
     pdf.addImage(data, "PNG", 0, 0, pdfWidth, pdfHeight);
     pdf.save("Ticket.pdf");
   };
 
-  
-  console.log("DATOOO", data);
+
+  console.log("DATOOO", data2);
 
   const isLocalhost = window.location.hostname === "localhost";
 
@@ -122,13 +123,14 @@ const ViewBooking = () => {
     setLoading2(true);
     try {
       const res = await axios.get(
-        proxy +
-          `https://omairiq.azurewebsites.net/ticket?booking_id=${data?.booking_id}`,
+        // proxy +
+        // `https://omairiq.azurewebsites.net/ticket?booking_id=${data?.booking_id}`,
+        `${ticketcurl}/${data?.booking_id}`,
         {
           headers: {
-            "api-key": API_KEY,
+           "api-key": API_KEY,
             Authorization: token,
-            "Content-Type": "application/json",
+            Accept: ACCEPT_HEADER,
           },
         }
       );
@@ -169,16 +171,29 @@ const ViewBooking = () => {
                 {data?.get_con === 0 && (
                   <div className="d-flex align-self-start align-self-lg-center align-items-center gap-3">
                     {/* <BsCalendarDate size={18} /> */}
-                    <div className="text-muted fw-bold">BOOKING DATE - </div>
-                    <div>
+                    {
+                      data2?.booking_date &&<>
+                         <div className="text-muted fw-bold">BOOKING DATE - </div>
+                    
+                    {data2?.booking_date && (
+                      <div>
+                        {moment(data2.booking_date).format("DD MMM'YY hh:mm a").toLowerCase()}
+                      </div>
+                    )}
+                      </>
+                    }
+                   
+
+                  </div>
+                  
+                )}
+                {/* <div>
                       {moment(data2?.booking_date, "DD MMM YYYY HH:mm")
                         .format("DD MMM'YY hh:mm a")
                         .toLowerCase()}
-                    </div>
-                  </div>
-                )}
+                    </div> */}
               </div>
-
+                
               <div className={`cardd p-3 shadow-sm classokkaro`}>
                 <div className="divviewopen" onClick={toggleview}>
                   <h4 className="d-flex gap-2">
@@ -264,7 +279,7 @@ const ViewBooking = () => {
                                   height: "50px",
                                   objectFit: "contain",
                                 }}
-                                // className="airline_logo"
+                              // className="airline_logo"
                               />
                             ) : airline === "Vistara" ? (
                               <img
@@ -593,7 +608,7 @@ const ViewBooking = () => {
                                       height: "50px",
                                       objectFit: "contain",
                                     }}
-                                    // className="airline_logo"
+                                  // className="airline_logo"
                                   />
                                 ) : airline === "Vistara" ? (
                                   <img
@@ -938,7 +953,7 @@ const ViewBooking = () => {
               </div>
 
               {/* <hr /> */}
-              
+
             </div>
 
             {/* Right Side */}

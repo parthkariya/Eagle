@@ -455,7 +455,8 @@
 }
 .plan-trip-btn {
   text-decoration: none;
-  background-color: var(--color-theme);
+  /* background-color: var(--color-theme); */
+  background: linear-gradient(135deg, #ff690f 0%, #e8381b 100%);
   color: white;
   border-radius: 20px;
   padding: 10px 20px;
@@ -627,7 +628,8 @@
   }
   .plan-trip-btn {
     text-decoration: none;
-    background-color: var(--color-theme);
+    /* background-color: var(--color-theme); */
+    background: linear-gradient(135deg, #ff690f 0%, #e8381b 100%);
     color: white;
     border-radius: 20px;
     padding: 10px 20px;

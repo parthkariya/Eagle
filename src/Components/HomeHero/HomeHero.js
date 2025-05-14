@@ -139,6 +139,8 @@ const HomeHero = () => {
   //   setTimeout(() => setIsSwapping(false), 500); // Match with CSS duration
   // };
 
+ 
+
   const swapLocations = () => {
   const newFrom = to;
   const newTo = from;
@@ -317,10 +319,10 @@ const HomeHero = () => {
     { value: "late-arrival", label: "Late Arrival" },
   ];
 
-  console.log("getSectorListTo2", getSectorListTo2);
+  // console.log("getSectorListTo2", getSectorListTo2);
   // console.log("getSearchFlightListDataCheap", getSearchFlightListDataCheap);
-  console.log("mergedData", mergedData);
-  console.log("getSearchFlightListData", getSearchFlightListData);
+  // console.log("mergedData", mergedData);
+  // console.log("getSearchFlightListData", getSearchFlightListData);
   // console.log("from",from);
 
   const [traveller, setTraveller] = useState("");
@@ -338,7 +340,7 @@ const HomeHero = () => {
   const sortedCheapFlights = [...getSearchFlightListDataCheap].sort(
     (a, b) => a[sortKey] - b[sortKey]
   );
-
+  
   // console.log("selectedxxx", selectedIndex);
 
   const navigate = useNavigate();
@@ -367,10 +369,11 @@ const HomeHero = () => {
   const [getfiltercondation, setfiltercondation] = useState(false);
   const [getfilerdata, setfilterData] = useState([]);
   const [getfilerdata2, setfilterData2] = useState([]);
+  const [recentswap, setrecentswap] = useState(0);
 
+  // console.log("recentswap",recentswap);
+  
 
-  console.log("getfilerdata", getfilerdata);
-  console.log("getfilerdata2", getfilerdata2);
 
 
   // const handleChanges = (item) => {
@@ -757,6 +760,8 @@ const HomeHero = () => {
     setSectorListTo(filteredSectors);
     setCondition(1);
 
+    
+
     const arrivalData = await ArrivalCityList(airportCode);
     SectorList(item.city_code);
     setDefaultMonth2("");
@@ -765,14 +770,23 @@ const HomeHero = () => {
       setSelectedValue2("");  // again, only clear this if not skipping
     // }
 
-    const mappedSortedCities = arrivalData.map((city) => ({
+    
+
+    const mappedSortedCities = arrivalData?.map((city) => ({
       city_name: city.city_name,
       city_code: city.city_code,
       airport_code: city.city_code,
       airport_name: "",
     }));
 
-    const combinedList = [...filteredSectors, ...mappedSortedCities];
+   let combinedList = selected === 1
+  ? [...mappedSortedCities]
+  : [...filteredSectors, ...mappedSortedCities];
+
+    // const combinedList = [...filteredSectors, ...mappedSortedCities];
+    console.log("combinedList",combinedList);
+    
+    
     const groupedTo = groupBy2(combinedList, "city_name");
 
     const formattedGroupedCitiesTo = Object.entries(groupedTo).map(
@@ -946,6 +960,7 @@ const HomeHero = () => {
 
   const handleSelect2 = (item) => {
      console.log('parth-2', JSON.stringify(item, null , 2));
+     setrecentswap(0);
     if (!item) {
       setTo(null);
       return;
@@ -1023,12 +1038,17 @@ const HomeHero = () => {
     const futureDates = allDates
       .map((date) => moment(date, "YYYY-MM-DD"))
       .filter((date) => date.isValid() && date.isSameOrAfter(today))
-      .sort((a, b) => a.diff(today));
+      // .sort((a, b) => a.diff(today));
+      .sort((a, b) => a.diff(b));
 
     if (futureDates.length > 0) {
       const months = [
         ...new Set(futureDates.map((item) => item.format("YYYY-MM"))),
       ];
+
+      // console.log("futureDates",futureDates);
+      
+
 
       const defaultmonth = futureDates[0];
 
@@ -1119,7 +1139,7 @@ const HomeHero = () => {
       const departureData = await DepatureCityList(selected);
       const sectorData = await GetSectorsIQ();
 
-      console.log("departureData123", departureData);
+      // console.log("departureData123", departureData);
 
       mergeData(departureData, sectorData);
     } catch (error) {
@@ -1159,8 +1179,6 @@ const HomeHero = () => {
 
       if (data.replyCode === "success") {
         setdepcitylistload(false);
-        console.log("1111");
-
         // console.log("Raw Departure Data:", data.data);
         return data.data.map((item) => ({
           ...item,
@@ -1532,6 +1550,8 @@ const HomeHero = () => {
     setSearchCondition(false);
     setSearchFlightListDataCheap([]);
     // setSearchFlightListData([]);
+    const originCode = recentItem ? recentItem.departure_city_code : from?.city_code;
+    const destinationCode = recentItem ? recentItem.arrival_city_code : to?.city_code;
     const formattedDate = moment(date1, "DD-MM-YYYY").format("YYYY-MM-DD");
     console.log("formattedDate", date1);
 
@@ -1583,12 +1603,14 @@ const HomeHero = () => {
           trip_type: selected,
           end_user_ip: "183.83.43.117",
           token: token,
-          dep_city_code: recentItem
-            ? recentItem.departure_city_code
-            : getDepCityCode,
-          arr_city_code: recentItem
-            ? recentItem.arrival_city_code
-            : getArrCityCode,
+          // dep_city_code: recentItem
+          //   ? recentItem.departure_city_code
+          //   : getDepCityCode,
+          dep_city_code: originCode,
+          // arr_city_code: recentItem
+          //   ? recentItem.arrival_city_code
+          //   : getArrCityCode,
+          arr_city_code: destinationCode,
           onward_date: recentItem
             ? recentItem.departure_date
             : formattedDate == "Invalid date"
@@ -1698,16 +1720,21 @@ const HomeHero = () => {
 
         const url = "https://devapi.fareboutique.com/v1/fbapi/search";
 
+        // console.log("defaultMonth._i__",defaultMonth._i);
+        
+
         const payload = {
           trip_type: selected,
           end_user_ip: "183.83.43.117",
           token: token,
-          dep_city_code: recentItem
-            ? recentItem.departure_city_code
-            : getDepCityCode,
-          arr_city_code: recentItem
-            ? recentItem.arrival_city_code
-            : getArrCityCode,
+          // dep_city_code: recentItem
+          //   ? recentItem.departure_city_code
+          //   : getDepCityCode,
+          dep_city_code: originCode,
+          // arr_city_code: recentItem
+          //   ? recentItem.arrival_city_code
+          //   : getArrCityCode,
+          arr_city_code: destinationCode,
           onward_date: recentItem
             ? recentItem.departure_date
             : formattedDate == "Invalid date"
@@ -1917,6 +1944,10 @@ const HomeHero = () => {
 
   const handleRecentClick = async (item) => {
     console.log("Clicked item:", item);
+    if(recentswap == 0){
+      setrecentswap(1);
+    }else{}
+    
 
     // Step 1: Create From Option manually
     const fromOption = {
@@ -2103,8 +2134,16 @@ const HomeHero = () => {
   };
 
   const searchFlightData = async (isRecentClick = false, recentItem = null) => {
-    console.log("1111111111111");
+    // console.log("1111111111111");
+  const originCode = recentItem
+  ? recentItem.departure_city_code
+  : !from?.airport_code
+  ? from?.city_code
+  : from?.airport_code;
 
+    const destinationCode = recentItem ? recentItem.arrival_city_code : to?.city_code;
+    console.log("originCode",originCode);
+    
     const token = JSON.parse(localStorage.getItem("is_token_airiq"));
     const headers = new Headers(ACCEPT_HEADER1);
     headers.append("Authorization",token);
@@ -2142,11 +2181,13 @@ const HomeHero = () => {
       console.log("formattedDate", formattedDate);
       console.log("date1", date1);
       console.log("DEPARTURE DATE", departureDate);
-      console.log("Seleceted", selected);
+      // console.log("Seleceted", selected);
 
       const payload = {
-        origin: recentItem ? recentItem.departure_city_code : getDepCityCode,
-        destination: recentItem ? recentItem.arrival_city_code : getArrCityCode,
+        // origin: recentItem ? recentItem.departure_city_code : getDepCityCode,
+        origin: originCode,
+        // destination: recentItem ? recentItem.arrival_city_code : getArrCityCode,
+        destination: destinationCode,
         departure_date: recentItem ? recentItem.departure_date : departureDate,
         adult: recentItem
           ? Number(recentItem.adult_travelers)
@@ -2542,7 +2583,7 @@ const HomeHero = () => {
                 />
               </div>
 
-              <button className="swap-button" onClick={swapLocations}>
+              <button disabled={recentswap == 1 ? true : false} className="swap-button" onClick={swapLocations}>
                 <FaExchangeAlt
                   className={isSwapping ? "spin" : ""}
                   color="#000"
@@ -3226,6 +3267,11 @@ const HomeHero = () => {
                                                 src={images.airasiax}
                                                 className="airline_logo"
                                               />
+                                            ) : airline === "AirAsia" ? (
+                                              <img
+                                                src={images.airasia}
+                                                className="airline_logo"
+                                              />
                                             ) : airline ===
                                               "Air India Express" ? (
                                               <img
@@ -3861,6 +3907,11 @@ const HomeHero = () => {
                                                 src={images.airasiax}
                                                 className="airline_logo"
                                               />
+                                            ) :  airline === "AirAsia" ? (
+                                              <img
+                                                src={images.airasia}
+                                                className="airline_logo"
+                                              />
                                             ) : airline ===
                                               "Air India Express" ? (
                                               <img
@@ -4469,6 +4520,11 @@ const HomeHero = () => {
                                           ) : airline === "AirAsia X" ? (
                                             <img
                                               src={images.airasiax}
+                                              className="airline_logo"
+                                            />
+                                          ) : airline === "AirAsia" ? (
+                                            <img
+                                              src={images.airasia}
                                               className="airline_logo"
                                             />
                                           ) : airline ===
