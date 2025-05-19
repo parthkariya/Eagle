@@ -55,6 +55,7 @@ import flight4 from "../Assets/Flights_04_2x.png";
 import flight5 from "../Assets/Generic_02_2x.png";
 import flight6 from "../Assets/Generic_01_1_5x.png";
 import header_image from "../Assets/header_bg.avif";
+import logo2 from "../Assets/logo2.jpeg";
 
 export default {
   logo,
@@ -114,4 +115,5 @@ export default {
   flight5,
   flight6,
   header_image,
+  logo2,
 };

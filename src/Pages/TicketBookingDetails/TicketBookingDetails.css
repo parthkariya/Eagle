@@ -1,6 +1,7 @@
 .details-contt {
   /* background-color: var(--color-background); */
-  background-color: #f0f3f5;
+  /* background-color: #f0f3f5; */
+  background-color: #fff;
 }
 
 .bg-cont {
@@ -251,14 +252,16 @@
 .tab-main {
   padding: 10px;
   /* background-color: var(--color-background); */
-  background-color: #f0f3f5;
+  /* background-color: #f0f3f5; */
+  background-color: #fff;
   border-radius: 10px;
-  width: 85%;
+  width: 95%;
   height: 300px;
   overflow-y: scroll;
   scrollbar-width: none;
   -ms-overflow-style: none;
   padding-top: 0px;
+  margin-bottom: 1rem;
 }
 .tab-main::-webkit-scrollbar {
   display: none;
@@ -268,7 +271,8 @@
   position: sticky;
   top: 0;
   /* background-color: var(--color-background); */
-  background-color: #f0f3f5;
+  /* background-color: #f0f3f5; */
+  background-color: #fff;
   z-index: 10;
   padding: 10px 0;
 }

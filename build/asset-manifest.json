@@ -1,7 +1,7 @@
 {
   "files": {
-    "main.css": "/airlineticketapi/static/css/main.dcbfa4cf.css",
-    "main.js": "/airlineticketapi/static/js/main.3e10a0e4.js",
+    "main.css": "/airlineticketapi/static/css/main.f673b6aa.css",
+    "main.js": "/airlineticketapi/static/js/main.3cc53697.js",
     "static/js/977.89001b81.chunk.js": "/airlineticketapi/static/js/977.89001b81.chunk.js",
     "static/js/667.fdcdc330.chunk.js": "/airlineticketapi/static/js/667.fdcdc330.chunk.js",
     "static/media/flight-0.png": "/airlineticketapi/static/media/flight-0.2d61c4f3980907ddda61.png",
@@ -53,12 +53,12 @@
     "static/media/completed-empty.avif": "/airlineticketapi/static/media/completed-empty.ab3b5a4c36b00ad41e1d.avif",
     "static/media/upcoming-empty.avif": "/airlineticketapi/static/media/upcoming-empty.812da1f80302a7935850.avif",
     "index.html": "/airlineticketapi/index.html",
-    "main.dcbfa4cf.css.map": "/airlineticketapi/static/css/main.dcbfa4cf.css.map",
-    "main.3e10a0e4.js.map": "/airlineticketapi/static/js/main.3e10a0e4.js.map",
+    "main.f673b6aa.css.map": "/airlineticketapi/static/css/main.f673b6aa.css.map",
+    "main.3cc53697.js.map": "/airlineticketapi/static/js/main.3cc53697.js.map",
     "667.fdcdc330.chunk.js.map": "/airlineticketapi/static/js/667.fdcdc330.chunk.js.map"
   },
   "entrypoints": [
-    "static/css/main.dcbfa4cf.css",
-    "static/js/main.3e10a0e4.js"
+    "static/css/main.f673b6aa.css",
+    "static/js/main.3cc53697.js"
   ]
 }

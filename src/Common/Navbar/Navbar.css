@@ -12,7 +12,7 @@
 }
 .logoimg {
   height: 100px;
-  width: 100px;
+  width: 150px;
   /* background-color: red; */
   object-fit: cover;
 }
@@ -328,7 +328,8 @@
   .responsivenavmain {
     display: flex;
     flex-direction: column;
-    background-color: var(--color-background);
+    /* background-color: var(--color-background); */
+    background-color: #f0f3f5;
     padding: 1rem;
     box-shadow: 0px 4px 6px rgba(0, 0, 0, 0.1);
   }

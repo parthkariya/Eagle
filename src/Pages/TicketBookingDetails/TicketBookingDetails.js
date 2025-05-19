@@ -254,6 +254,8 @@ const TicketBookingDetails = () => {
 
   const [selectedMembers, setSelectedMembers] = useState([]);
 
+
+
   const handleMemberSelect = (member, memberId, cat) => {
     const genderObject =
       member.gender === 1
@@ -313,24 +315,15 @@ const TicketBookingDetails = () => {
 
     const updateTravelers = (prevTravelers, extraData = {}) => {
       const updatedTravelers = [...prevTravelers];
-
-      // If only one slot exists, always replace the existing member and prevent deselection
-      if (updatedTravelers.length === 1) {
-        return [{ ...getTravelerFields(member), ...extraData }];
-      }
-
-      // Check if the member is already selected
       const existingIndex = updatedTravelers.findIndex(
         (t) => t.fname === member.first_name && t.lname === member.last_name
       );
 
       if (existingIndex !== -1) {
-        // Allow deselection only if there are multiple slots
-        if (updatedTravelers.length > 1) {
-          updatedTravelers[existingIndex] = getEmptyFields();
-        }
+        // If already exists, clear it (toggle off)
+        updatedTravelers[existingIndex] = getEmptyFields();
       } else {
-        // Find the first empty slot and replace it
+        // Add to the first empty slot
         const emptyIndex = updatedTravelers.findIndex((t) => t.fname === "");
         if (emptyIndex !== -1) {
           updatedTravelers[emptyIndex] = {
@@ -343,27 +336,77 @@ const TicketBookingDetails = () => {
       return updatedTravelers;
     };
 
-    if (cat === "Adult") {
-      setTravelers((prevTravelers) => updateTravelers(prevTravelers));
-    } else if (cat === "Child") {
-      setChildTravelers((prevTravelers) => updateTravelers(prevTravelers));
-    } else if (cat === "Infant") {
-      setInfantTravelers((prevTravelers) => {
-        const formattedDate = dayjs(member.dob).format("YYYY-MM-DD");
-        return updateTravelers(prevTravelers, { dob: formattedDate });
-      });
+    // ✅ Prevent selecting same person twice by name
+    const isAlreadySelectedByName = () => {
+      if (cat === "Adult") {
+        return travelers.some(
+          (t) => t.fname === member.first_name && t.lname === member.last_name
+        );
+      } else if (cat === "Child") {
+        return childtravelers.some(
+          (t) => t.fname === member.first_name && t.lname === member.last_name
+        );
+      } else if (cat === "Infant") {
+        return infanttravelers.some(
+          (t) => t.fname === member.first_name && t.lname === member.last_name
+        );
+      }
+      return false;
+    };
+
+    const selectedCount = (cat) => {
+      if (cat === "Adult") {
+        return travelers.filter((t) => t.fname !== "").length;
+      } else if (cat === "Child") {
+        return childtravelers.filter((t) => t.fname !== "").length;
+      } else if (cat === "Infant") {
+        return infanttravelers.filter((t) => t.fname !== "").length;
+      }
+      return 0;
+    };
+
+    const getLimit = (cat) => {
+      if (cat === "Adult") return adulttraveler;
+      if (cat === "Child") return childtraveler;
+      if (cat === "Infant") return infanttraveler;
+      return Infinity;
+    };
+
+    const alreadySelected = selectedMembers.includes(memberId);
+    const overLimit = !alreadySelected && selectedCount(cat) >= getLimit(cat);
+
+    // ✅ Block duplicate or over-limit selection
+    if (!alreadySelected && isAlreadySelectedByName()) {
+      alert("This traveler is already selected.");
+      return;
     }
 
-    // Update selected members list correctly
-    setSelectedMembers((prevSelected) => {
-      // Prevent deselection if only one slot exists
-      if (prevSelected.includes(memberId)) {
-        return prevSelected.filter((id) => id !== memberId); // Remove if already selected
-      }
+    if (overLimit) {
+      alert(`You can select only ${getLimit(cat)} ${cat}(s).`);
+      return;
+    }
 
-      return [...prevSelected, memberId]; // Allow multiple selections
+    // ✅ Proceed to update traveler data
+    if (cat === "Adult") {
+      setTravelers((prev) => updateTravelers(prev));
+    } else if (cat === "Child") {
+      setChildTravelers((prev) => updateTravelers(prev));
+    } else if (cat === "Infant") {
+      const formattedDate = dayjs(member.dob).format("YYYY-MM-DD");
+      setInfantTravelers((prev) =>
+        updateTravelers(prev, { dob: formattedDate })
+      );
+    }
+
+    setSelectedMembers((prev) => {
+      if (alreadySelected) {
+        return prev.filter((id) => id !== memberId); // Deselect
+      }
+      return [...prev, memberId]; // Select
     });
   };
+
+
 
   const handleInputChangeAdult = (index, field, value) => {
     const updatedTravelers = [...travelers];
@@ -1579,6 +1622,8 @@ const TicketBookingDetails = () => {
   };
 
   const TravelerCard = ({ member, category, index }) => (
+    // console.log("selectedMembers", selectedMembers),
+
     <div
       className={`d-flex flex-column flex-md-row mb-3 gap-md-4 justify-content-start accordion_select_div ${selectedMembers.includes(member.id) ? "selected" : ""
         }`}
@@ -1652,6 +1697,26 @@ const TicketBookingDetails = () => {
           </div>
         )}
       </div>
+      <div className="ms-auto">
+        {selectedMembers.includes(member.id) ?
+
+          <input
+            type="checkbox"
+            checked={true}
+            readOnly
+            // disabled={true}
+            style={{ transform: "scale(1.5)" }}
+          />
+          :
+          <input
+            type="checkbox"
+            checked={false}
+            readOnly
+            // disabled={true}
+            style={{ transform: "scale(1.5)" }}
+          />
+        }
+      </div>
     </div>
   );
 
@@ -1709,7 +1774,7 @@ const TicketBookingDetails = () => {
                     ) : (
                       <>
                         {/* Filter and store traveler categories in state */}
-                        {(() => {
+                        {/* {(() => {
                           const infants = [];
                           const children = [];
                           const adults = [];
@@ -1728,7 +1793,7 @@ const TicketBookingDetails = () => {
 
                           return (
                             <>
-                              {/* Fixed Tabs */}
+                         
                               <div className="fixed-tablist">
                                 <TabList>
                                   <Tab
@@ -1761,6 +1826,126 @@ const TicketBookingDetails = () => {
                                   </Tab>
                                 </TabList>
                               </div>
+                           
+                              <TabPanel>
+                                {adults.length > 0 ? (
+                                  adults.map((member, index) => (
+                                    <TravelerCard
+                                      key={member.id}
+                                      member={member}
+                                      category="Adult"
+                                      index={index}
+                                    />
+                                  ))
+                                ) : (
+                                  <p>No adults available</p>
+                                )}
+                              </TabPanel>
+                              <TabPanel>
+                                {children.length > 0 ? (
+                                  children.map((member, index) => (
+                                    <TravelerCard
+                                      key={member.id}
+                                      member={member}
+                                      category="Child"
+                                      index={index}
+                                    />
+                                  ))
+                                ) : (
+                                  <p>No children available</p>
+                                )}
+                              </TabPanel>
+                              <TabPanel>
+                                {infants.length > 0 ? (
+                                  infants.map((member, index) => (
+                                    <TravelerCard
+                                      key={member.id}
+                                      member={member}
+                                      category="Infant"
+                                      index={index}
+                                    />
+                                  ))
+                                ) : (
+                                  <p>No infants available</p>
+                                )}
+                              </TabPanel>
+                            </>
+                          );
+                        })()} */}
+
+                        {(() => {
+                          const infants = [];
+                          const children = [];
+                          const adults = [];
+
+                          const seenAdults = new Map();
+                          const seenChildren = new Map();
+                          const seenInfants = new Map();
+
+                          bookingapi.forEach((cat) => {
+                            cat.child.forEach((c) => {
+                              const key = `${c.first_name?.toLowerCase()}-${c.last_name?.toLowerCase()}}`;
+                              const hasPhone = !!c.phone_no;
+
+                              if (c.travelers_id === 2) {
+                                const existing = seenInfants.get(key);
+                                if (!existing || (!existing.phone_no && hasPhone)) {
+                                  seenInfants.set(key, c);
+                                }
+                              } else if (c.travelers_id === 1) {
+                                const existing = seenChildren.get(key);
+                                if (!existing || (!existing.phone_no && hasPhone)) {
+                                  seenChildren.set(key, c);
+                                }
+                              } else if (c.travelers_id === 0) {
+                                const existing = seenAdults.get(key);
+                                if (!existing || (!existing.phone_no && hasPhone)) {
+                                  seenAdults.set(key, c);
+                                }
+                              }
+                            });
+                          });
+
+                          // Convert maps to arrays
+                          seenAdults.forEach((val) => adults.push(val));
+                          seenChildren.forEach((val) => children.push(val));
+                          seenInfants.forEach((val) => infants.push(val));
+
+                          return (
+                            <>
+                              {/* Fixed Tabs */}
+                              <div className="fixed-tablist">
+                                <TabList>
+                                  <Tab
+                                    onClick={() => {
+                                      setChildMemberInfant([]);
+                                      setChildMemberChild([]);
+                                      setChildMemberAdult(adults);
+                                    }}
+                                  >
+                                    Adult ({adults.length})
+                                  </Tab>
+                                  <Tab
+                                    onClick={() => {
+                                      setChildMemberInfant([]);
+                                      setChildMemberAdult([]);
+                                      setChildMemberChild(children);
+                                    }}
+                                  >
+                                    Child ({children.length})
+                                  </Tab>
+                                  <Tab
+                                    onClick={() => {
+                                      setChildMemberChild([]);
+                                      setChildMemberAdult([]);
+                                      setChildMemberInfant(infants);
+                                    }}
+                                  >
+                                    Infant ({infants.length})
+                                  </Tab>
+                                </TabList>
+                              </div>
+
                               {/* Tab Panels */}
                               <TabPanel>
                                 {adults.length > 0 ? (
@@ -1807,6 +1992,8 @@ const TicketBookingDetails = () => {
                             </>
                           );
                         })()}
+
+
                       </>
                     )}
                   </Tabs>
@@ -2534,7 +2721,7 @@ const TicketBookingDetails = () => {
                         <span className="fw-bold text-muted">
                           I agree with the{" "}
                           <a
-                            href="#"
+                            href=""
                             className="fw-bold text-muted text-decoration-none"
                           >
                             Terms & Conditions

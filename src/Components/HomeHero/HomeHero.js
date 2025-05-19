@@ -41,6 +41,14 @@ import { Swiper, SwiperSlide } from "swiper/react";
 import "swiper/css";
 import "swiper/css/navigation";
 import { Navigation } from "swiper/modules";
+import {
+  motion,
+  useScroll,
+  useTransform,
+  useSpring,
+  useMotionValue,
+  useAnimation,
+} from "framer-motion";
 
 const tabs = [
   { name: "Flights", icon: <FaPlaneDeparture size={25} />, key: "flights" },
@@ -139,21 +147,21 @@ const HomeHero = () => {
   //   setTimeout(() => setIsSwapping(false), 500); // Match with CSS duration
   // };
 
- 
+
 
   const swapLocations = () => {
-  const newFrom = to;
-  const newTo = from;
+    const newFrom = to;
+    const newTo = from;
 
-  setFrom(newFrom);
-  setTo(newTo);
+    setFrom(newFrom);
+    setTo(newTo);
 
-  ArrivalCityList(newFrom.city_code); // use swapped `from` value
+    ArrivalCityList(newFrom.city_code); // use swapped `from` value
 
-  // Use new values directly instead of waiting for state update
-  getOnwardDate(newFrom.city_code, newTo.city_code);
-  dateAvailability(newFrom.city_code, newTo.city_code);
-};
+    // Use new values directly instead of waiting for state update
+    getOnwardDate(newFrom.city_code, newTo.city_code);
+    dateAvailability(newFrom.city_code, newTo.city_code);
+  };
 
 
 
@@ -291,6 +299,8 @@ const HomeHero = () => {
   const [depcitylistload, setdepcitylistload] = useState(false);
   const [arrcitylistload, setarrcitylistload] = useState(false);
   const [hasSwappedOnce, setHasSwappedOnce] = useState(false);
+  const [sortedFlights, setsortedFlights] = useState([]);
+  const [sortedCheapFlights, setsortedCheapFlights] = useState([]);
 
 
   const monthMap = {
@@ -333,14 +343,23 @@ const HomeHero = () => {
   const sortKey = getCondition ? "price" : "per_adult_child_price";
 
   // Make a copy of each array and sort it by the chosen key in ascending order
-  const sortedFlights = [...getSearchFlightListData].sort(
-    (a, b) => a[sortKey] - b[sortKey]
-  );
 
-  const sortedCheapFlights = [...getSearchFlightListDataCheap].sort(
-    (a, b) => a[sortKey] - b[sortKey]
-  );
-  
+  useEffect(() => {
+    const sorted = [...getSearchFlightListData].sort(
+      (a, b) => a[sortKey] - b[sortKey]
+    );
+    setsortedFlights(sorted);
+
+    const sortedcheap = [...getSearchFlightListDataCheap].sort(
+      (a, b) => a[sortKey] - b[sortKey]
+    );
+
+    setsortedCheapFlights(sortedcheap);
+  }, [getSearchFlightListData, getSearchFlightListDataCheap])
+
+
+
+
   // console.log("selectedxxx", selectedIndex);
 
   const navigate = useNavigate();
@@ -372,7 +391,7 @@ const HomeHero = () => {
   const [recentswap, setrecentswap] = useState(0);
 
   // console.log("recentswap",recentswap);
-  
+
 
 
 
@@ -715,8 +734,8 @@ const HomeHero = () => {
   // };
 
   const handleSelect = async (item, skipToReset = false) => {
-    console.log('parth-1', JSON.stringify(item, null , 2));
-    
+    console.log('parth-1', JSON.stringify(item, null, 2));
+
     if (!item) {
       setFrom(null);
       return;
@@ -732,16 +751,16 @@ const HomeHero = () => {
     setIsDropdownOpen(false);
 
     // if (!skipToReset) {
-      
-      setSelectedValue2("");   // only reset "To" if not skipping
-      setTo(null);
-      setSearchTerm2("");
-      setSelectedDate(null);
-      setDate1("");
-      setSearchFlightListData([]);
-      setSearchFlightListDataCheap([]);
-      setDefaultMonth("");
-      setSelectedIndex(null);
+
+    setSelectedValue2("");   // only reset "To" if not skipping
+    setTo(null);
+    setSearchTerm2("");
+    setSelectedDate(null);
+    setDate1("");
+    setSearchFlightListData([]);
+    setSearchFlightListDataCheap([]);
+    setDefaultMonth("");
+    setSelectedIndex(null);
     // }
 
     const filteredSectors = getSectorListNew
@@ -760,17 +779,17 @@ const HomeHero = () => {
     setSectorListTo(filteredSectors);
     setCondition(1);
 
-    
+
 
     const arrivalData = await ArrivalCityList(airportCode);
     SectorList(item.city_code);
     setDefaultMonth2("");
     setSelectedDate2(null);
     // if (!skipToReset) {
-      setSelectedValue2("");  // again, only clear this if not skipping
+    setSelectedValue2("");  // again, only clear this if not skipping
     // }
 
-    
+
 
     const mappedSortedCities = arrivalData?.map((city) => ({
       city_name: city.city_name,
@@ -779,14 +798,14 @@ const HomeHero = () => {
       airport_name: "",
     }));
 
-   let combinedList = selected === 1
-  ? [...mappedSortedCities]
-  : [...filteredSectors, ...mappedSortedCities];
+    let combinedList = selected === 1
+      ? [...mappedSortedCities]
+      : [...filteredSectors, ...mappedSortedCities];
 
     // const combinedList = [...filteredSectors, ...mappedSortedCities];
-    console.log("combinedList",combinedList);
-    
-    
+    console.log("combinedList", combinedList);
+
+
     const groupedTo = groupBy2(combinedList, "city_name");
 
     const formattedGroupedCitiesTo = Object.entries(groupedTo).map(
@@ -859,6 +878,10 @@ const HomeHero = () => {
 
   const handleCounterChange = (type, change) => {
     // setSearchFlightList([]);
+    setfilterData([]);
+    setsortedFlights([]);
+    setsortedCheapFlights([]);
+
     setTravellers((prev) => {
       const newValue = prev[type] + change;
 
@@ -959,8 +982,8 @@ const HomeHero = () => {
 
 
   const handleSelect2 = (item) => {
-     console.log('parth-2', JSON.stringify(item, null , 2));
-     setrecentswap(0);
+    console.log('parth-2', JSON.stringify(item, null, 2));
+    setrecentswap(0);
     if (!item) {
       setTo(null);
       return;
@@ -1047,7 +1070,7 @@ const HomeHero = () => {
       ];
 
       // console.log("futureDates",futureDates);
-      
+
 
 
       const defaultmonth = futureDates[0];
@@ -1431,9 +1454,9 @@ const HomeHero = () => {
     }
   };
 
-  const getOnwardDate = async (dep_city_code,citycode) => {
-   
-    
+  const getOnwardDate = async (dep_city_code, citycode) => {
+
+
 
     const token = "4-2-3721-KRAZY-389-xnewkncBUI8";
     const publicIP = await getPublicIP();
@@ -1550,9 +1573,17 @@ const HomeHero = () => {
     setSearchCondition(false);
     setSearchFlightListDataCheap([]);
     // setSearchFlightListData([]);
-    const originCode = recentItem ? recentItem.departure_city_code : from?.city_code;
+    // const originCode = 
+    // recentItem ? recentItem.departure_city_code : from?.city_code;
+    const originCode = recentItem
+      ? recentItem.departure_city_code
+      : !from?.airport_code
+        ? from?.city_code
+        : from?.airport_code;
     const destinationCode = recentItem ? recentItem.arrival_city_code : to?.city_code;
     const formattedDate = moment(date1, "DD-MM-YYYY").format("YYYY-MM-DD");
+    console.log("originCode", originCode);
+
     console.log("formattedDate", date1);
 
     // const formattedDate1 = moment(defaultMonth, "DD-MM-YYYY").format(
@@ -1721,7 +1752,7 @@ const HomeHero = () => {
         const url = "https://devapi.fareboutique.com/v1/fbapi/search";
 
         // console.log("defaultMonth._i__",defaultMonth._i);
-        
+
 
         const payload = {
           trip_type: selected,
@@ -1944,10 +1975,10 @@ const HomeHero = () => {
 
   const handleRecentClick = async (item) => {
     console.log("Clicked item:", item);
-    if(recentswap == 0){
+    if (recentswap == 0) {
       setrecentswap(1);
-    }else{}
-    
+    } else { }
+
 
     // Step 1: Create From Option manually
     const fromOption = {
@@ -1998,13 +2029,13 @@ const HomeHero = () => {
     // }
   };
 
-  const dateAvailability = async (originCode,destinationcode) => {
+  const dateAvailability = async (originCode, destinationcode) => {
     const token = JSON.parse(localStorage.getItem("is_token_airiq"));
     const headers = new Headers(ACCEPT_HEADER1);
-  headers.append("Authorization",token);
+    headers.append("Authorization", token);
 
-    console.log("getDepCityCode",originCode);
-    
+    console.log("getDepCityCode", originCode);
+
 
     const payload = {
       // origin: getDepCityCode,
@@ -2014,7 +2045,7 @@ const HomeHero = () => {
 
     try {
       const response = await fetch(availabilitycurl,
-       
+
         {
           method: "POST",
           headers: headers,
@@ -2064,7 +2095,7 @@ const HomeHero = () => {
   const dateAvailabilitySupplier = async (destinationcode) => {
     const token = JSON.parse(localStorage.getItem("is_token_airiq"));
     const headers = new Headers(ACCEPT_HEADER1);
-    headers.append("Authorization",token);
+    headers.append("Authorization", token);
 
     const payload = {
       origin: getDepCityCode,
@@ -2074,7 +2105,7 @@ const HomeHero = () => {
     try {
       const response = await fetch(supplieravailabilitycurl,
         // proxy + "https://omairiq.azurewebsites.net/supplieravailability",
-        
+
         // {
         //   method: "POST",
         //   headers: {
@@ -2086,14 +2117,14 @@ const HomeHero = () => {
         //   body: JSON.stringify(payload),
         // }
 
-         {
+        {
           method: "POST",
           headers: headers,
           Authorization: token,
           body: JSON.stringify(payload),
           redirect: "follow"
         }
-        
+
       );
 
       const data = await response.json();
@@ -2135,18 +2166,18 @@ const HomeHero = () => {
 
   const searchFlightData = async (isRecentClick = false, recentItem = null) => {
     // console.log("1111111111111");
-  const originCode = recentItem
-  ? recentItem.departure_city_code
-  : !from?.airport_code
-  ? from?.city_code
-  : from?.airport_code;
+    const originCode = recentItem
+      ? recentItem.departure_city_code
+      : !from?.airport_code
+        ? from?.city_code
+        : from?.airport_code;
 
     const destinationCode = recentItem ? recentItem.arrival_city_code : to?.city_code;
-    console.log("originCode",originCode);
-    
+    console.log("originCode", originCode);
+
     const token = JSON.parse(localStorage.getItem("is_token_airiq"));
     const headers = new Headers(ACCEPT_HEADER1);
-    headers.append("Authorization",token);
+    headers.append("Authorization", token);
 
     setSearchCondition2(false);
 
@@ -2225,8 +2256,8 @@ const HomeHero = () => {
             Authorization: token,
             body: JSON.stringify(payload),
             redirect: "follow"
-            },
-           
+          },
+
 
         );
 
@@ -2288,7 +2319,7 @@ const HomeHero = () => {
             .filter((price) => price !== undefined && price !== null);
 
           const minPrice = Math.min(...prices);
-          
+
 
           setSearchFlightListData(data.data);
           setbookingtokenid(data.booking_token_id);
@@ -2430,6 +2461,40 @@ const HomeHero = () => {
       };
     }
   });
+
+  const containerRef = useRef(null);
+
+  const { scrollY } = useScroll();
+  const y1Scroll = useTransform(scrollY, [0, 300], [0, -80]);
+  const y2Scroll = useTransform(scrollY, [0, 300], [0, 80]);
+
+  const y1 = useMotionValue(50);
+  const y2 = useMotionValue(-50);
+
+  const controls1 = useAnimation();
+  const controls2 = useAnimation();
+
+  useEffect(() => {
+    controls1.start({
+      y: 0,
+      opacity: 1,
+      transition: { duration: 0.8, ease: "easeOut" },
+    });
+    controls2.start({
+      y: 0,
+      opacity: 1,
+      transition: { duration: 0.8, ease: "easeOut" },
+    });
+
+    // After initial anim, connect to scroll values
+    const unsubscribeY1 = y1Scroll.onChange((latest) => y1.set(latest));
+    const unsubscribeY2 = y2Scroll.onChange((latest) => y2.set(latest));
+
+    return () => {
+      unsubscribeY1();
+      unsubscribeY2();
+    };
+  }, []);
 
   return (
     // <>
@@ -2831,7 +2896,7 @@ const HomeHero = () => {
             {/* <div className="AQWr-mod-margin-top-small voEJ-cmp2-direct-wrapper"></div> */}
           </div>
         </div>
-        <div className="E9width40">
+        {/* <div className="E9width40">
           <div className="d-flex gap-4 chalisninicheno">
             <div className="d-flex flex-column gap-4 zeel-1">
               <img
@@ -2868,6 +2933,56 @@ const HomeHero = () => {
                 style={{ width: "220px", height: "220px" }}
               />
             </div>
+          </div>
+        </div> */}
+
+        <div ref={containerRef} className="E9width40">
+          <div className="d-flex gap-4 chalisninicheno">
+            <motion.div
+              className="d-flex flex-column gap-4 zeel-1"
+              initial={{ opacity: 1 }}
+              animate={controls1}
+              style={{ y: y1 }}
+            >
+              <img
+                src={images.flight1}
+                className="rounded-xl object-cover h-24 md:h-32"
+                style={{ width: "220px", height: "220px" }}
+              />
+              <img
+                src={images.flight2}
+                className="rounded-xl object-cover h-40 md:h-48"
+                style={{ width: "220px", height: "220px" }}
+              />
+              <img
+                src={images.flight3}
+                className="rounded-xl object-cover h-32 md:h-40"
+                style={{ width: "220px", height: "220px" }}
+              />
+            </motion.div>
+
+            <motion.div
+              className="d-flex flex-column gap-4 zeel-2"
+              initial={{ opacity: 1 }}
+              animate={controls2}
+              style={{ y: y2 }}
+            >
+              <img
+                src={images.flight4}
+                className="rounded-xl object-cover h-24 md:h-32"
+                style={{ width: "220px", height: "220px" }}
+              />
+              <img
+                src={images.flight5}
+                className="rounded-xl object-cover h-40 md:h-48"
+                style={{ width: "220px", height: "220px" }}
+              />
+              <img
+                src={images.flight6}
+                className="rounded-xl object-cover h-32 md:h-40"
+                style={{ width: "220px", height: "220px" }}
+              />
+            </motion.div>
           </div>
         </div>
       </div>
@@ -2928,7 +3043,7 @@ const HomeHero = () => {
                 getSearchFlightListDataCheap?.length > 0) && (
                   <>
                     <div
-                      className="flightcounter2"
+                      className="flightcounter2 resp_flight_search_result"
                       style={{
                         display: "flex",
                         alignItems: "center",
@@ -2957,7 +3072,7 @@ const HomeHero = () => {
                         </span>{" "}
                         {totalTravellers} Traveller
                       </h5>
-                      <Select
+                      <Select className="resp_flight_filter"
                         options={optionss}
                         onChange={handleChanges}
                         placeholder={
@@ -3419,10 +3534,11 @@ const HomeHero = () => {
                               <div className="mobile_row">
                                 <div>
                                   {(() => {
-                                    const airline =
+                                    {/* const airline =
                                       getCondition === 1
                                         ? item.airline_name
-                                        : item.airline;
+                                        : item.airline; */}
+                                    const airline = item.airline;
 
                                     return airline === "IndiGo Airlines" ||
                                       airline === "IndiGo" ? (
@@ -3496,11 +3612,12 @@ const HomeHero = () => {
                                 <div className="mob_time_cont">
                                   <div className="mob_time_row">
                                     <div className="mob_time">
-                                      {getCondition == 0 ? (
+                                      {/* {getCondition == 0 ? (
                                         <>{item?.departure_time}</>
                                       ) : (
                                         <>{item?.dep_time}</>
-                                      )}
+                                      )} */}
+                                      {item?.departure_time}
                                     </div>
                                     <div
                                       style={{
@@ -3510,23 +3627,25 @@ const HomeHero = () => {
                                       -------
                                     </div>
                                     <div className="mob_time">
-                                      {getCondition == 0 ? (
+                                      {/* {getCondition == 0 ? (
                                         <>{item?.arival_time}</>
                                       ) : (
                                         <>{item?.arr_time}</>
-                                      )}
+                                      )} */}
+                                      {item?.arival_time}
                                     </div>
                                   </div>
                                   <div className="mob_time_row justify-content-between">
                                     <div className="mob_city_kode">
-                                      {getCondition == 0 ? (
+                                      {/* {getCondition == 0 ? (
                                         <>{item?.departure_time}</>
                                       ) : (
                                         <>{item?.dep_airport_code}</>
-                                      )}
+                                      )} */}
+                                      {item?.departure_time}
                                     </div>
                                     <div className="mob_duration">
-                                      {getCondition == 0 ? (
+                                      {/* {getCondition == 0 ? (
                                         <>
                                           {calculateDuration(
                                             item?.departure_time,
@@ -3539,14 +3658,19 @@ const HomeHero = () => {
                                             `${item.duration.split(":")[0]}h ${item.duration.split(":")[1]
                                             }m`}
                                         </>
+                                      )} */}
+                                      {calculateDuration(
+                                        item?.departure_time,
+                                        item?.arival_time
                                       )}
                                     </div>
                                     <div className="mob_city_kode">
-                                      {getCondition == 0 ? (
+                                      {/* {getCondition == 0 ? (
                                         <>{item?.destination}</>
                                       ) : (
                                         <>{item?.arr_city_code}</>
-                                      )}
+                                      )} */}
+                                      {item?.destination}
                                     </div>
                                   </div>
                                 </div>
@@ -3558,11 +3682,12 @@ const HomeHero = () => {
                                     <FaIndianRupeeSign size={20} />
                                   </div>
                                   <div className="mob_amount">
-                                    {getCondition == 0 ? (
+                                    {/* {getCondition == 0 ? (
                                       <>{item?.price}</>
                                     ) : (
                                       <>{item?.per_adult_child_price}</>
-                                    )}
+                                    )} */}
+                                    {item?.price}
                                   </div>
                                 </div>
                               </div>
@@ -3575,11 +3700,12 @@ const HomeHero = () => {
                             />
                             <div className="mob_book_btn_main">
                               <div className="mob_book_airlineNm">
-                                {getCondition == 0 ? (
+                                {/* {getCondition == 0 ? (
                                   <>{item?.airline}</>
                                 ) : (
                                   <>{item?.airline_name}</>
-                                )}
+                                )} */}
+                                {item?.airline}
                               </div>
                               <div>
                                 {login ? (
@@ -3907,7 +4033,7 @@ const HomeHero = () => {
                                                 src={images.airasiax}
                                                 className="airline_logo"
                                               />
-                                            ) :  airline === "AirAsia" ? (
+                                            ) : airline === "AirAsia" ? (
                                               <img
                                                 src={images.airasia}
                                                 className="airline_logo"
@@ -4059,10 +4185,11 @@ const HomeHero = () => {
                               <div className="mobile_row">
                                 <div>
                                   {(() => {
-                                    const airline =
+                                    {/* const airline =
                                       getCondition === 1
                                         ? item.airline_name
-                                        : item.airline;
+                                        : item.airline; */}
+                                    const airline = item.airline;
 
                                     return airline === "IndiGo Airlines" ||
                                       airline === "IndiGo" ? (
@@ -4136,11 +4263,12 @@ const HomeHero = () => {
                                 <div className="mob_time_cont">
                                   <div className="mob_time_row">
                                     <div className="mob_time">
-                                      {getCondition == 0 ? (
+                                      {/* {getCondition == 0 ? (
                                         <>{item?.departure_time}</>
                                       ) : (
                                         <>{item?.dep_time}</>
-                                      )}
+                                      )} */}
+                                      {item?.departure_time}
                                     </div>
                                     <div
                                       style={{
@@ -4150,23 +4278,25 @@ const HomeHero = () => {
                                       -------
                                     </div>
                                     <div className="mob_time">
-                                      {getCondition == 0 ? (
+                                      {/* {getCondition == 0 ? (
                                         <>{item?.arival_time}</>
                                       ) : (
                                         <>{item?.arr_time}</>
-                                      )}
+                                      )} */}
+                                      {item?.arival_time}
                                     </div>
                                   </div>
                                   <div className="mob_time_row justify-content-between">
                                     <div className="mob_city_kode">
-                                      {getCondition == 0 ? (
+                                      {/* {getCondition == 0 ? (
                                         <>{item?.departure_time}</>
                                       ) : (
                                         <>{item?.dep_airport_code}</>
-                                      )}
+                                      )} */}
+                                      {item?.departure_time}
                                     </div>
                                     <div className="mob_duration">
-                                      {getCondition == 0 ? (
+                                      {/* {getCondition == 0 ? (
                                         <>
                                           {calculateDuration(
                                             item?.departure_time,
@@ -4179,14 +4309,19 @@ const HomeHero = () => {
                                             `${item.duration.split(":")[0]}h ${item.duration.split(":")[1]
                                             }m`}
                                         </>
+                                      )} */}
+                                      {calculateDuration(
+                                        item?.departure_time,
+                                        item?.arival_time
                                       )}
                                     </div>
                                     <div className="mob_city_kode">
-                                      {getCondition == 0 ? (
+                                      {/* {getCondition == 0 ? (
                                         <>{item?.destination}</>
                                       ) : (
                                         <>{item?.arr_city_code}</>
-                                      )}
+                                      )} */}
+                                      {item?.destination}
                                     </div>
                                   </div>
                                 </div>
@@ -4198,11 +4333,12 @@ const HomeHero = () => {
                                     <FaIndianRupeeSign size={20} />
                                   </div>
                                   <div className="mob_amount">
-                                    {getCondition == 0 ? (
+                                    {/* {getCondition == 0 ? (
                                       <>{item?.price}</>
                                     ) : (
                                       <>{item?.per_adult_child_price}</>
-                                    )}
+                                    )} */}
+                                    {item?.price}
                                   </div>
                                 </div>
                               </div>
@@ -4215,11 +4351,12 @@ const HomeHero = () => {
                             />
                             <div className="mob_book_btn_main">
                               <div className="mob_book_airlineNm">
-                                {getCondition == 0 ? (
+                                {/* {getCondition == 0 ? (
                                   <>{item?.airline}</>
                                 ) : (
                                   <>{item?.airline_name}</>
-                                )}
+                                )} */}
+                                {item?.airline}
                               </div>
                               <div>
                                 {login ? (
@@ -4670,10 +4807,11 @@ const HomeHero = () => {
                             <div className="mobile_row">
                               <div>
                                 {(() => {
-                                  const airline =
+                                  {/* const airline =
                                     getCondition === 1
                                       ? item.airline_name
-                                      : item.airline;
+                                      : item.airline; */}
+                                  const airline = item.airline;
 
                                   return airline === "IndiGo Airlines" ||
                                     airline === "IndiGo" ? (
@@ -4744,11 +4882,12 @@ const HomeHero = () => {
                               <div className="mob_time_cont">
                                 <div className="mob_time_row">
                                   <div className="mob_time">
-                                    {getCondition == 0 ? (
+                                    {/* {getCondition == 0 ? (
                                       <>{item?.departure_time}</>
                                     ) : (
                                       <>{item?.dep_time}</>
-                                    )}
+                                    )} */}
+                                    {item?.departure_time}
                                   </div>
                                   <div
                                     style={{
@@ -4758,23 +4897,25 @@ const HomeHero = () => {
                                     -------
                                   </div>
                                   <div className="mob_time">
-                                    {getCondition == 0 ? (
+                                    {/* {getCondition == 0 ? (
                                       <>{item?.arival_time}</>
                                     ) : (
                                       <>{item?.arr_time}</>
-                                    )}
+                                    )} */}
+                                    {item?.arival_time}
                                   </div>
                                 </div>
                                 <div className="mob_time_row justify-content-between">
                                   <div className="mob_city_kode">
-                                    {getCondition == 0 ? (
+                                    {/* {getCondition == 0 ? (
                                       <>{item?.departure_time}</>
                                     ) : (
                                       <>{item?.dep_airport_code}</>
-                                    )}
+                                    )} */}
+                                    {item?.departure_time}
                                   </div>
                                   <div className="mob_duration">
-                                    {getCondition == 0 ? (
+                                    {/* {getCondition == 0 ? (
                                       <>
                                         {calculateDuration(
                                           item?.departure_time,
@@ -4787,14 +4928,19 @@ const HomeHero = () => {
                                           `${item.duration.split(":")[0]}h ${item.duration.split(":")[1]
                                           }m`}
                                       </>
+                                    )} */}
+                                    {calculateDuration(
+                                      item?.departure_time,
+                                      item?.arival_time
                                     )}
                                   </div>
                                   <div className="mob_city_kode">
-                                    {getCondition == 0 ? (
+                                    {/* {getCondition == 0 ? (
                                       <>{item?.destination}</>
                                     ) : (
                                       <>{item?.arr_city_code}</>
-                                    )}
+                                    )} */}
+                                    {item?.destination}
                                   </div>
                                 </div>
                               </div>
@@ -4806,11 +4952,12 @@ const HomeHero = () => {
                                   <FaIndianRupeeSign size={20} />
                                 </div>
                                 <div className="mob_amount">
-                                  {getCondition == 0 ? (
+                                  {/* {getCondition == 0 ? (
                                     <>{item?.price}</>
                                   ) : (
                                     <>{item?.per_adult_child_price}</>
-                                  )}
+                                  )} */}
+                                  {item?.price}
                                 </div>
                               </div>
                             </div>
@@ -4823,11 +4970,12 @@ const HomeHero = () => {
                           />
                           <div className="mob_book_btn_main">
                             <div className="mob_book_airlineNm">
-                              {getCondition == 0 ? (
+                              {/* {getCondition == 0 ? (
                                 <>{item?.airline}</>
                               ) : (
                                 <>{item?.airline_name}</>
-                              )}
+                              )} */}
+                              {item?.airline}
                             </div>
                             <div>
                               {login ? (

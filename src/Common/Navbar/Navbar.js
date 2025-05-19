@@ -626,7 +626,7 @@ const Navbar = () => {
           {/* Logo */}
           <div>
             <Link to={"/"} className="linkHover">
-              <img src={images.logo} className="logoimg" alt="Logo" />
+              <img src={images.logo2} className="logoimg" alt="Logo" />
             </Link>
           </div>
 
@@ -769,6 +769,7 @@ const Navbar = () => {
             <button className="d-md-none menubtn" onClick={toggleMenu}>
               {isMenuOpen ? (
                 <RiCloseFill color="black" size={24} />
+                
               ) : (
                 <RiMenu3Fill color="black" size={24} />
               )}
@@ -846,7 +847,7 @@ const Navbar = () => {
           </div>
 
           <div className="modal_Logodiv">
-            <img src={images.logo} alt="" />
+            <img src={images.logo2} alt="" />
           </div>
           <div className="modal_headingdiv mt-4">
             <p className="fs-5">
