@@ -9,6 +9,9 @@ import {
   FARE_RULES_BEGIN,
   FARE_RULES_ERROR,
   FARE_RULES_SUCCESS,
+  FLIGHT_SEARCH_AIRIQ_BEGIN,
+  FLIGHT_SEARCH_AIRIQ_ERROR,
+  FLIGHT_SEARCH_AIRIQ_SUCCESS,
   FLIGHT_SEARCH_BEGIN,
   FLIGHT_SEARCH_ERROR,
   FLIGHT_SEARCH_SUCCESS,
@@ -18,6 +21,12 @@ import {
   GET_ITINERARY_BEGIN,
   GET_ITINERARY_ERROR,
   GET_ITINERARY_SUCCESS,
+  GET_PASSENGER_DETAILS_BEGIN,
+  GET_PASSENGER_DETAILS_ERROR,
+  GET_PASSENGER_DETAILS_SUCCESS,
+  PASSENGER_DETAILS_BEGIN,
+  PASSENGER_DETAILS_ERROR,
+  PASSENGER_DETAILS_SUCCESS,
   REPRICE_BEGIN,
   REPRICE_ERROR,
   REPRICE_SUCCESS,
@@ -31,7 +40,7 @@ import {
 
 const flight_reducer = (state, action) => {
   if (action.type == FLIGHT_SEARCH_BEGIN) {
-    return { ...state, flight_Loading: true };
+    return { ...state, flight_Loading: true, hasSearched: true };
   }
   if (action.type == FLIGHT_SEARCH_SUCCESS) {
     return {
@@ -46,7 +55,30 @@ const flight_reducer = (state, action) => {
     };
   }
   if (action.type == FLIGHT_SEARCH_ERROR) {
-    return { ...state, flight_Loading: false };
+    return {
+      ...state,
+      flight_Loading: false,
+      flight_Data: [],
+      return_flight_data: [],
+    };
+  }
+
+  if (action.type == FLIGHT_SEARCH_AIRIQ_BEGIN) {
+    return { ...state, flightAiriq_Loading: true };
+  }
+  if (action.type == FLIGHT_SEARCH_AIRIQ_SUCCESS) {
+    return {
+      ...state,
+      flightAiriq_Loading: false,
+      flightAirIq_Data: action.payload,
+    };
+  }
+  if (action.type == FLIGHT_SEARCH_AIRIQ_ERROR) {
+    return {
+      ...state,
+      flightAiriq_Loading: false,
+      flightAirIq_Data: [],
+    };
   }
 
   if (action.type == FARE_RULES_BEGIN) {
@@ -150,10 +182,35 @@ const flight_reducer = (state, action) => {
       ...state,
       get_booking_loading: false,
       get_booking_data: action.payload ? action.payload : {},
+      return_get_booking_data: action.payload ? action.payload : {},
     };
   }
   if (action.type == GET_BOOKING_ERROR) {
     return { ...state, get_booking_loading: false };
+  }
+
+  if (action.type == GET_PASSENGER_DETAILS_BEGIN) {
+    return { ...state, passenger_loading_details: true };
+  }
+  if (action.type == GET_PASSENGER_DETAILS_SUCCESS) {
+    return {
+      ...state,
+      passenger_loading_details: false,
+      passenger_Details: action.payload ? action.payload : {},
+    };
+  }
+  if (action.type == GET_PASSENGER_DETAILS_ERROR) {
+    return { ...state, passenger_loading_details: false };
+  }
+
+  if (action.type == PASSENGER_DETAILS_BEGIN) {
+    return { ...state, add_passenger_loading: true };
+  }
+  if (action.type == PASSENGER_DETAILS_SUCCESS) {
+    return { ...state, add_passenger_loading: false };
+  }
+  if (action.type == PASSENGER_DETAILS_ERROR) {
+    return { ...state, add_passenger_loading: false };
   }
 };
 

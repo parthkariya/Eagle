@@ -43,6 +43,7 @@ export const availabilitycurl = BaseUrl2 + "availabilitycurl";
 export const searchcurl = BaseUrl2 + "searchcurl";
 export const bookcurl = BaseUrl2 + "bookcurl";
 export const ticketcurl = BaseUrl2 + "ticketcurl";
+export const get_all_flights_booking = BaseUrl2 + "get-all-flights-booking";
 export const supplieravailabilitycurl = BaseUrl2 + "supplieravailabilitycurl";
 export const suppliersearchcurl = BaseUrl2 + "suppliersearchcurl";
 export const supplierbookcurl = BaseUrl2 + "supplierbookcurl";
@@ -50,6 +51,8 @@ export const supplierticketcurl = BaseUrl2 + "supplierticketcurl";
 export const dynamic_curl = BaseUrl2 + "dynamic_curl";
 export const get_bus_booking = BaseUrl2 + "get-bus-booking";
 export const newFlightApi_dynamic = BaseUrl2 + "dynamic_flights_curl";
+export const PassengerDetails_url = BaseUrl2 + "passenger-details";
+export const GetPassengerDetails = BaseUrl2 + "get-passenger-details";
 
 // Air IQ API
 export const sectors = BaseUrl + "sectors";
@@ -109,3 +112,8 @@ export const walletApi = newAirlineURL + "wallet";
 export const bookingget = newAirlineURL + "bookings";
 
 export const Payment_Api = BaseUrl2 + "payment-initiate";
+
+// Hotel API
+
+const HotelBaseUrl = "https://hotel-api-sandbox.travclan.com/api/v1/";
+export const locationAutosuggestApi = HotelBaseUrl + "locations/search/";

@@ -24,10 +24,18 @@ import HappySection from "../../Components/HappySection/HappySection";
 import WhyChooseUsBus from "../../Components/WhyChooseUsBus/WhyChooseUsBus";
 import CountSection from "../../Components/CountSection/CountSection";
 import { useBusContext } from "../../Context/bus_context";
+import { useFlightContext } from "../../Context/flight_context";
 
 const HomePage = () => {
   const { getCancellationPolicyApi } = useAuthContext();
   const [modalWidth, setModalWidth] = useState("90%");
+
+    const {
+      FlightSearch,
+      FlightSearchAiriq,
+      flight_Data,
+      flightAirIq_Data,
+    } = useFlightContext();
 
   useLayoutEffect(() => {
     const updateWidth = () => {
@@ -208,8 +216,11 @@ const HomePage = () => {
         </>
       ) : (
         <>
+        {flight_Data?.length > 0 || flightAirIq_Data?.length > 0 ? <></> : <>
           <WhyChooseUs />
           <PartnerAirline />
+        </>}
+          
         </>
       )}
 

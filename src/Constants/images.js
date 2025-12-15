@@ -63,7 +63,7 @@ import bus4 from "../Assets/bus4.jpeg";
 import header_bg_bus from "../Assets/header_bus_bg.jpg";
 import bgbus from "../Assets/bgbus.jpg";
 import eaglebus from "../Assets/eaglebus.png";
-
+import srilankan from "../Assets/Srilankan.png";
 import viewticketsvg from "../Assets/viewticketsvg.png";
 import brothers from "../Assets/brothers.jpg";
 
@@ -110,7 +110,7 @@ export default {
   planecompleted,
 
   Air_India_Express_logo,
-
+  srilankan,
   traveler,
   rupees,
   wmremovetransformed,

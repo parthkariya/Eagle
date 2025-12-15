@@ -1,0 +1,593 @@
+/* HotelBookingDetails.css */
+
+.hotel-container {
+  max-width: 1240px;
+  margin: 0 auto;
+  padding: 20px;
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto,
+    "Helvetica Neue", Arial, sans-serif;
+}
+
+.hotel-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  margin-bottom: 30px;
+  margin-top: 30px;
+  gap: 40px;
+}
+
+.hotel-info {
+  flex: 1;
+}
+
+.hotel-name-details {
+  font-size: 32px;
+  font-weight: 700;
+  margin-bottom: 10px;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.rating-stars {
+  font-size: 16px;
+  color: #000;
+  letter-spacing: 2px;
+}
+
+.hotel-address {
+  font-size: 16px;
+  color: #333;
+  margin-bottom: 15px;
+}
+
+.review-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  background-color: #f8f8f8;
+  padding: 8px 12px;
+  border-radius: 8px;
+}
+
+.score {
+  background-color: #2ecc71;
+  color: white;
+  padding: 4px 10px;
+  border-radius: 6px;
+  font-weight: 700;
+  font-size: 16px;
+}
+
+.review-text {
+  font-weight: 600;
+  font-size: 15px;
+}
+
+.review-count {
+  color: #666;
+  font-size: 14px;
+}
+
+.hotel-pricing {
+  text-align: right;
+}
+
+.price {
+  font-size: 36px;
+  font-weight: 700;
+  color: #000;
+  margin-bottom: 5px;
+}
+
+.price-detail {
+  font-size: 14px;
+  color: #666;
+  margin-bottom: 5px;
+}
+
+.source {
+  font-size: 14px;
+  color: #666;
+}
+
+.action-buttons {
+  display: flex;
+  gap: 10px;
+  justify-content: center;
+  box-shadow: none;
+}
+
+.btn-primary {
+  background-color: #ff6b35;
+  color: white;
+  border: none;
+  width: 120px;
+  border-radius: 8px;
+  font-size: 16px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background-color 0.3s ease;
+}
+
+.btn-primary:hover {
+  background-color: #ff5722;
+}
+
+.gallery-grid {
+  display: grid;
+  grid-template-columns: 2fr 1fr 1fr;
+  grid-template-rows: repeat(2, 320px);
+  gap: 12px;
+  margin-bottom: 30px;
+}
+
+.gallery-item {
+  position: relative;
+  overflow: hidden;
+  border-radius: 12px;
+  cursor: pointer;
+}
+
+.main-image {
+  grid-row: 1 / 3;
+}
+
+.gallery-item img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  transition: transform 0.3s ease;
+}
+
+.gallery-item:hover img {
+  transform: scale(1.05);
+}
+
+.photo-label,
+.photo-count {
+  position: absolute;
+  bottom: 16px;
+  left: 16px;
+  background-color: rgba(0, 0, 0, 0.7);
+  color: white;
+  padding: 8px 16px;
+  border-radius: 8px;
+  font-size: 14px;
+  font-weight: 600;
+}
+
+.view-all-btn {
+  position: absolute;
+  bottom: 16px;
+  right: 16px;
+  background-color: white;
+  color: #000;
+  border: none;
+  width: 150px;
+  border-radius: 8px;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background-color 0.3s ease;
+}
+
+.view-all-btn:hover {
+  background-color: #f0f0f0;
+}
+
+/* New Sections Below Images */
+
+/* Section Title */
+.section-title {
+  font-size: 20px;
+  font-weight: 700;
+  margin-bottom: 15px;
+  color: #1a1a1a;
+}
+
+/* Highlights Section */
+.highlights-section {
+  margin-bottom: 25px;
+  padding: 20px;
+  background-color: #f8f9fa;
+  border-radius: 12px;
+}
+
+.highlights-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 12px;
+}
+
+.highlight-item {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 12px 15px;
+  background-color: white;
+  border-radius: 10px;
+  border: 1px solid #e9ecef;
+  transition: all 0.3s ease;
+}
+
+.highlight-item:hover {
+  border-color: #ff6b35;
+  box-shadow: 0 2px 8px rgba(255, 107, 53, 0.15);
+  transform: translateY(-2px);
+}
+
+.highlight-icon {
+  font-size: 22px;
+  color: #ff6b35;
+  flex-shrink: 0;
+}
+
+.highlight-text {
+  font-size: 14px;
+  font-weight: 500;
+  color: #333;
+}
+
+/* Facilities Section */
+.facilities-section {
+  margin-bottom: 25px;
+  padding: 20px;
+  background-color: #ffffff;
+  border: 1px solid #e9ecef;
+  border-radius: 12px;
+}
+
+.facilities-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+  gap: 10px;
+}
+
+.facility-item {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 12px;
+  font-size: 14px;
+  color: #333;
+  background-color: #f8f9fa;
+  border-radius: 8px;
+  transition: all 0.3s ease;
+}
+
+.facility-item:hover {
+  background-color: #e9ecef;
+}
+
+.facility-icon {
+  color: #4caf50;
+  font-size: 18px;
+  flex-shrink: 0;
+}
+
+/* About Section */
+.about-section {
+  margin-bottom: 25px;
+  padding: 20px;
+  background-color: #fff5f2;
+  border-radius: 12px;
+  border-left: 4px solid #ff6b35;
+}
+
+.about-text {
+  font-size: 14px;
+  line-height: 1.6;
+  color: #444;
+  margin: 0;
+}
+
+/* Landmarks Section */
+.landmarks-section {
+  margin-bottom: 30px;
+  padding: 20px;
+  background-color: #ffffff;
+  border: 1px solid #e9ecef;
+  border-radius: 12px;
+}
+
+.landmarks-list {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.landmark-item {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 12px 15px;
+  background-color: #f8f9fa;
+  border-radius: 10px;
+  transition: all 0.3s ease;
+}
+
+.landmark-item:hover {
+  background-color: #e9ecef;
+  transform: translateX(5px);
+}
+
+.landmark-icon {
+  font-size: 24px;
+  color: #ff6b35;
+  flex-shrink: 0;
+}
+
+.landmark-name {
+  flex: 1;
+  font-size: 14px;
+  font-weight: 500;
+  color: #333;
+}
+
+.landmark-distance {
+  font-size: 13px;
+  font-weight: 600;
+  color: #ff6b35;
+  padding: 4px 10px;
+  background-color: white;
+  border-radius: 6px;
+}
+
+/* Property Rules Section */
+.property-rules-section {
+  margin-bottom: 30px;
+  padding: 20px;
+  background-color: #ffffff;
+  border: 1px solid #e9ecef;
+  border-radius: 12px;
+}
+
+.rules-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+  gap: 20px;
+}
+
+.rule-category {
+  padding: 15px;
+  background-color: #f8f9fa;
+  border-radius: 10px;
+}
+
+.rule-category-title {
+  font-size: 16px;
+  font-weight: 600;
+  color: #1a1a1a;
+  margin: 0 0 12px 0;
+  padding-bottom: 8px;
+  border-bottom: 2px solid #ff6b35;
+}
+
+.rule-item {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  padding: 10px 0;
+  border-bottom: 1px solid #e9ecef;
+}
+
+.rule-item:last-child {
+  border-bottom: none;
+  padding-bottom: 0;
+}
+
+.rule-icon {
+  font-size: 20px;
+  color: #ff6b35;
+  flex-shrink: 0;
+  margin-top: 2px;
+}
+
+.rule-content {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  flex: 1;
+}
+
+.rule-label {
+  font-size: 13px;
+  color: #666;
+  font-weight: 500;
+}
+
+.rule-value {
+  font-size: 14px;
+  color: #1a1a1a;
+  font-weight: 600;
+}
+
+/* Responsive adjustments for Property Rules */
+@media (max-width: 768px) {
+  .rules-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .property-rules-section {
+    padding: 15px;
+    margin-bottom: 20px;
+  }
+}
+
+/* Modal Styles */
+.modal-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 16px 20px;
+  border-bottom: 1px solid #e0e0e0;
+  flex-shrink: 0;
+}
+
+.modal-title {
+  font-size: 18px;
+  font-weight: 600;
+  margin: 0;
+}
+
+.close-btn {
+  background: none;
+  border: none;
+  font-size: 28px;
+  cursor: pointer;
+  color: #333;
+  width: 36px;
+  height: 36px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+  transition: background-color 0.2s;
+  padding: 0;
+  line-height: 1;
+}
+
+.close-btn:hover {
+  background-color: #f0f0f0;
+}
+
+.modal-tabs {
+  display: flex;
+  gap: 8px;
+  padding: 16px 20px;
+  overflow-x: auto;
+  flex-shrink: 0;
+}
+
+.modal-tabs::-webkit-scrollbar {
+  height: 4px;
+}
+
+.modal-tabs::-webkit-scrollbar-thumb {
+  background-color: #ddd;
+  border-radius: 4px;
+}
+
+.tab-btn {
+  padding: 8px 16px;
+  border: 1px solid #ddd;
+  background-color: white;
+  border-radius: 20px;
+  font-size: 14px;
+  font-weight: 500;
+  cursor: pointer;
+  white-space: nowrap;
+  transition: all 0.2s;
+}
+
+.tab-btn:hover {
+  border-color: #333;
+}
+
+.tab-btn.active {
+  background-color: #ff5722;
+  color: white;
+}
+
+.modal-content {
+  padding: 20px;
+  overflow-y: auto;
+  flex: 1;
+}
+
+.image-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 12px;
+}
+
+.image-grid-item {
+  position: relative;
+  aspect-ratio: 4/3;
+  border-radius: 8px;
+  overflow: hidden;
+  cursor: pointer;
+}
+
+.image-grid-item img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  transition: transform 0.3s ease;
+}
+
+.image-grid-item:hover img {
+  transform: scale(1.05);
+}
+
+/* Responsive Design */
+@media (max-width: 1024px) {
+  .hotel-header {
+    flex-direction: column;
+  }
+
+  .hotel-pricing {
+    text-align: left;
+    width: 100%;
+  }
+
+  .action-buttons {
+    justify-content: flex-start;
+  }
+
+  .gallery-grid {
+    grid-template-columns: 1fr 1fr;
+    grid-template-rows: repeat(3, 280px);
+  }
+
+  .main-image {
+    grid-row: 1 / 2;
+    grid-column: 1 / 3;
+  }
+
+  .image-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+@media (max-width: 768px) {
+  .hotel-name-details {
+    font-size: 24px;
+  }
+
+  .price {
+    font-size: 28px;
+  }
+
+  .gallery-grid {
+    grid-template-columns: 1fr;
+    grid-template-rows: repeat(5, 240px);
+  }
+
+  .main-image {
+    grid-row: 1 / 2;
+    grid-column: 1;
+  }
+
+  .image-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .highlights-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .facilities-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .highlights-section,
+  .facilities-section,
+  .about-section,
+  .landmarks-section {
+    padding: 15px;
+    margin-bottom: 20px;
+  }
+}

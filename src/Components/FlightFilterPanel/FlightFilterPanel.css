@@ -1,0 +1,20 @@
+.flight-filter-panel {
+  width: 100%;
+  font-size: 14px;
+}
+
+.flight-filter-panel h6 {
+  color: #333;
+}
+
+.flight-filter-panel .form-check {
+  margin-bottom: 4px;
+}
+
+.flight-filter-panel input[type="checkbox"] {
+  cursor: pointer;
+}
+
+.flight-filter-panel label {
+  cursor: pointer;
+}

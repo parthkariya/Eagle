@@ -10,6 +10,8 @@
   align-items: center;
   left: 0;
 }
+
+
 .logoimg {
   height: 100px;
   width: 150px;
@@ -315,7 +317,7 @@
     width: 100% !important;
   }
   .menubtn {
-    margin-right: 1.5rem;
+    /* margin-right: 1.2rem; */
     background-color: transparent;
   }
   .mobileMenu {

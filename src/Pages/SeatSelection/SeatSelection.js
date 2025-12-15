@@ -18,6 +18,7 @@ import { Link, useLocation, useNavigate } from "react-router-dom";
 import {
   ACCEPT_HEADER,
   bookseat,
+  get_booking,
   getRouteMiddleCitySequence,
   Payment_Api,
   seararrangementdetails,
@@ -113,6 +114,8 @@ const SeatSelection = () => {
   const [login, SetLogin] = useState("");
   const [timeLeft, setTimeLeft] = useState(null);
   const [paymentData, setPaymentData] = useState(null);
+  const [bookingapi, setBookingApi] = useState([]);
+  const [bookingapiload, setBookingApiLoad] = useState(false);
 
   const navigate = useNavigate();
 
@@ -141,6 +144,7 @@ const SeatSelection = () => {
     var user = localStorage.getItem("is_user");
     setUser(JSON.parse(user));
     GetmiddleCityroute();
+    BookingApi();
   }, []);
 
   const validatePassengerDetails = () => {
@@ -598,6 +602,7 @@ const SeatSelection = () => {
 
   const [seats, setSeats] = useState(generateSeats());
   const [selected, setSelected] = useState([]);
+
   const [totalPrice, setTotalPrice] = useState(0);
 
   useEffect(() => {
@@ -688,7 +693,7 @@ const SeatSelection = () => {
     );
 
     const seats = [];
-    const price = 521; // Default price from seats_data, adjust as needed
+    const price = 0; // Default price from seats_data, adjust as needed
 
     const seatsByRow = {};
     filteredSeats.forEach((seat) => {
@@ -979,14 +984,21 @@ const SeatSelection = () => {
 
           <div className="seat-details">
             <h5>Seat details</h5>
-            {selected.length > 0 && (
+            {selectedSeats.length > 0 && (
               <>
-                <span>Total Seat : {selected.length}</span>
-                <div className="seat-numbers">
-                  <div className="seat-badge">
-                    Seat No. {selected.map((item) => item.number).join(", ")}
-                  </div>
-                </div>
+                <span>Total Seat : {selectedSeats.length}</span>
+                {selectedSeats.map((seat, index) => {
+                  return (
+                    <>
+                      <div className="seat-numbers">
+                        <div className="seat-badge">
+                          Seat No. {seat.seatNo}
+                          {/* {selected.map((item) => item.number).join(", ")} */}
+                        </div>
+                      </div>
+                    </>
+                  );
+                })}
               </>
             )}
           </div>
@@ -994,6 +1006,179 @@ const SeatSelection = () => {
       </div>
     );
   };
+
+  function logout() {
+    localStorage.clear();
+    navigate("/");
+    window.location.reload(false);
+  }
+
+  const BookingApi = async () => {
+    const token = JSON.parse(localStorage.getItem("is_token"));
+    setBookingApiLoad(true);
+    try {
+      const res = await axios.get(get_booking, {
+        headers: {
+          Accept: ACCEPT_HEADER,
+          Authorization: `Bearer ${token}`,
+        },
+      });
+      if (res.data.success === 1) {
+        setBookingApi(res.data.data);
+        setBookingApiLoad(false);
+      } else if (res.data.status === "Token is Expired") {
+        logout();
+        setBookingApiLoad(false);
+        console.log("Get BOoking Api", res.data.message);
+      } else {
+        setBookingApiLoad(false);
+      }
+    } catch (error) {
+      console.log("Error", error);
+      setBookingApiLoad(false);
+    }
+  };
+
+  const [selectedMembers, setSelectedMembers] = useState([]);
+
+  const renderMemberCard = (member) => {
+    const memberId = member.id; // ✅ unique from API
+    const isSelected = selectedMembers.some(
+      (selected) => selected.id === memberId
+    );
+
+    const handleMemberSelect = (e) => {
+      e.preventDefault();
+      e.stopPropagation();
+
+      if (isSelected) {
+        // ✅ remove if already selected
+        setSelectedMembers((prev) =>
+          prev.filter((selected) => selected.id !== memberId)
+        );
+      } else {
+        // ✅ check max selection limit
+        if (selectedMembers.length < selectedSeats.length) {
+          setSelectedMembers((prev) => [
+            ...prev,
+            {
+              id: memberId,
+              ...member,
+            },
+          ]);
+        } else if (selectedMembers.length < selected.length) {
+          setSelectedMembers((prev) => [
+            ...prev,
+            {
+              id: memberId,
+              ...member,
+            },
+          ]);
+        } else {
+          alert(`You can select maximum ${selectedSeats.length} members.`);
+        }
+      }
+    };
+
+    return (
+      <div
+        key={memberId}
+        className={`member-card ${isSelected ? "selected-member" : ""}`}
+        onClick={handleMemberSelect}
+        style={{
+          cursor: "pointer",
+          borderColor: isSelected ? "red" : "#e0e0e0",
+        }}
+      >
+        <div className="member-name">
+          {member.first_name} {member.last_name}
+        </div>
+
+        <div className="member-info-row">
+          <span
+            className={`gender-badge ${
+              member.gender === 1
+                ? "gender-male"
+                : member.gender === 2
+                ? "gender-female"
+                : "gender-other"
+            }`}
+          >
+            {member.gender === 1
+              ? "Male"
+              : member.gender === 2
+              ? "Female"
+              : "Other"}
+          </span>
+          <span className="age-badge">Age: {member.age ?? "N/A"}</span>
+        </div>
+      </div>
+    );
+  };
+
+  const renderBookingContent = () => {
+    if (!bookingapi || bookingapi.length === 0) {
+      return <div className="no-data-message">No bookings found</div>;
+    }
+
+    const memberCards = [];
+    let hasMember = false;
+
+    // ✅ uniqueness track karva mate
+    const seen = new Set();
+
+    bookingapi.forEach((booking) => {
+      if (booking.child && booking.child.length > 0) {
+        hasMember = true;
+        booking.child.forEach((member) => {
+          const key = `${member.first_name}-${member.last_name}-${member.age}-${member.gender}`;
+
+          if (!seen.has(key)) {
+            seen.add(key);
+            memberCards.push(renderMemberCard(member));
+          }
+        });
+      }
+    });
+
+    if (!hasMember) {
+      return (
+        <div className="no-data-message">No members found in bookings</div>
+      );
+    }
+
+    return memberCards;
+  };
+
+  useEffect(() => {
+    setPassengerDetails((prevDetails) =>
+      prevDetails.map((p, index) => {
+        const member = selectedMembers[index]; // assign by order
+        if (!member) {
+          // ❌ no member for this seat → clear it
+          return {
+            ...p,
+            name: "",
+            age: "",
+            gender: p.userGender || "",
+          };
+        }
+
+        // ✅ member exists → fill values
+        return {
+          ...p,
+          name: `${member.first_name} ${member.last_name}`,
+          age: member.age,
+          gender:
+            member.gender === 1
+              ? "male"
+              : member.gender === 2
+              ? "female"
+              : "other",
+        };
+      })
+    );
+  }, [selectedMembers, selectedSeats]);
 
   return (
     <>
@@ -1403,6 +1588,17 @@ const SeatSelection = () => {
                                 />
                               </div>
                             </div>
+
+                            <div className="sheet-expanded-content">
+                              <div className="form-section">
+                                <h4>Previously Booked Members</h4>
+
+                                <div className="members-container">
+                                  {renderBookingContent()}
+                                </div>
+                              </div>
+                            </div>
+
                             <div className="sheet-expanded-content">
                               <div className="form-section">
                                 <h4>Passenger details</h4>

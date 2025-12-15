@@ -33,7 +33,6 @@ import {
   get_recent_search,
   recent_search,
 } from "../../Utils/Constant";
-// import { image } from "html2canvas/dist/types/css/types/image";
 
 const HeroTicketBooking = () => {
   const [selected, setSelected] = useState(0);

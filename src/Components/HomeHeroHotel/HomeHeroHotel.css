@@ -1,0 +1,315 @@
+.hotel-card {
+  width: 100%;
+  max-width: 1240px;
+  margin: 40px auto;
+  font-family: "Inter", sans-serif;
+}
+
+.hotel-card-inner {
+  display: flex;
+  gap: 0;
+  background: white;
+  border-radius: 8px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+  overflow: hidden;
+}
+
+/* Image Carousel Section */
+.hotel-image-section {
+  flex: 0 0 320px;
+  height: 300px;
+  position: relative;
+  overflow: hidden;
+}
+
+/* Swiper Styles */
+.hotel-swiper {
+  width: 100%;
+  height: 100%;
+}
+
+.hotel-swiper .swiper-slide {
+  width: 100%;
+  height: 100%;
+}
+
+.hotel-swiper .swiper-slide img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+  border-radius: 8px 0 0 8px;
+}
+
+/* Swiper Navigation Buttons */
+.hotel-swiper .swiper-button-next,
+.hotel-swiper .swiper-button-prev {
+  background: rgba(0, 0, 0, 0.4);
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  color: white;
+}
+
+.hotel-swiper .swiper-button-next:after,
+.hotel-swiper .swiper-button-prev:after {
+  font-size: 14px;
+  font-weight: bold;
+}
+
+.hotel-swiper .swiper-button-next:hover,
+.hotel-swiper .swiper-button-prev:hover {
+  background: rgba(0, 0, 0, 0.6);
+}
+
+/* Swiper Pagination */
+.hotel-swiper .swiper-pagination {
+  bottom: 12px;
+}
+
+.hotel-swiper .swiper-pagination-bullet {
+  width: 8px;
+  height: 8px;
+  background: rgba(255, 255, 255, 0.5);
+  opacity: 1;
+}
+
+.hotel-swiper .swiper-pagination-bullet-active {
+  background: white;
+}
+
+/* Hotel Details Container */
+.hotel-details-container {
+  flex: 1;
+  display: flex;
+  padding: 0;
+}
+
+/* Left Column: Info and Comparison Deals */
+.info-and-comparison-column {
+  flex: 1;
+  padding: 20px 20px 20px 20px;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+}
+
+.hotel-info {
+  flex-grow: 0;
+}
+
+.hotel-name {
+  font-size: 20px;
+  font-weight: 600;
+  color: #1a1a1a;
+  margin: 0 0 4px 0;
+  line-height: 1.3;
+}
+
+.hotel-location {
+  color: #666;
+  font-size: 14px;
+  margin: 0 0 12px 0;
+}
+
+/* Rating Container */
+.rating-container {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-top: 10px;
+}
+
+.rating-badge {
+  background: #0a8c4e;
+  color: white;
+  padding: 4px 8px;
+  border-radius: 4px;
+  font-weight: 600;
+  font-size: 14px;
+}
+
+.rating-text {
+  color: #333;
+  font-size: 14px;
+}
+
+.stars {
+  color: #333;
+  font-size: 14px;
+  letter-spacing: 1px;
+}
+
+/* Comparison Deals List */
+.other-deals-list {
+  margin-top: 20px;
+  padding-top: 20px;
+  border-top: 1px solid #eee;
+  flex-grow: 0;
+}
+
+.deal-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 8px 0;
+}
+
+.deal-info {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+
+.deal-provider-logo {
+  font-weight: 600;
+  font-size: 14px;
+  padding: 2px 4px;
+  border-radius: 3px;
+}
+
+.provider-expedia {
+  color: #0a8c4e;
+}
+
+.provider-hotelscom {
+  color: #d41c5c;
+}
+
+.deal-breakfast {
+  color: #666;
+  font-size: 14px;
+}
+
+.deal-price-text {
+  font-size: 18px;
+  font-weight: 600;
+  color: #1a1a1a;
+}
+
+/* Right Column: Main Agoda Price Deal */
+.agoda-price-column {
+  width: 200px;
+  padding: 20px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  border-left: 1px solid #eee;
+}
+
+.discount-badge {
+  background: #d4f4dd;
+  color: #0a8c4e;
+  padding: 6px 12px;
+  border-radius: 4px;
+  font-size: 13px;
+  font-weight: 500;
+  margin-bottom: 20px;
+}
+
+.price-container {
+  text-align: right;
+  width: 100%;
+}
+
+.provider-logo {
+  font-weight: 600;
+  color: #d41c5c;
+  margin-bottom: 8px;
+  font-size: 18px;
+}
+
+.provider-logo::after {
+  content: "●●●●●";
+  display: block;
+  font-size: 8px;
+  letter-spacing: 2px;
+  color: #d41c5c;
+}
+
+.price {
+  display: flex;
+  align-items: flex-start;
+  justify-content: flex-end;
+  margin-bottom: 8px;
+}
+
+.currency {
+  font-size: 20px;
+  font-weight: 500;
+  color: #1a1a1a;
+  margin-right: 2px;
+}
+
+.amount {
+  font-size: 32px;
+  font-weight: 700;
+  color: #1a1a1a;
+  line-height: 1;
+}
+
+.breakfast-info {
+  color: #0a8c4e;
+  font-size: 13px;
+  margin-bottom: 16px;
+  font-weight: 500;
+}
+
+.view-deal-btn {
+  background: #ff5722;
+  color: white;
+  border: none;
+
+  border-radius: 4px;
+  font-size: 16px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 0.2s;
+  width: 100%;
+}
+
+.view-deal-btn:hover {
+  background: #f4511e;
+}
+
+/* Responsive Design */
+@media (max-width: 950px) {
+  .hotel-card-inner {
+    flex-direction: column;
+  }
+
+  .hotel-image-section {
+    flex: 0 0 250px;
+    height: 250px;
+    width: 100%;
+  }
+
+  .hotel-swiper .swiper-slide img {
+    border-radius: 8px 8px 0 0;
+  }
+
+  .hotel-details-container {
+    flex-direction: column;
+  }
+
+  .info-and-comparison-column {
+    border-bottom: 1px solid #eee;
+  }
+
+  .agoda-price-column {
+    width: 100%;
+    align-items: flex-start;
+    border-left: none;
+    padding: 20px;
+  }
+
+  .price-container {
+    text-align: left;
+    width: 100%;
+  }
+
+  .price {
+    justify-content: flex-start;
+  }
+}

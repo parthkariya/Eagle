@@ -23,7 +23,9 @@ import {
   bookseatdetails,
   canceldetails,
   confirmCancellationUrl,
+  get_all_flights_booking,
   get_booking,
+  get_combineflight_Booking,
   get_flight_Booking,
   TicketStatus,
   verifyCall,
@@ -63,6 +65,7 @@ const DashBoard = () => {
   const [confirmationModalOpen, setConfirmationModalOpen] = useState(false);
   const [selectedPNR, setSelectedPNR] = useState(null);
   const [selectedIndex, setSelectedIndex] = useState(null);
+  const [visibleCount, setVisibleCount] = useState(10);
 
   const location = useLocation();
   const captureRef = useRef(null);
@@ -136,20 +139,6 @@ const DashBoard = () => {
     );
   };
 
-  const handleFromDateChange = (date) => {
-    if (date) {
-      const formattedDate = dayjs(date);
-      setFromDate(formattedDate);
-      setToDate(null);
-    } else {
-      setFromDate(null);
-    }
-  };
-
-  const handleFromDateChange2 = (date) => {
-    setDepartureFromDate(date);
-    setDepartureToDate(null);
-  };
 
   function logout() {
     localStorage.clear();
@@ -157,26 +146,6 @@ const DashBoard = () => {
     window.location.reload(false);
   }
 
-  const handleToDateChange = (date) => {
-    if (date) {
-      const formattedDate = dayjs(date); // Ensure it's a dayjs object
-      setToDate(formattedDate);
-    } else setToDate(null);
-  };
-
-  const handleToDateChange2 = (date) => {
-    setDepartureToDate(date);
-  };
-
-  const handleReset = () => {
-    setFromDate(null);
-    setToDate(null);
-    setDepartureFromDate(null);
-    setDepartureToDate(null);
-    setDep("");
-    setArr("");
-    SetbookingDataFilter(getBookingData); // Reset to original data
-  };
 
   const openModal = () => setIsOpen(true);
   const closeModal = () => setIsOpen(false);
@@ -209,9 +178,6 @@ const DashBoard = () => {
       });
   };
 
-  const disabledDate2 = (current) => {
-    return current && current > dayjs().endOf("day");
-  };
 
   const [modalWidth, setModalWidth] = useState(
     window.innerWidth <= 600 ? "90vw" : "80vw"
@@ -230,7 +196,8 @@ const DashBoard = () => {
     var getcondition = localStorage.getItem("getConditionnn");
     setCondi(getcondition);
     GetBooking();
-    GetFlightBooking();
+    // GetFlightBooking();
+    GetAllFlightBookings();
     window.scroll(0, 0);
   }, []);
 
@@ -294,6 +261,142 @@ const DashBoard = () => {
       });
   };
 
+
+  const GetAllFlightBookings = async () => {
+    setFlightLoading(true);
+    const token = JSON.parse(localStorage.getItem("is_token"));
+
+    try {
+      const res = await axios.get(get_all_flights_booking, {
+        headers: {
+          Accept: ACCEPT_HEADER,
+          Authorization: "Bearer " + token,
+        },
+      });
+
+      if (res.data.success === 1) {
+        const raw = res.data.data; // array of bookings
+
+        // ---- NORMALISE -------------------------------------------------
+        const normalised = raw.map((item) => {
+          // 1. TravClan – already has the deep structure
+          if (item.booking_type === "trav_clan_booking") {
+            return {
+              booking_code: item.booking_code,
+              response_data: item.response_data,
+            };
+          }
+
+          // 2. AirIQ – flat fields → build a *fake* response_data
+          // Inside GetAllFlightBookings → AirIQ normalization
+          if (item.booking_type === "air_iq_booking") {
+            // ---------- 1. Build a *complete* fake results object ----------
+            const fakeResults = {
+              // ALWAYS an array – even if empty
+              itineraryItems: [
+                {
+                  itemCode: `airiq-${item.id}`,
+                  itemFlight: {
+                    airlineName: item.airline_name || "Unknown Airline",
+                    flightNumber: (item.airline_code || "").split(" ").pop() || "",
+                    departureAt: `${item.departure_date}T${item.departure_time}.000Z`,
+                    arrivalAt: `${item.arrival_date}T${item.arrival_time}.000Z`,
+                    fareIdentifier: { name: "Economy" },
+                    stopCount: { stops: item.stop || 0 },
+                    isRefundable: !!item.is_refundable,
+                    segments: [
+                      [
+                        {
+                          or: {
+                            aC: item.departure_city || "",
+                            aN: "", // you can add airport name later
+                            dT: `${item.departure_date}T${item.departure_time}`, // ← CRITICAL
+                          },
+                          ds: {
+                            aC: item.arrival_city || "",
+                            aN: "",
+                            aT: `${item.arrival_date}T${item.arrival_time}`,     // ← CRITICAL
+                          },
+                          bg: item.total_baggage || "Reconfirm with Airline",
+                          cBg: item.total_baggage || "Reconfirm with Airline",
+                        },
+                      ],
+                    ],
+                    // ---- fake fareQuote so GST/YR works (optional) ----
+                    fareQuote: {
+                      paxFareBreakUp: [
+                        {
+                          gst: Math.round((Number(item.taxes_and_others) || 0) * 0.05),
+                          yrTax: 0,
+                        },
+                      ],
+                    },
+                    // ---- fake fare rule (optional) ----
+                    fareRule: [
+                      {
+                        fareRuleDetail:
+                          "<p>Cancellation / change policy as per airline. Contact support for details.</p>",
+                      },
+                    ],
+                  },
+                },
+              ],
+
+              // ---------- 2. Passengers ----------
+              passengers: (item.child || []).map((c) => ({
+                title: c.gender === 1 ? "Mr" : "Ms",
+                firstName: c.first_name || "",
+                lastName: c.last_name || "",
+                gender: c.gender,
+                email: c.email || "",
+                contactNumber: c.phone_no || "",
+                cellCountryCode: "91",
+                nationality: "IN",
+                passportNumber: c.passport_no || "",
+                passportExpiry: c.passport_expiry_date || "",
+                dateOfBirth: c.dob || "",
+              })),
+
+              // ---------- 3. Pricing ----------
+              totalAmount: Number(item.total_amount || 0),
+              baseFare: Number(item.base_fare || 0),
+              taxAndSurcharge: Number(item.taxes_and_others || 0),
+            };
+
+            // ---------- 4. Return the normalised object ----------
+            return {
+              booking_code: item.booking_id || `AIRIQ-${item.id}`,
+              response_data: {
+                booking_details: {
+                  flight_itinerary: {
+                    responseData: { results: fakeResults }, // <-- THIS IS CRUCIAL
+                  },
+                  bookingStatus: "CONFIRMED",
+                },
+              },
+              // keep original flat fields if you need them elsewhere
+              ...item,
+            };
+          }
+
+          // fallback – unknown provider
+          return {
+            booking_code: item.booking_code || item.booking_id || `UNKNOWN-${item.id}`,
+          };
+        });
+
+        setFlightData(normalised);
+        SetbookingDataFilter(normalised);
+      } else if (res.data.status === "Token is Expired") {
+        logout();
+      }
+    } catch (err) {
+      console.error("get_all_flights_booking error", err);
+    } finally {
+      setFlightLoading(false);
+    }
+  };
+
   const filterBookings = (data, type) => {
     const now = new Date();
 
@@ -330,23 +433,6 @@ const DashBoard = () => {
     setFilteredBookingData(filtered);
   };
 
-  const busBookings = (data, type) => {
-    const now = new Date();
-
-    const filtered = data.filter((item) => {
-      const departureDateTime = new Date(
-        `${item.departure_date}T${item.departure_time}`
-      );
-      if (type === "upcoming") {
-        return departureDateTime >= now;
-      } else if (type === "completed") {
-        return departureDateTime < now;
-      }
-      return true;
-    });
-
-    setFilteredBookingData(filtered);
-  };
 
   const handleTabChange = (type) => {
     setSelectedTab(type);
@@ -375,40 +461,7 @@ const DashBoard = () => {
     filterBookingsBus(booking_data, selectedTab);
   }, [getBookingData]);
 
-  const filterFlights = () => {
-    const filteredData = getBookingData.filter((item) => {
-      const matchesDeparture = dep
-        ? item.departure_city.toLowerCase().includes(dep.toLowerCase())
-        : true;
-      const matchesArrival = arr
-        ? item.arrival_city.toLowerCase().includes(arr.toLowerCase())
-        : true;
 
-      const itemBookingDate = moment(item?.updated_at).format("YYYY-MM-DD");
-
-      let matchesBookingFrom = true;
-      let matchesBookingTo = true;
-
-      if (fromDate) {
-        const fromTimestamp = dayjs(fromDate).format("YYYY-MM-DD");
-        matchesBookingFrom = fromTimestamp <= itemBookingDate;
-      }
-
-      if (toDate) {
-        const toTimestamp = dayjs(toDate).format("YYYY-MM-DD");
-        matchesBookingTo = toTimestamp >= itemBookingDate;
-      }
-
-      return (
-        matchesDeparture &&
-        matchesArrival &&
-        matchesBookingFrom &&
-        matchesBookingTo
-      );
-    });
-
-    SetbookingDataFilter(filteredData);
-  };
 
   const handleViewBookingBus = async (pnr) => {
     const formdata = new FormData();
@@ -428,8 +481,6 @@ const DashBoard = () => {
       }
     }
   };
-
-  console.log("ticket_statusDATO", ticket_status);
 
   const handleCancelBookingDetails = async (pnr) => {
     setConfirmationModalOpen(true);
@@ -468,6 +519,12 @@ const DashBoard = () => {
 
   const handleCloseModal = () => {
     setSelectedBooking(null);
+  };
+
+  const formatFlightTime = (dateString) => {
+    // remove ".000Z" if present
+    const cleanDate = dateString.replace(".000Z", "");
+    return moment(cleanDate).format("hh:mm A");
   };
 
   return (
@@ -512,7 +569,7 @@ const DashBoard = () => {
                 </header>
 
                 <div className="flights-list">
-                  {flightdata.map((flight) => {
+                  {flightdata.slice(0, visibleCount).map((flight) => {
                     const {
                       booking_code,
                       response_data: {
@@ -526,6 +583,7 @@ const DashBoard = () => {
                     } = flight;
 
                     const { itineraryItems } = results;
+
                     const departureSegment =
                       itineraryItems[0].itemFlight.segments[0][0];
                     const flightInfo = itineraryItems[0].itemFlight;
@@ -599,13 +657,15 @@ const DashBoard = () => {
                           <div className="route-segment">
                             <div className="location-block departure">
                               <div className="time">
-                                {new Date(
+                                {/* {new Date(
                                   flightInfo.departureAt
-                                ).toLocaleTimeString("en-US", {
+                                ).toLocaleTimeString("en-IN", {
                                   hour: "2-digit",
                                   minute: "2-digit",
-                                  hour12: false,
-                                })}
+                                  hour12: true,
+                                })} */}
+
+                                {formatFlightTime(flightInfo.departureAt)}
                               </div>
                               <div className="airport">
                                 <span className="airport-code">
@@ -620,8 +680,22 @@ const DashBoard = () => {
                             <div className="route-connector">
                               <div className="flight-info-line">
                                 <div className="duration">
-                                  {Math.floor(departureSegment.dr / 60)}h{" "}
-                                  {departureSegment.dr % 60}m
+                                  {(() => {
+                                    const departure = moment(
+                                      departureSegment?.or?.dT
+                                    );
+                                    const arrival = moment(
+                                      departureSegment?.ds?.aT
+                                    );
+
+                                    // total minutes
+                                    const totalMinutes = arrival.diff(
+                                      departure,
+                                      "minutes"
+                                    );
+
+                                    return `${Math.floor(totalMinutes / 60)}h ${totalMinutes % 60}m`;
+                                  })()}
                                 </div>
                                 <div className="route-line">
                                   <div className="line-dot"></div>
@@ -634,7 +708,7 @@ const DashBoard = () => {
                                     >
                                       <path
                                         fill="currentColor"
-                                        d="M20.56 3.44c.59-.59.59-1.54 0-2.12s-1.54-.59-2.12 0L12 7.76 5.56 1.32c-.59-.59-1.54-.59-2.12 0s-.59 1.54 0 2.12L9.88 9.88 3.44 16.32c-.59.59-.59 1.54 0 2.12.3.3.68.44 1.06.44s.77-.15 1.06-.44L12 12l6.44 6.44c.3.3.68.44 1.06.44s.77-.15 1.06-.44c.59-.59.59-1.54 0-2.12l-6.44-6.44 6.44-6.44z"
+                                        d="M21 16v-2l-8-5V3.5c0-.83-.67-1.5-1.5-1.5S10 2.67 10 3.5V9l-8 5v2l8-2.5V19l-2 1.5V22l3.5-1 3.5 1v-1.5L13 19v-5.5l8 2.5z"
                                       />
                                     </svg>
                                   </div>
@@ -644,30 +718,30 @@ const DashBoard = () => {
                                 <div className="stops">
                                   {flightInfo.stopCount.stops === 0
                                     ? "Direct"
-                                    : `${flightInfo.stopCount.stops} stop${
-                                        flightInfo.stopCount.stops > 1
-                                          ? "s"
-                                          : ""
-                                      }`}
+                                    : `${flightInfo.stopCount.stops} stop${flightInfo.stopCount.stops > 1
+                                      ? "s"
+                                      : ""
+                                    }`}
                                 </div>
                               </div>
                             </div>
 
                             <div className="location-block arrival">
                               <div className="time">
-                                {new Date(
+                                {/* {new Date(
                                   flightInfo.arrivalAt
                                 ).toLocaleTimeString("en-US", {
                                   hour: "2-digit",
                                   minute: "2-digit",
-                                  hour12: false,
-                                })}
+                                  hour12: true,
+                                })} */}
+                                {formatFlightTime(flightInfo.arrivalAt)}
                               </div>
                               <div className="airport">
                                 <span className="airport-code">
                                   {departureSegment.ds.aC}
                                 </span>
-                                <span className="airport-name">
+                                <span className="airport-name text-end">
                                   {departureSegment.ds.aN}
                                 </span>
                               </div>
@@ -675,14 +749,16 @@ const DashBoard = () => {
                           </div>
 
                           <div className="flight-date">
-                            {new Date(
-                              flightInfo.departureAt
-                            ).toLocaleDateString("en-US", {
-                              weekday: "long",
-                              year: "numeric",
-                              month: "long",
-                              day: "numeric",
-                            })}
+                            {(() => {
+                              const date = new Date(flightInfo.departureAt);
+                              return date.toLocaleDateString("en-US", {
+                                weekday: "long",
+                                year: "numeric",
+                                month: "long",
+                                day: "numeric",
+                                timeZone: "UTC", // ← CRITICAL: Treat as UTC
+                              });
+                            })()}
                           </div>
                         </div>
 
@@ -704,11 +780,10 @@ const DashBoard = () => {
                             <div className="detail-group">
                               <span className="detail-key">Refund</span>
                               <span
-                                className={`detail-value ${
-                                  flightInfo.isRefundable
-                                    ? "refundable"
-                                    : "non-refundable"
-                                }`}
+                                className={`detail-value ${flightInfo.isRefundable
+                                  ? "refundable"
+                                  : "non-refundable"
+                                  }`}
                               >
                                 {flightInfo.isRefundable ? "Yes" : "No"}
                               </span>
@@ -728,6 +803,17 @@ const DashBoard = () => {
                       </article>
                     );
                   })}
+
+                  {visibleCount < flightdata.length && (
+                    <div className="d-flex align-items-center">
+                      <button
+                        className="subsbtn"
+                        onClick={() => setVisibleCount((prev) => prev + 10)}
+                      >
+                        Show More
+                      </button>
+                    </div>
+                  )}
 
                   {flightdata.length === 0 && (
                     <div className="empty-flights">
@@ -771,14 +857,15 @@ const DashBoard = () => {
                       },
                     } = selectedBooking;
 
+                    // ---- SAFE DESTRUCTURING ----
+                    const resultsSafe = results || {};
                     const {
-                      itineraryItems,
-                      passengers,
-                      totalAmount,
-                      baseFare,
-                      taxAndSurcharge,
-                    } = results;
-
+                      itineraryItems = [],
+                      passengers = [],
+                      totalAmount = 0,
+                      baseFare = 0,
+                      taxAndSurcharge = 0,
+                    } = resultsSafe;
                     const bookingStatus =
                       selectedBooking?.response_data?.booking_details
                         ?.bookingStatus || "";
@@ -868,9 +955,9 @@ const DashBoard = () => {
                               <h2>Flight Information</h2>
                             </div>
 
-                            {itineraryItems.map((item, index) => (
+                            {(itineraryItems || []).map((item, index) => (
                               <div key={item.itemCode} className="flight-card">
-                                <div className="flight-header">
+                                <div className="flight-header flight_header_dash__modal">
                                   <div className="airline-info">
                                     <span className="airline-name">
                                       {item.itemFlight.airlineName}
@@ -891,12 +978,15 @@ const DashBoard = () => {
                                     </div>
                                     <div className="datetime">
                                       <div className="time">
-                                        {new Date(
-                                          item.itemFlight.departureAt
-                                        ).toLocaleTimeString("en-US", {
-                                          hour: "2-digit",
-                                          minute: "2-digit",
-                                        })}
+                                        {(() => {
+                                          const date = new Date(item.itemFlight.departureAt);
+                                          return date.toLocaleTimeString("en-US", {
+                                            hour: "2-digit",
+                                            minute: "2-digit",
+                                            hour12: false,
+                                            timeZone: "UTC", // ← Show time as per UTC (same as API)
+                                          });
+                                        })()}
                                       </div>
                                       <div className="date">
                                         {new Date(
@@ -911,11 +1001,14 @@ const DashBoard = () => {
 
                                   <div className="route-line">
                                     <div className="duration-badge">
-                                      {Math.floor(
-                                        item.itemFlight.segments[0][0].dr / 60
-                                      )}
-                                      h {item.itemFlight.segments[0][0].dr % 60}
-                                      m
+                                      {(() => {
+                                        const dep = moment(item.itemFlight.departureAt);
+                                        const arr = moment(item.itemFlight.arrivalAt);
+                                        const totalMinutes = arr.diff(dep, "minutes");
+                                        const hours = Math.floor(totalMinutes / 60);
+                                        const minutes = totalMinutes % 60;
+                                        return `${hours}h ${minutes}m`;
+                                      })()}
                                     </div>
                                     <div className="line-graphic">
                                       <div className="line"></div>
@@ -933,13 +1026,11 @@ const DashBoard = () => {
                                     <div className="stops-info">
                                       {item.itemFlight.stopCount.stops === 0
                                         ? "Direct"
-                                        : `${
-                                            item.itemFlight.stopCount.stops
-                                          } stop${
-                                            item.itemFlight.stopCount.stops > 1
-                                              ? "s"
-                                              : ""
-                                          }`}
+                                        : `${item.itemFlight.stopCount.stops
+                                        } stop${item.itemFlight.stopCount.stops > 1
+                                          ? "s"
+                                          : ""
+                                        }`}
                                     </div>
                                   </div>
 
@@ -949,12 +1040,15 @@ const DashBoard = () => {
                                     </div>
                                     <div className="datetime">
                                       <div className="time">
-                                        {new Date(
-                                          item.itemFlight.arrivalAt
-                                        ).toLocaleTimeString("en-US", {
-                                          hour: "2-digit",
-                                          minute: "2-digit",
-                                        })}
+                                        {(() => {
+                                          const date = new Date(item.itemFlight.arrivalAt);  // ← arrivalAt
+                                          return date.toLocaleTimeString("en-US", {
+                                            hour: "2-digit",
+                                            minute: "2-digit",
+                                            hour12: false,
+                                            timeZone: "UTC"
+                                          });
+                                        })()}
                                       </div>
                                       <div className="date">
                                         {new Date(
@@ -970,35 +1064,24 @@ const DashBoard = () => {
 
                                 <div className="flight-details-grid">
                                   <div className="detail-item">
-                                    <span className="detail-label">
-                                      Baggage
-                                    </span>
+                                    <span className="detail-label">Baggage</span>
                                     <span className="detail-value">
-                                      {item.itemFlight.segments[0][0].bg}
+                                      {item.itemFlight.segments?.[0]?.[0]?.bg || "Reconfirm with Airline"}
                                     </span>
                                   </div>
                                   <div className="detail-item">
-                                    <span className="detail-label">
-                                      Cabin Bag
-                                    </span>
+                                    <span className="detail-label">Cabin Bag</span>
                                     <span className="detail-value">
-                                      {item.itemFlight.segments[0][0].cBg}
+                                      {item.itemFlight.segments?.[0]?.[0]?.cBg || "Reconfirm with Airline"}
                                     </span>
                                   </div>
                                   <div className="detail-item">
-                                    <span className="detail-label">
-                                      Refundable
-                                    </span>
+                                    <span className="detail-label">Refundable</span>
                                     <span
-                                      className={`detail-value ${
-                                        item.itemFlight.isRefundable
-                                          ? "refundable"
-                                          : "non-refundable"
-                                      }`}
+                                      className={`detail-value ${item.itemFlight.isRefundable ? "refundable" : "non-refundable"
+                                        }`}
                                     >
-                                      {item.itemFlight.isRefundable
-                                        ? "Yes"
-                                        : "No"}
+                                      {item.itemFlight.isRefundable ? "Yes" : "No"}
                                     </span>
                                   </div>
                                 </div>
@@ -1006,6 +1089,7 @@ const DashBoard = () => {
                             ))}
                           </section>
 
+                          {/* Pricing Breakdown */}
                           {/* Pricing Breakdown */}
                           <section className="content-section">
                             <div className="section-title">
@@ -1016,35 +1100,36 @@ const DashBoard = () => {
                               <div className="price-row">
                                 <span className="price-label">Base Fare</span>
                                 <span className="price-amount">
-                                  ₹{baseFare.toLocaleString()}
+                                  ₹{baseFare?.toLocaleString() || "0"}
                                 </span>
                               </div>
                               <div className="price-row">
-                                <span className="price-label">
-                                  Taxes & Fees
-                                </span>
+                                <span className="price-label">Taxes & Fees</span>
                                 <span className="price-amount">
-                                  ₹{taxAndSurcharge.toLocaleString()}
+                                  ₹{taxAndSurcharge?.toLocaleString() || "0"}
                                 </span>
                               </div>
-                              <div className="tax-breakdown">
-                                <div className="tax-item">
-                                  <span>
-                                    GST: ₹
-                                    {itineraryItems[0].itemFlight.fareQuote.paxFareBreakUp[0].gst.toLocaleString()}
-                                  </span>
-                                  <span>
-                                    YR Tax: ₹
-                                    {itineraryItems[0].itemFlight.fareQuote.paxFareBreakUp[0].yrTax.toLocaleString()}
-                                  </span>
+
+                              {/* ---- GST & YR Tax – only show if TravClan (paxFareBreakUp exists) ---- */}
+                              {itineraryItems?.[0]?.itemFlight?.fareQuote?.paxFareBreakUp?.[0] && (
+                                <div className="tax-breakdown">
+                                  <div className="tax-item">
+                                    <span>
+                                      GST: ₹
+                                      {itineraryItems[0].itemFlight.fareQuote.paxFareBreakUp[0].gst.toLocaleString()}
+                                    </span>
+                                    <span>
+                                      YR Tax: ₹
+                                      {itineraryItems[0].itemFlight.fareQuote.paxFareBreakUp[0].yrTax.toLocaleString()}
+                                    </span>
+                                  </div>
                                 </div>
-                              </div>
+                              )}
+
                               <div className="price-total">
-                                <span className="total-label">
-                                  Total Amount
-                                </span>
+                                <span className="total-label">Total Amount</span>
                                 <span className="total-amount">
-                                  ₹{totalAmount.toLocaleString()}
+                                  ₹{totalAmount?.toLocaleString() || "0"}
                                 </span>
                               </div>
                             </div>
@@ -1185,9 +1270,8 @@ const DashBoard = () => {
             <section className="container p-0 bookingsec shadow">
               <div className="tabSec">
                 <div
-                  className={`tabDiv ${
-                    selectedTab === "upcoming" ? "activeTab" : ""
-                  }`}
+                  className={`tabDiv ${selectedTab === "upcoming" ? "activeTab" : ""
+                    }`}
                   onClick={() => handleTabChange("upcoming")}
                 >
                   <div>
@@ -1197,9 +1281,8 @@ const DashBoard = () => {
                 </div>
 
                 <div
-                  className={`tabDiv ${
-                    selectedTab === "CANCELLED" ? "activeTab" : ""
-                  }`}
+                  className={`tabDiv ${selectedTab === "CANCELLED" ? "activeTab" : ""
+                    }`}
                   onClick={() => handleTabChange("CANCELLED")}
                 >
                   <div>
@@ -1209,9 +1292,8 @@ const DashBoard = () => {
                 </div>
 
                 <div
-                  className={`tabDiv ${
-                    selectedTab === "completed" ? "activeTab" : ""
-                  }`}
+                  className={`tabDiv ${selectedTab === "completed" ? "activeTab" : ""
+                    }`}
                   onClick={() => handleTabChange("completed")}
                 >
                   <div>
@@ -1689,12 +1771,12 @@ const DashBoard = () => {
                                                       {item.child[0].last_name}{" "}
                                                       {item.child.length >
                                                         1 && (
-                                                        <span>
-                                                          +
-                                                          {item.child.length -
-                                                            1}
-                                                        </span>
-                                                      )}
+                                                          <span>
+                                                            +
+                                                            {item.child.length -
+                                                              1}
+                                                          </span>
+                                                        )}
                                                     </div>
                                                   </div>
                                                 )}
@@ -1864,7 +1946,7 @@ const DashBoard = () => {
                 <div className="col-12 col-md-6 ">
                   <div
                     className=""
-                    // style={{ borderRight: "2px solid #ddb46b", height: "100%" }}
+                  // style={{ borderRight: "2px solid #ddb46b", height: "100%" }}
                   >
                     <div
                       className="row p-2 gap-2 align-items-center justify-content-around "
@@ -2109,7 +2191,7 @@ const DashBoard = () => {
                       style={{ border: "2px solid #ddb46b" }}
                     >
                       {getModalData?.return_departure_date ===
-                      getModalData?.return_arrival_date ? (
+                        getModalData?.return_arrival_date ? (
                         <div className="row gap-2 p-2 align-items-center justify-content-around">
                           <div className="col-5 text-center fw-bold">Date </div>
                           <div className="col-6 text-center">
@@ -2406,7 +2488,7 @@ const DashBoard = () => {
                             <>
                               <div
                                 className="mt-3"
-                                // style={{ border: "2px solid #ddb46b" }}
+                              // style={{ border: "2px solid #ddb46b" }}
                               >
                                 <div className="booking_details_baggage_head text-center ticket_booking_details_table_border p-2">
                                   Cabin
@@ -2840,7 +2922,7 @@ const DashBoard = () => {
                   <div className="col-12 col-md-6 ">
                     <div
                       className=""
-                      // style={{ borderRight: "2px solid #ddb46b", height: "100%" }}
+                    // style={{ borderRight: "2px solid #ddb46b", height: "100%" }}
                     >
                       <div
                         className="row p-2 gap-2 align-items-center justify-content-around "
@@ -2975,7 +3057,7 @@ const DashBoard = () => {
                         style={{ border: "2px solid #ddb46b" }}
                       >
                         {getModalData?.return_departure_date ===
-                        getModalData?.return_arrival_date ? (
+                          getModalData?.return_arrival_date ? (
                           <div className="row gap-2 p-2 align-items-center justify-content-around">
                             <div className="col-5 text-center fw-bold">
                               Date{" "}
@@ -3264,7 +3346,7 @@ const DashBoard = () => {
                             <>
                               <div
                                 className="mt-3"
-                                // style={{ border: "2px solid #ddb46b" }}
+                              // style={{ border: "2px solid #ddb46b" }}
                               >
                                 <div className="booking_details_baggage_head text-center ticket_booking_details_table_border p-2">
                                   Cabin

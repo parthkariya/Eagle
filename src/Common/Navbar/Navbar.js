@@ -271,7 +271,7 @@ const Navbar = () => {
     // Create JSON object (Raw Data format)
     const params = {
       Username: "9555202202",
-      Password: "1122333",
+      Password: "112233344",
     };
 
     // Call API with JSON data
@@ -378,6 +378,7 @@ const Navbar = () => {
           localStorage.setItem("is_id", JSON.stringify(data.user.id));
           localStorage.setItem("is_user", JSON.stringify(data.user));
           localStorage.setItem("is_role", JSON.stringify(data.user.role));
+          await Login();
           await NewLoginAPi();
           await companyListApi();
           window.location.reload();
@@ -402,6 +403,7 @@ const Navbar = () => {
 
         if (data && data.success == 1) {
           await NewLoginAPi();
+          await Login();
           await companyListApi();
           setIsModalOpen(false);
           setEmail("");
@@ -763,7 +765,15 @@ const Navbar = () => {
   };
 
   return (
-    <div className="container-fluid">
+    <div
+      className="container-fluid"
+      style={{
+        position: "sticky",
+        top: "0px",
+        zIndex: "999",
+        backgroundColor: "var(--color-white)",
+      }}
+    >
       <div className="container containernav">
         <div className="navbarcont">
           {/* Logo */}
