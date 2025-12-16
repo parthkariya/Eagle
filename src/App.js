@@ -39,8 +39,7 @@ function App() {
         <Route path="/ViewBooking" element={<ViewBooking />} />
         <Route path="/ViewBookingBus" element={<ViewBookingBus />} />
         <Route path="/zk" element={<PassengerBooking />} />
-        <Route path="/VD" element={<HotelBookingDetails />} />
-
+        <Route path="/hoteldetails" element={<HotelBookingDetails />} />
         <Route path="/Payment" element={<Payment />} />
         <Route path="/payment-status" element={<PaymentStatus />} />
         <Route path="/payment-status2" element={<PaymentStatus2 />} />

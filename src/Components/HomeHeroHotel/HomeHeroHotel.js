@@ -1,10 +1,12 @@
-import React from "react";
+import React, { useEffect } from "react";
 import { Swiper, SwiperSlide } from "swiper/react";
 import { Navigation, Pagination, Autoplay } from "swiper/modules";
 import "swiper/css";
 import "swiper/css/navigation";
 import "swiper/css/pagination";
 import "./HomeHeroHotel.css";
+import { useHotelContext } from "../../Context/Hotel_context";
+import { useNavigate } from "react-router-dom";
 
 const HomeHeroHotel = () => {
   const hotels = [
@@ -64,14 +66,39 @@ const HomeHeroHotel = () => {
     },
   ];
 
+  const navigate = useNavigate();
+
+  const { Static_content_data, static_content_load } = useHotelContext();
+
+  console.log("Static_content_data", Static_content_data);
+
+  // Show loader while data is loading
+  if (static_content_load) {
+    return (
+      <div className="loader-container">
+        <div className="loader-spinner"></div>
+        <p className="loader-text">Loading hotels...</p>
+      </div>
+    );
+  }
+
+  // Show message if no data available
+  if (!Static_content_data || Static_content_data.length === 0) {
+    return (
+      <div className="no-data-container">
+        <p>No hotels available at the moment.</p>
+      </div>
+    );
+  }
+
   return (
     <div className="hotel-list">
-      {hotels.map((hotel) => (
+      {Static_content_data.map((hotel) => (
         <div className="hotel-card" key={hotel.id}>
           <div className="hotel-card-inner">
             {/* Image Carousel */}
             <div className="hotel-image-section">
-              <Swiper
+              {/* <Swiper
                 modules={[Navigation, Pagination, Autoplay]}
                 navigation
                 pagination={{ clickable: true }}
@@ -82,11 +109,43 @@ const HomeHeroHotel = () => {
                 className="hotel-swiper"
               >
                 {hotel.images.map((img, index) => (
-                  <SwiperSlide key={index}>
-                    <img src={img} alt={`Hotel ${index}`} />
-                  </SwiperSlide>
+                <SwiperSlide
+                key={index}
+                >
+                  <img src={hotel?.heroImage} />
+                </SwiperSlide>
                 ))}
-              </Swiper>
+              </Swiper> */}
+              {hotel?.heroImage ? (
+                <img
+                  src={hotel?.heroImage}
+                  style={{ objectFit: "fill", height: "100%", width: "100%" }}
+                  alt={hotel.name}
+                />
+              ) : (
+                <div className="no-image-placeholder">
+                  <svg
+                    width="64"
+                    height="64"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    strokeWidth="1.5"
+                  >
+                    <rect
+                      x="3"
+                      y="3"
+                      width="18"
+                      height="18"
+                      rx="2"
+                      ry="2"
+                    ></rect>
+                    <circle cx="8.5" cy="8.5" r="1.5"></circle>
+                    <polyline points="21 15 16 10 5 21"></polyline>
+                  </svg>
+                  <p>No Image Available</p>
+                </div>
+              )}
             </div>
 
             {/* Hotel Info */}
@@ -94,27 +153,44 @@ const HomeHeroHotel = () => {
               <div className="info-and-comparison-column">
                 <div className="hotel-info">
                   <h2 className="hotel-name">{hotel.name}</h2>
-                  <p className="hotel-location">{hotel.location}</p>
-
+                  <p className="hotel-location">
+                    {hotel.contact?.address?.line1}
+                  </p>
+                  <p className="hotel-location">
+                    {hotel.contact?.address?.city?.name}
+                  </p>
                   <div className="rating-container">
-                    <span className="rating-badge">{hotel.rating}</span>
-                    <span className="rating-text">{hotel.ratingText}</span>
-                    <div className="stars">★★★★★</div>
+                    {/* <span className="rating-badge">{hotel.rating}</span>
+                    <span className="rating-text">{hotel.ratingText}</span> */}
+                    <div className="stars">
+                      {[...Array(5)].map((_, index) => (
+                        <span key={index} style={{ fontSize: "20px" }}>
+                          {index < Number(hotel.starRating) ? "★" : "☆"}
+                        </span>
+                      ))}
+                    </div>
                   </div>
                 </div>
               </div>
 
               {/* Price Column */}
               <div className="agoda-price-column">
-                <div className="discount-badge">30% less than usual</div>
+                {/* <div className="discount-badge">30% less than usual</div> */}
 
                 <div className="price-container">
-                  <div className="price">
+                  {/* <div className="price">
                     <span className="currency">₹</span>
                     <span className="amount">{hotel.price}</span>
                   </div>
-                  <div className="breakfast-info">Free breakfast</div>
-                  <button className="view-deal-btn">View Deal</button>
+                  <div className="breakfast-info">Free breakfast</div> */}
+                  <button
+                    className="view-deal-btn"
+                    onClick={() =>
+                      navigate("/hoteldetails", { state: { hotelData: hotel } })
+                    }
+                  >
+                    View Deal
+                  </button>
                 </div>
               </div>
             </div>

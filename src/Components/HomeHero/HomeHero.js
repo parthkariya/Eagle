@@ -197,6 +197,7 @@ const HomeHero = () => {
     setSelectedOption(opt);
     setIsOpen(false);
   };
+
   const swapLocations = () => {
     const newFrom = to?.value;
     const newTo = from?.value;
@@ -315,7 +316,8 @@ const HomeHero = () => {
   const [resultIndex, setResultIndex] = useState([]);
   const [flightProName, setFlightProName] = useState("travclan");
   const [hotelSearchtext, setHotelSearchText] = useState("");
-  const [selectedHotel, setSelectedHotel] = useState([]);
+  const [selectedHotel, setSelectedHotel] = useState(null);
+  const [isHotelDropdownOpen, setIsHotelDropdownOpen] = useState(false);
   const [rooms, setRooms] = useState(1);
   const [adults, setAdults] = useState(2);
   const [children, setChildren] = useState(0);
@@ -1008,8 +1010,14 @@ const HomeHero = () => {
     flightAirIq_Data,
   } = useFlightContext();
 
-  const { LocationSearchHotel, hotel_data, hotel_loading, clearHotelData } =
-    useHotelContext();
+  const {
+    LocationSearchHotel,
+    hotel_data,
+    hotel_loading,
+    clearHotelData,
+    SearchHotelMain,
+    StaticContentAPi,
+  } = useHotelContext();
 
   useEffect(() => {
     if (!hotelSearchtext.trim()) {
@@ -1302,7 +1310,6 @@ const HomeHero = () => {
 
   const scrollToTop = () => {
     listRef.current?.scrollIntoView({ behavior: "smooth", block: "start" });
-    // window.scrollTo(0, listRef.current?.offsetTop ?? 0);
   };
 
   useEffect(() => {
@@ -1646,14 +1653,12 @@ const HomeHero = () => {
   const FareRuleGet = async (ref) => {
     const traceid = localStorage.getItem("traceID");
     const token = localStorage.getItem("accessToken");
-
     const formdata = new FormData();
     formdata.append("type", "POST");
     formdata.append("url", getFare);
     formdata.append("url_token", `Bearer ${token}`);
     formdata.append("traceId", traceid);
     formdata.append("resultIndex", ref);
-
     await GetFareRules(formdata);
   };
 
@@ -1914,6 +1919,32 @@ const HomeHero = () => {
     }));
   };
 
+  const buildOccupancies = () => {
+    const adultsPerRoom = Math.floor(adults / rooms);
+    const remainingAdults = adults % rooms;
+
+    return Array.from({ length: rooms }).map((_, index) => ({
+      numOfAdults: adultsPerRoom + (index < remainingAdults ? 1 : 0),
+      childAges: [],
+    }));
+  };
+
+  const HandleHotelSearch = async () => {
+    const payload = {
+      checkIn: moment(dateRange[0].toDate()).format("YYYY-MM-DD"),
+      checkOut: moment(dateRange[1].toDate()).format("YYYY-MM-DD"),
+      nationality: "IN",
+      occupancies: buildOccupancies(),
+      // locationId: selectedHotel?.locationId || "228381",
+      hotelId: String(selectedHotel?.referenceId),
+      page: 1,
+      pageSize: 100,
+      traceId: null,
+    };
+    SearchHotelMain(payload);
+    StaticContentAPi(selectedHotel?.referenceId);
+  };
+
   const activeFilterCount =
     filters.stops.length +
     filters.airlines.length +
@@ -2029,14 +2060,24 @@ const HomeHero = () => {
                         type="text"
                         placeholder="Enter a city, hotel, airport, address or landmark"
                         className="location-input"
-                        value={hotelSearchtext}
-                        onChange={(e) => setHotelSearchText(e.target.value)}
+                        value={
+                          selectedHotel ? selectedHotel.name : hotelSearchtext
+                        }
+                        onChange={(e) => {
+                          setHotelSearchText(e.target.value);
+                          setSelectedHotel(null);
+                          if (!isHotelDropdownOpen) {
+                            setIsHotelDropdownOpen(true);
+                          }
+                        }}
+                        onClick={() =>
+                          setIsHotelDropdownOpen(!isHotelDropdownOpen)
+                        }
                       />
 
-                      {/* Hotel Results Dropdown */}
-                      {hotelSearchtext &&
-                        (hotel_loading ||
-                          (hotel_data && hotel_data.length > 0)) && (
+                      {isHotelDropdownOpen &&
+                        hotel_data &&
+                        hotel_data.length > 0 && (
                           <div className="hotel-results-dropdown">
                             {hotel_loading ? (
                               <div className="hotel-loader">
@@ -2046,9 +2087,9 @@ const HomeHero = () => {
                             ) : (
                               <div className="hotel-results-list">
                                 {hotel_data.map((hotel) => {
-                                  const isSelected = selectedHotel.some(
-                                    (h) => h.referenceId === hotel.referenceId
-                                  );
+                                  const isSelected =
+                                    selectedHotel?.referenceId ===
+                                    hotel.referenceId;
                                   return (
                                     <div
                                       key={hotel.referenceId}
@@ -2056,21 +2097,8 @@ const HomeHero = () => {
                                         isSelected ? "selected" : ""
                                       }`}
                                       onClick={() => {
-                                        if (isSelected) {
-                                          // Remove hotel from selection
-                                          setSelectedHotel(
-                                            selectedHotel.filter(
-                                              (h) =>
-                                                h.referenceId !==
-                                                hotel.referenceId
-                                            )
-                                          );
-                                        } else {
-                                          setSelectedHotel([
-                                            ...selectedHotel,
-                                            hotel,
-                                          ]);
-                                        }
+                                        setSelectedHotel(hotel);
+                                        setIsHotelDropdownOpen(false);
                                       }}
                                     >
                                       <div>
@@ -2203,7 +2231,10 @@ const HomeHero = () => {
                     {/* Search Button */}
                     <button
                       className="search-button-stay"
-                      onClick={() => setStayCondition(true)}
+                      onClick={() => {
+                        setStayCondition(true);
+                        HandleHotelSearch();
+                      }}
                     >
                       Search
                     </button>

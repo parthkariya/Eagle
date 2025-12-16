@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useMemo } from "react";
 import Modal from "react-modal";
 import {
   FaRunning,
@@ -22,93 +22,106 @@ import { GiLion, GiForest, GiPartyPopper } from "react-icons/gi";
 import { BsBuildingFill, BsClockHistory } from "react-icons/bs";
 import "./HotelBookingDetails.css";
 import RoomTypes from "../../Components/RoomType/RoomTypes";
+import { useLocation } from "react-router-dom";
 
 Modal.setAppElement("#root");
-
-const hotelImages = {
-  all: [
-    {
-      url: "https://images.unsplash.com/photo-1582719478250-c89cae4dc85b?w=800&h=600&fit=crop",
-      category: "Facilities",
-    },
-    {
-      url: "https://images.unsplash.com/photo-1566665797739-1674de7a421a?w=800&h=600&fit=crop",
-      category: "Rooms",
-    },
-    {
-      url: "https://images.unsplash.com/photo-1631049307264-da0ec9d70304?w=800&h=600&fit=crop",
-      category: "Rooms",
-    },
-    {
-      url: "https://images.unsplash.com/photo-1522771739844-6a9f6d5f14af?w=800&h=600&fit=crop",
-      category: "Dining",
-    },
-    {
-      url: "https://images.unsplash.com/photo-1602941525421-8f8b81d3edbb?w=800&h=600&fit=crop",
-      category: "Property views",
-    },
-    {
-      url: "https://images.unsplash.com/photo-1618773928121-c32242e63f39?w=800&h=600&fit=crop",
-      category: "Rooms",
-    },
-    {
-      url: "https://images.unsplash.com/photo-1552321554-5fefe8c9ef14?w=800&h=600&fit=crop",
-      category: "Rooms",
-    },
-    {
-      url: "https://images.unsplash.com/photo-1584132967334-10e028bd69f7?w=800&h=600&fit=crop",
-      category: "Nearby attraction",
-    },
-  ],
-  rooms: [
-    {
-      url: "https://images.unsplash.com/photo-1566665797739-1674de7a421a?w=800&h=600&fit=crop",
-      category: "Rooms",
-    },
-    {
-      url: "https://images.unsplash.com/photo-1631049307264-da0ec9d70304?w=800&h=600&fit=crop",
-      category: "Rooms",
-    },
-    {
-      url: "https://images.unsplash.com/photo-1618773928121-c32242e63f39?w=800&h=600&fit=crop",
-      category: "Rooms",
-    },
-    {
-      url: "https://images.unsplash.com/photo-1552321554-5fefe8c9ef14?w=800&h=600&fit=crop",
-      category: "Rooms",
-    },
-  ],
-  facilities: [
-    {
-      url: "https://images.unsplash.com/photo-1582719478250-c89cae4dc85b?w=800&h=600&fit=crop",
-      category: "Facilities",
-    },
-  ],
-  dining: [
-    {
-      url: "https://images.unsplash.com/photo-1522771739844-6a9f6d5f14af?w=800&h=600&fit=crop",
-      category: "Dining",
-    },
-  ],
-  propertyViews: [
-    {
-      url: "https://images.unsplash.com/photo-1602941525421-8f8b81d3edbb?w=800&h=600&fit=crop",
-      category: "Property views",
-    },
-  ],
-  nearbyAttraction: [
-    {
-      url: "https://images.unsplash.com/photo-1584132967334-10e028bd69f7?w=800&h=600&fit=crop",
-      category: "Nearby attraction",
-    },
-  ],
-};
 
 function HotelBookingDetails() {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [activeTab, setActiveTab] = useState("all");
 
-  const openModal = () => {
+  const location = useLocation();
+  const [hotelData, setHotelData] = useState(location.state?.hotelData);
+
+  console.log("Hotel Data:", hotelData);
+  console.log("Hotel Images:", hotelData?.images);
+
+  // Group images by caption dynamically
+  const groupedImages = useMemo(() => {
+    if (!hotelData?.images || !Array.isArray(hotelData.images)) {
+      console.log("No images found in hotelData");
+      return {};
+    }
+
+    const groups = {};
+
+    hotelData.images.forEach((image, idx) => {
+      console.log(`Image ${idx}:`, image);
+      const caption = image.caption || "Other";
+      if (!groups[caption]) {
+        groups[caption] = [];
+      }
+      groups[caption].push(image);
+    });
+
+    console.log("Grouped Images:", groups);
+    return groups;
+  }, [hotelData?.images]);
+
+  // Get all categories with counts
+  const categories = useMemo(() => {
+    const cats = Object.keys(groupedImages).map((key) => ({
+      key: key.toLowerCase().replace(/\s+/g, ""),
+      label: key,
+      count: groupedImages[key].length,
+    }));
+    console.log("Categories:", cats);
+    return cats;
+  }, [groupedImages]);
+
+  // Get the best quality image URL
+  const getImageUrl = (links) => {
+    console.log("links", links);
+
+    if (!links || links.length === 0) {
+      console.log("No links found");
+      return "";
+    }
+    const xxl = links.find((link) => link.size === "Xxl");
+    const xl = links.find((link) => link.size === "Xl");
+    const standard = links.find((link) => link.size === "Standard");
+    const url = xxl?.url || xl?.url || standard?.url || links[0]?.url || "";
+    console.log("url", url);
+
+    return url;
+  };
+
+  // Get images for modal based on active tab
+  const getImagesByTab = () => {
+    if (activeTab === "all") {
+      return hotelData?.images || [];
+    }
+
+    // Find the category by matching the key
+    const categoryLabel = Object.keys(groupedImages).find(
+      (label) => label.toLowerCase().replace(/\s+/g, "") === activeTab
+    );
+
+    if (categoryLabel) {
+      console.log(
+        `Getting images for category: ${categoryLabel}`,
+        groupedImages[categoryLabel]
+      );
+      return groupedImages[categoryLabel] || [];
+    }
+
+    return [];
+  };
+
+  // Get grid display images (first 5 categories)
+
+  const getGridDisplayData = () => {
+    const displayCategories = categories.slice(0, 5);
+    console.log("displayCategories", displayCategories);
+
+    return displayCategories.map((cat) => ({
+      ...cat,
+      image: groupedImages[cat.label][0],
+    }));
+  };
+
+  const openModal = (tab = "all") => {
+    setActiveTab(tab);
     setIsModalOpen(true);
   };
 
@@ -116,34 +129,27 @@ function HotelBookingDetails() {
     setIsModalOpen(false);
   };
 
-  const getImagesByTab = () => {
-    switch (activeTab) {
-      case "all":
-        return hotelImages.all;
-      case "rooms":
-        return hotelImages.rooms;
-      case "facilities":
-        return hotelImages.facilities;
-      case "dining":
-        return hotelImages.dining;
-      case "propertyViews":
-        return hotelImages.propertyViews;
-      case "nearbyAttraction":
-        return hotelImages.nearbyAttraction;
-      default:
-        return hotelImages.all;
-    }
-  };
+  const totalImages = hotelData?.images?.length || 0;
+  const gridData = getGridDisplayData();
+
+  console.log("Grid Data:", gridData);
+  console.log("Total Images:", totalImages);
 
   return (
     <div className="hotel-container">
       <div className="hotel-header">
         <div className="hotel-info">
           <h1 className="hotel-name-details">
-            Woods at Sasan
-            <span className="rating-stars">★★★★★</span>
+            {hotelData?.name}
+            <span className="rating-stars">
+              {[...Array(5)].map((_, index) => (
+                <span key={index} style={{ fontSize: "20px" }}>
+                  {index < Number(hotelData?.starRating) ? "★" : "☆"}
+                </span>
+              ))}
+            </span>
           </h1>
-          <p className="hotel-address">Sasan Talala Road, Sasan Gir 362 135</p>
+          <p className="hotel-address">{hotelData?.contact?.address?.line1}</p>
           <div className="review-badge">
             <span className="score">8.7</span>
             <span className="review-text">Very good</span>
@@ -159,50 +165,51 @@ function HotelBookingDetails() {
         </div>
       </div>
 
-      <div className="gallery-grid">
-        <div className="gallery-item main-image" onClick={openModal}>
-          <img
-            src="https://images.unsplash.com/photo-1566665797739-1674de7a421a?w=800&h=600&fit=crop"
-            alt="Main bedroom view"
-          />
-          <div className="photo-count">All photos (51)</div>
-        </div>
+      {/* Dynamic Gallery Grid */}
+      {gridData.length > 0 ? (
+        <div className="gallery-grid">
+          {/* Main Image */}
+          <div
+            className="gallery-item main-image"
+            onClick={() => openModal("all")}
+          >
+            <img
+              src={getImageUrl(gridData[0]?.image?.links)}
+              alt={gridData[0]?.label}
+            />
+            <div className="photo-count">All photos ({totalImages})</div>
+          </div>
 
-        <div className="gallery-item" onClick={openModal}>
-          <img
-            src="https://images.unsplash.com/photo-1631049307264-da0ec9d70304?w=400&h=300&fit=crop"
-            alt="Other view"
-          />
-          <div className="photo-label">Rooms (8)</div>
+          {/* Other Category Images */}
+          {gridData.slice(1, 5).map((item, index) => (
+            <div
+              key={item.key}
+              className="gallery-item"
+              onClick={() => openModal(item.key)}
+            >
+              <img src={getImageUrl(item.image?.links)} alt={item.label} />
+              <div className="photo-label">
+                {item.label} ({item.count})
+              </div>
+              {index === 3 && (
+                <button
+                  className="view-all-btn"
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    openModal("all");
+                  }}
+                >
+                  View all photos
+                </button>
+              )}
+            </div>
+          ))}
         </div>
-
-        <div className="gallery-item" onClick={openModal}>
-          <img
-            src="https://images.unsplash.com/photo-1552321554-5fefe8c9ef14?w=400&h=300&fit=crop"
-            alt="Bathroom"
-          />
-          <div className="photo-label">Property views (26)</div>
+      ) : (
+        <div style={{ padding: "20px", textAlign: "center" }}>
+          <p>No images available</p>
         </div>
-
-        <div className="gallery-item" onClick={openModal}>
-          <img
-            src="https://images.unsplash.com/photo-1602941525421-8f8b81d3edbb?w=400&h=300&fit=crop"
-            alt="Outdoor view"
-          />
-          <div className="photo-label">Facilities (11)</div>
-        </div>
-
-        <div className="gallery-item" onClick={openModal}>
-          <img
-            src="https://images.unsplash.com/photo-1618773928121-c32242e63f39?w=400&h=300&fit=crop"
-            alt="Bedroom"
-          />
-          <div className="photo-label">Dining (4)</div>
-          <button className="view-all-btn" onClick={openModal}>
-            View all photos
-          </button>
-        </div>
-      </div>
+      )}
 
       {/* About Section */}
       <div className="about-section">
@@ -431,44 +438,17 @@ function HotelBookingDetails() {
                 className={`tab-btn ${activeTab === "all" ? "active" : ""}`}
                 onClick={() => setActiveTab("all")}
               >
-                All (51)
+                All ({totalImages})
               </button>
-              <button
-                className={`tab-btn ${activeTab === "rooms" ? "active" : ""}`}
-                onClick={() => setActiveTab("rooms")}
-              >
-                Rooms (8)
-              </button>
-              <button
-                className={`tab-btn ${
-                  activeTab === "propertyViews" ? "active" : ""
-                }`}
-                onClick={() => setActiveTab("propertyViews")}
-              >
-                Property views (26)
-              </button>
-              <button
-                className={`tab-btn ${
-                  activeTab === "facilities" ? "active" : ""
-                }`}
-                onClick={() => setActiveTab("facilities")}
-              >
-                Facilities (11)
-              </button>
-              <button
-                className={`tab-btn ${activeTab === "dining" ? "active" : ""}`}
-                onClick={() => setActiveTab("dining")}
-              >
-                Dining (4)
-              </button>
-              <button
-                className={`tab-btn ${
-                  activeTab === "nearbyAttraction" ? "active" : ""
-                }`}
-                onClick={() => setActiveTab("nearbyAttraction")}
-              >
-                Nearby attraction (2)
-              </button>
+              {categories.map((cat) => (
+                <button
+                  key={cat.key}
+                  className={`tab-btn ${activeTab === cat.key ? "active" : ""}`}
+                  onClick={() => setActiveTab(cat.key)}
+                >
+                  {cat.label} ({cat.count})
+                </button>
+              ))}
             </div>
           </h2>
           <button className="close-btn" onClick={closeModal}>
@@ -480,7 +460,10 @@ function HotelBookingDetails() {
           <div className="image-grid">
             {getImagesByTab().map((image, index) => (
               <div key={index} className="image-grid-item">
-                <img src={image.url} alt={`${image.category} ${index + 1}`} />
+                <img
+                  src={getImageUrl(image.links)}
+                  alt={`${image.caption} ${index + 1}`}
+                />
               </div>
             ))}
           </div>
