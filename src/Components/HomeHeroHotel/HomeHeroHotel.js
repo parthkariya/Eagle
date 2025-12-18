@@ -25,6 +25,7 @@ const HomeHeroHotel = () => {
     static_content_load,
     Hotel_Main_data,
     main_hotel_loading,
+    hasSearched,
   } = useHotelContext();
 
   const formatPrice = (price) => {
@@ -40,7 +41,10 @@ const HomeHeroHotel = () => {
     );
   }
 
-  if (!Static_content_data || Static_content_data.length === 0) {
+  if (
+    hasSearched &&
+    (!Static_content_data || Static_content_data.length === 0)
+  ) {
     return (
       <div className="no-data-container">
         <p>No hotels available at the moment.</p>

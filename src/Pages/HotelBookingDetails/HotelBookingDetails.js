@@ -438,7 +438,7 @@ function HotelBookingDetails() {
         </div>
       </div>
 
-      <RoomTypes />
+      <RoomTypes hotelID={hotelId} />
 
       {/* React Modal Bottom Sheet */}
       <Modal

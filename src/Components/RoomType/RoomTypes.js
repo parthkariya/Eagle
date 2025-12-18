@@ -17,11 +17,14 @@ import { MdKingBed } from "react-icons/md";
 import "./RoomTypes.css";
 import { useHotelContext } from "../../Context/Hotel_context";
 
-const RoomTypes = () => {
-  const { rooms_rate_data, rooms_rate_loading } = useHotelContext();
+const RoomTypes = ({ hotelID }) => {
+  const { rooms_rate_data, rooms_rate_loading, PriceCheckApi } =
+    useHotelContext();
 
   const [expandedPolicies, setExpandedPolicies] = useState({});
   const [selectedRates, setSelectedRates] = useState({});
+  const [selectedOptionId, setSelectedOptionId] = useState("");
+  const [hotelId, setHotelId] = useState(String(hotelID));
 
   const togglePolicies = (roomId) => {
     setExpandedPolicies((prev) => ({
@@ -30,14 +33,32 @@ const RoomTypes = () => {
     }));
   };
 
-  const selectRate = (roomId, rateIndex) => {
+  const selectRate = (roomId, room, rateIndex) => {
+    setSelectedOptionId(room?.optionId);
     setSelectedRates((prev) => ({
       ...prev,
       [roomId]: rateIndex,
     }));
   };
 
-  // Parse and structure the room data from API
+  const handleBookNow = () => {
+    const traceId = localStorage.getItem("hotelTraceID");
+    if (!traceId) {
+      console.error("Trace ID not found in localStorage");
+      return;
+    }
+    if (!selectedOptionId) {
+      console.error("Option ID missing");
+      return;
+    }
+    const payload = {
+      traceId: traceId,
+      optionId: selectedOptionId,
+      hotelId: hotelId,
+    };
+    PriceCheckApi(payload);
+  };
+
   const roomsData = useMemo(() => {
     if (!rooms_rate_data) {
       console.log("No rooms_rate_data.results found");
@@ -46,13 +67,11 @@ const RoomTypes = () => {
 
     const { options, rooms, standardizedRooms } = rooms_rate_data;
 
-    // Validate that all required objects exist
     if (!options || !rooms || !standardizedRooms) {
       console.log("Missing required data structures");
       return [];
     }
 
-    // Check if options object has any entries
     if (Object.keys(options).length === 0) {
       console.log("No options available");
       return [];
@@ -73,7 +92,6 @@ const RoomTypes = () => {
       const roomId = occupancy.roomId;
       const stdRoomId = occupancy.stdRoomId;
 
-      // Check if the standardized room and room exist
       if (!standardizedRooms[stdRoomId] || !rooms[roomId]) {
         console.log(
           `Missing room data for stdRoomId: ${stdRoomId}, roomId: ${roomId}`
@@ -241,10 +259,6 @@ const RoomTypes = () => {
                     <p>No image available</p>
                   </div>
                 )}
-
-                {!selectedRate.refundable && (
-                  <div className="non-refundable-badge">Non-Refundable</div>
-                )}
               </div>
 
               {/* Room Details */}
@@ -315,7 +329,7 @@ const RoomTypes = () => {
                             ? "price-option-selected"
                             : ""
                         }`}
-                        onClick={() => selectRate(room.id, index)}
+                        onClick={() => selectRate(room.id, rate, index)}
                       >
                         <div className="price-option-left">
                           <div className="price-option-meal">
@@ -407,7 +421,12 @@ const RoomTypes = () => {
                     </div>
                     <span className="price-note">Per night incl. taxes</span>
                   </div>
-                  <button className="book-now-btn">Book Now</button>
+                  <button
+                    className="book-now-btn"
+                    onClick={() => handleBookNow()}
+                  >
+                    Select
+                  </button>
                 </div>
               </div>
             </div>

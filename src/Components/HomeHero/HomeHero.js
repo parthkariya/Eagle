@@ -275,10 +275,7 @@ const HomeHero = () => {
   const [filteredFlights, setFilteredFlights] = useState([]);
   const [filtered, setFiltered] = useState(false);
   const [isModalOpen, setIsModalOpen] = useState(false);
-  const [dateRange, setDateRange] = useState([
-    dayjs(new Date()),
-    dayjs(new Date()),
-  ]);
+  const [dateRange, setDateRange] = useState([dayjs(), dayjs().add(1, "day")]);
 
   // For filter
   const [selectedItem, setSelectedItem] = useState(null);
@@ -1930,19 +1927,27 @@ const HomeHero = () => {
   };
 
   const HandleHotelSearch = async () => {
-    const payload = {
-      checkIn: moment(dateRange[0].toDate()).format("YYYY-MM-DD"),
-      checkOut: moment(dateRange[1].toDate()).format("YYYY-MM-DD"),
-      nationality: "IN",
-      occupancies: buildOccupancies(),
-      // locationId: selectedHotel?.locationId || "228381",
-      hotelId: String(selectedHotel?.referenceId),
-      page: 1,
-      pageSize: 100,
-      traceId: null,
-    };
-    SearchHotelMain(payload);
-    StaticContentAPi(selectedHotel?.referenceId);
+    if (!selectedHotel) {
+      toast.warning("Please select a hotel from the dropdown.");
+    } else if (!dateRange || dateRange.length !== 2) {
+      toast.warning("Please select both check-in and check-out dates.");
+    } else if (dateRange[0].isAfter(dateRange[1])) {
+      toast.warning("Check-out date must be after check-in date.");
+    } else {
+      const payload = {
+        checkIn: moment(dateRange[0].toDate()).format("YYYY-MM-DD"),
+        checkOut: moment(dateRange[1].toDate()).format("YYYY-MM-DD"),
+        nationality: "IN",
+        occupancies: buildOccupancies(),
+        // locationId: selectedHotel?.locationId || "228381",
+        hotelId: String(selectedHotel?.referenceId),
+        page: 1,
+        pageSize: 100,
+        traceId: null,
+      };
+      SearchHotelMain(payload);
+      StaticContentAPi(selectedHotel?.referenceId);
+    }
   };
 
   const activeFilterCount =

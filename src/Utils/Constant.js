@@ -123,3 +123,6 @@ export const SearchHotelMainApi =
 export const StaticContentApi = HotelBaseUrl + "hotels";
 export const getRoomsandrates =
   "https://hotel-volt-api-sandbox.travclan.com/api/v1/roomsandrates";
+
+export const priceCheckurl =
+  "https://hotel-volt-api-sandbox.travclan.com/api/v1/price-check";

@@ -3,6 +3,9 @@ import {
   GET_ROOMS_RATE_BEGIN,
   GET_ROOMS_RATE_ERROR,
   GET_ROOMS_RATE_SUCCESS,
+  HOTEL_PRICE_CHECK_BEGIN,
+  HOTEL_PRICE_CHECK_ERROR,
+  HOTEL_PRICE_CHECK_SUCCESS,
   HOTEL_SEARCH_BEGIN,
   HOTEL_SEARCH_ERROR,
   HOTEL_SEARCH_SUCCESS,
@@ -38,12 +41,14 @@ const hotel_reducer = (state, action) => {
       return {
         ...state,
         main_hotel_loading: true,
+        hasSearched: true,
       };
     case MAIN_SEARCH_SUCCESS:
       return {
         ...state,
         main_hotel_loading: false,
         Hotel_Main_data: action.payload,
+        hasSearched: false,
       };
     case MAIN_SEARCH_ERROR:
       return {
@@ -86,6 +91,24 @@ const hotel_reducer = (state, action) => {
         ...state,
         rooms_rate_loading: false,
         rooms_rate_data: {},
+      };
+
+    case HOTEL_PRICE_CHECK_BEGIN:
+      return {
+        ...state,
+        price_check_loading: true,
+      };
+    case HOTEL_PRICE_CHECK_SUCCESS:
+      return {
+        ...state,
+        price_check_loading: false,
+        price_check_data: action.payload,
+      };
+    case HOTEL_PRICE_CHECK_ERROR:
+      return {
+        ...state,
+        price_check_loading: false,
+        price_check_data: {},
       };
 
     case CLEAR_SEARCHED_HOTEL:

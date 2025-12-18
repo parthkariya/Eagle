@@ -6,6 +6,9 @@ import {
   GET_ROOMS_RATE_BEGIN,
   GET_ROOMS_RATE_ERROR,
   GET_ROOMS_RATE_SUCCESS,
+  HOTEL_PRICE_CHECK_BEGIN,
+  HOTEL_PRICE_CHECK_ERROR,
+  HOTEL_PRICE_CHECK_SUCCESS,
   HOTEL_SEARCH_BEGIN,
   HOTEL_SEARCH_ERROR,
   HOTEL_SEARCH_SUCCESS,
@@ -19,6 +22,7 @@ import {
 import {
   getRoomsandrates,
   locationAutosuggestApi,
+  priceCheckurl,
   SearchHotelMainApi,
   StaticContentApi,
 } from "../Utils/Constant";
@@ -32,6 +36,9 @@ const initialState = {
   static_content_load: false,
   rooms_rate_data: {},
   rooms_rate_loading: false,
+  price_check_data: {},
+  price_check_loading: false,
+  hasSearched: false,
 };
 
 const HotelContext = createContext();
@@ -155,6 +162,26 @@ export const HotelProvider = ({ children }) => {
 
   const PriceCheckApi = async (params) => {
     const token = localStorage.getItem("accessToken");
+    dispatch({ type: HOTEL_PRICE_CHECK_BEGIN });
+    axios
+      .post(priceCheckurl, params, {
+        headers: {
+          Authorization: "Bearer " + token,
+          source: "website",
+        },
+      })
+      .then((res) => {
+        if (res.data.error === false) {
+          dispatch({
+            type: HOTEL_PRICE_CHECK_SUCCESS,
+            payload: res?.data?.results,
+          });
+        } else dispatch({ type: HOTEL_PRICE_CHECK_ERROR });
+      })
+      .catch((err) => {
+        dispatch({ type: HOTEL_PRICE_CHECK_ERROR });
+        console.log("Error in hotel price check api ", err);
+      });
   };
 
   const clearHotelData = () => {
@@ -170,6 +197,7 @@ export const HotelProvider = ({ children }) => {
         SearchHotelMain,
         StaticContentAPi,
         GetRoomsAndRates,
+        PriceCheckApi,
       }}
     >
       {children}
