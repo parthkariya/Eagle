@@ -638,3 +638,124 @@
     gap: 4px;
   }
 }
+
+/* Room Policies Section - Add this to your HotelBookingDetails.css */
+
+.room-policies-section {
+  margin-top: 20px;
+  padding-top: 20px;
+  border-top: 1px solid #e9ecef;
+}
+
+.policies-toggle {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  cursor: pointer;
+  padding: 12px;
+  background-color: #fff5f2;
+  border-radius: 8px;
+  border: 1px solid #ffe0d6;
+  transition: all 0.3s ease;
+}
+
+.policies-toggle:hover {
+  background-color: #ffe8df;
+  border-color: #ffd4c3;
+}
+
+.policies-toggle-left {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.policies-icon {
+  color: #ff6b35;
+  font-size: 18px;
+}
+
+.policies-title {
+  font-weight: 600;
+  font-size: 14px;
+  color: #1a1a1a;
+}
+
+.policies-chevron {
+  color: #ff6b35;
+  font-size: 14px;
+  transition: transform 0.3s ease;
+}
+
+.policies-content {
+  margin-top: 12px;
+  padding: 15px;
+  background-color: #ffffff;
+  border-radius: 8px;
+  border: 1px solid #e9ecef;
+  animation: slideDown 0.3s ease;
+}
+
+@keyframes slideDown {
+  from {
+    opacity: 0;
+    transform: translateY(-10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.policy-item {
+  margin-bottom: 12px;
+  padding-bottom: 12px;
+  border-bottom: 1px solid #f0f0f0;
+}
+
+.policy-item:last-child {
+  margin-bottom: 0;
+  padding-bottom: 0;
+  border-bottom: none;
+}
+
+.policy-type {
+  font-size: 12px;
+  font-weight: 600;
+  color: #ff6b35;
+  margin-bottom: 6px;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.policy-text {
+  font-size: 13px;
+  line-height: 1.5;
+  color: #444;
+}
+
+.cancellation-policy-section,
+.board-basis-section {
+  margin-top: 12px;
+  padding-top: 12px;
+  border-top: 1px solid #f0f0f0;
+}
+
+/* Responsive adjustments for policies */
+@media (max-width: 768px) {
+  .policies-toggle {
+    padding: 10px;
+  }
+
+  .policies-title {
+    font-size: 13px;
+  }
+
+  .policies-content {
+    padding: 12px;
+  }
+
+  .policy-text {
+    font-size: 12px;
+  }
+}
