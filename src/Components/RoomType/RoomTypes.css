@@ -86,39 +86,19 @@
   transform: translateY(-4px);
 }
 
-/* Swiper Image Section */
+/* Image Section with React Slick */
 .room-image-container {
   position: relative;
   width: 100%;
   height: 320px;
-  overflow: visible;
-  background: #f8f9fa;
-  padding: 15px 0;
-}
-
-.room-swiper {
-  width: 100%;
-  height: 100%;
-  overflow: visible;
-}
-
-.room-swiper .swiper-slide {
-  border-radius: 12px;
   overflow: hidden;
-  opacity: 0.6;
-  transition: all 0.3s ease;
-}
-
-.room-swiper .swiper-slide-active {
-  opacity: 1;
-  transform: scale(1);
+  background: #f8f9fa;
 }
 
 .room-image {
   width: 100%;
-  height: 100%;
+  height: 320px;
   object-fit: cover;
-  border-radius: 12px;
 }
 
 /* Image Placeholder */
@@ -164,74 +144,56 @@
   transition: all 0.3s ease;
 }
 
-/* Custom Swiper Navigation Buttons */
-.swiper-button-prev,
-.swiper-button-next {
-  background: rgba(255, 255, 255, 0.95);
+/* Custom React Slick Navigation Buttons */
+.slick-arrow {
   width: 32px;
   height: 32px;
   border-radius: 50%;
-  display: flex;
+  background: rgba(255, 255, 255, 0.95) !important;
+  display: flex !important;
   align-items: center;
   justify-content: center;
   transition: all 0.3s ease;
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
-  opacity: 0;
   z-index: 10;
+  cursor: pointer;
 }
 
-.room-card:hover .swiper-button-prev,
-.room-card:hover .swiper-button-next {
-  opacity: 1;
-}
-
-.swiper-button-prev::after,
-.swiper-button-next::after {
-  display: none;
-}
-
-.swiper-button-prev svg,
-.swiper-button-next svg {
+.slick-arrow svg {
   font-size: 12px;
   color: #333;
 }
 
-.swiper-button-prev:hover,
-.swiper-button-next:hover {
-  background: white;
-  transform: scale(1.15);
-}
-
-.swiper-button-prev {
+.slick-prev {
   left: 16px;
 }
 
-.swiper-button-next {
+.slick-next {
   right: 16px;
 }
 
-.swiper-button-disabled {
+.slick-prev:before,
+.slick-next:before {
+  display: none;
+}
+
+.slick-disabled {
   opacity: 0.35 !important;
   cursor: not-allowed;
 }
 
-/* Custom Swiper Pagination */
-.room-swiper .swiper-pagination {
+/* Custom React Slick Pagination */
+.slick-dots {
   bottom: 20px;
 }
 
-.room-swiper .swiper-pagination-bullet {
-  background: rgba(255, 255, 255, 0.7);
-  opacity: 1;
-  width: 6px;
-  height: 6px;
-  transition: all 0.3s ease;
+.slick-dots li button:before {
+  color: rgba(255, 255, 255, 0.7);
+  font-size: 8px;
 }
 
-.room-swiper .swiper-pagination-bullet-active {
-  background: white;
-  width: 20px;
-  border-radius: 3px;
+.slick-dots li.slick-active button:before {
+  color: white;
 }
 
 /* Room Content */
@@ -257,37 +219,6 @@
   color: #1a1a1a;
   margin: 0;
   flex: 1;
-}
-
-.room-availability {
-  display: flex;
-  align-items: center;
-  gap: 6px;
-  font-size: 13px;
-  font-weight: 600;
-  color: #ff6b35;
-  white-space: nowrap;
-  background: #fff5f2;
-  padding: 6px 12px;
-  border-radius: 20px;
-}
-
-.availability-dot {
-  width: 8px;
-  height: 8px;
-  background: #ff6b35;
-  border-radius: 50%;
-  animation: pulse 2s infinite;
-}
-
-@keyframes pulse {
-  0%,
-  100% {
-    opacity: 1;
-  }
-  50% {
-    opacity: 0.5;
-  }
 }
 
 .room-description {
@@ -374,273 +305,112 @@
   flex-shrink: 0;
 }
 
-/* Features */
-.room-features {
+/* Price Options Section - NEW */
+.price-options-section {
   padding: 16px;
-  background: #fff5f2;
+  background: #f8f9fa;
   border-radius: 12px;
-  border-left: 4px solid #ff6b35;
+  border: 2px solid #e9ecef;
 }
 
-.features-title {
+.price-options-title {
   font-size: 16px;
   font-weight: 700;
   color: #1a1a1a;
-  margin: 0 0 12px 0;
+  margin: 0 0 16px 0;
 }
 
-.features-list {
+.price-options-list {
   display: flex;
-  flex-wrap: wrap;
-  gap: 8px;
+  flex-direction: column;
+  gap: 12px;
 }
 
-.feature-tag {
-  display: inline-block;
-  padding: 6px 14px;
-  background: white;
-  border: 1px solid #ff6b35;
-  color: #ff6b35;
-  border-radius: 20px;
-  font-size: 12px;
-  font-weight: 600;
-  transition: all 0.3s ease;
-}
-
-.feature-tag:hover {
-  background: #ff6b35;
-  color: white;
-}
-
-.feature-tag-success {
-  border-color: #28a745;
-  color: #28a745;
-}
-
-.feature-tag-success:hover {
-  background: #28a745;
-  color: white;
-}
-
-.feature-tag-warning {
-  border-color: #dc3545;
-  color: #dc3545;
-}
-
-.feature-tag-warning:hover {
-  background: #dc3545;
-  color: white;
-}
-
-/* Cancellation Info */
-.cancellation-info {
-  padding: 12px 16px;
-  background: #fff3cd;
-  border-left: 4px solid #ffc107;
-  border-radius: 8px;
-}
-
-.cancellation-text {
-  margin: 0;
-  font-size: 13px;
-  color: #856404;
-  line-height: 1.5;
-}
-
-.cancellation-text strong {
-  font-weight: 700;
-}
-
-/* Footer */
-.room-footer {
+.price-option {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  padding-top: 20px;
-  border-top: 2px solid #f0f0f0;
-  margin-top: auto;
-  gap: 16px;
+  padding: 16px;
+  background: white;
+  border: 2px solid #e9ecef;
+  border-radius: 10px;
+  cursor: pointer;
+  transition: all 0.3s ease;
 }
 
-.pricing-section {
+.price-option:hover {
+  border-color: #ff6b35;
+  background: #fffbf9;
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(255, 107, 53, 0.1);
+}
+
+.price-option-selected {
+  border-color: #ff6b35;
+  background: #fff5f2;
+  box-shadow: 0 4px 12px rgba(255, 107, 53, 0.15);
+}
+
+.price-option-left {
   display: flex;
   flex-direction: column;
-  gap: 4px;
+  gap: 8px;
+  flex: 1;
 }
 
-.price-container {
+.price-option-meal {
   display: flex;
-  align-items: baseline;
+  align-items: center;
   gap: 8px;
 }
 
-.current-price {
-  font-size: 28px;
+.meal-icon {
+  fontsize: 16px;
+  color: #ff6b35;
+}
+
+.meal-text {
+  font-size: 14px;
+  font-weight: 600;
+  color: #1a1a1a;
+}
+
+.price-option-details {
+  display: flex;
+  gap: 12px;
+  font-size: 12px;
+  flex-wrap: wrap;
+}
+
+.availability-text {
+  color: #666;
+}
+
+.refund-text {
+  color: #dc3545;
+  font-weight: 600;
+}
+
+.price-option-right {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 4px;
+}
+
+.option-price {
+  font-size: 22px;
   font-weight: 700;
   color: #ff6b35;
 }
 
-.currency-code {
-  font-size: 14px;
-  font-weight: 600;
-  color: #999;
-}
-
-.price-note {
+.option-currency {
   font-size: 12px;
   color: #666;
-}
-
-.book-now-btn {
-  background: linear-gradient(135deg, #ff6b35 0%, #ff5722 100%);
-  color: white;
-  border: none;
-  flex: 0.5;
-  border-radius: 8px;
-  font-size: 16px;
   font-weight: 600;
-  cursor: pointer;
-  transition: all 0.3s ease;
-  box-shadow: 0 4px 12px rgba(255, 87, 34, 0.3);
-  white-space: nowrap;
 }
 
-.book-now-btn:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 6px 20px rgba(255, 87, 34, 0.4);
-}
-
-.book-now-btn:active {
-  transform: translateY(0);
-}
-
-/* Responsive Design */
-@media (max-width: 1024px) {
-  .rooms-grid {
-    grid-template-columns: 1fr;
-  }
-}
-
-@media (max-width: 768px) {
-  .room-types-container {
-    padding: 30px 16px;
-  }
-
-  .room-types-title {
-    font-size: 28px;
-  }
-
-  .room-types-subtitle {
-    font-size: 14px;
-  }
-
-  .rooms-grid {
-    gap: 24px;
-    grid-template-columns: 1fr;
-  }
-
-  .room-image-container {
-    height: 240px;
-    padding: 10px 0;
-  }
-
-  .room-name {
-    font-size: 20px;
-  }
-
-  .room-swiper {
-    overflow: hidden;
-  }
-
-  .room-swiper .swiper-slide {
-    border-radius: 8px;
-  }
-
-  .room-specs {
-    grid-template-columns: repeat(2, 1fr);
-  }
-
-  .amenities-grid {
-    grid-template-columns: 1fr;
-  }
-
-  .room-footer {
-    flex-direction: column;
-    align-items: stretch;
-    gap: 16px;
-  }
-
-  .pricing-section {
-    align-items: center;
-    text-align: center;
-  }
-
-  .book-now-btn {
-    width: 100%;
-    padding: 16px;
-  }
-
-  .room-availability {
-    font-size: 11px;
-    padding: 4px 10px;
-  }
-
-  .non-refundable-badge {
-    top: 16px;
-    right: 16px;
-    padding: 8px 14px;
-    font-size: 10px;
-    letter-spacing: 0.8px;
-  }
-
-  /* Make navigation arrows always visible on mobile */
-  .swiper-button-prev,
-  .swiper-button-next {
-    opacity: 1;
-  }
-}
-
-@media (max-width: 480px) {
-  .room-types-title {
-    font-size: 24px;
-  }
-
-  .room-content {
-    padding: 20px;
-  }
-
-  .current-price {
-    font-size: 24px;
-  }
-
-  .non-refundable-badge {
-    font-size: 10px;
-    padding: 7px 12px;
-    top: 14px;
-    right: 14px;
-    letter-spacing: 0.6px;
-  }
-
-  .swiper-button-prev,
-  .swiper-button-next {
-    width: 28px;
-    height: 28px;
-  }
-
-  .swiper-button-prev svg,
-  .swiper-button-next svg {
-    font-size: 10px;
-  }
-
-  .price-container {
-    flex-direction: column;
-    align-items: center;
-    gap: 4px;
-  }
-}
-
-/* Room Policies Section - Add this to your HotelBookingDetails.css */
-
+/* Room Policies Section */
 .room-policies-section {
   margin-top: 20px;
   padding-top: 20px;
@@ -734,28 +504,206 @@
   color: #444;
 }
 
-.cancellation-policy-section,
-.board-basis-section {
-  margin-top: 12px;
-  padding-top: 12px;
-  border-top: 1px solid #f0f0f0;
+/* Cancellation Info */
+.cancellation-info {
+  padding: 12px 16px;
+  background: #fff3cd;
+  border-left: 4px solid #ffc107;
+  border-radius: 8px;
 }
 
-/* Responsive adjustments for policies */
+.cancellation-text {
+  margin: 0;
+  font-size: 13px;
+  color: #856404;
+  line-height: 1.5;
+}
+
+.cancellation-text strong {
+  font-weight: 700;
+}
+
+/* Footer */
+.room-footer {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding-top: 20px;
+  border-top: 2px solid #f0f0f0;
+  margin-top: auto;
+  gap: 16px;
+}
+
+.pricing-section {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.price-container {
+  display: flex;
+  align-items: baseline;
+  gap: 8px;
+}
+
+.current-price {
+  font-size: 28px;
+  font-weight: 700;
+  color: #ff6b35;
+}
+
+.currency-code {
+  font-size: 14px;
+  font-weight: 600;
+  color: #999;
+}
+
+.price-note {
+  font-size: 12px;
+  color: #666;
+}
+
+.book-now-btn {
+  background: linear-gradient(135deg, #ff6b35 0%, #ff5722 100%);
+  color: white;
+  border: none;
+  flex: 0.5;
+  /* padding: 14px 32px; */
+  border-radius: 8px;
+  font-size: 16px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  box-shadow: 0 4px 12px rgba(255, 87, 34, 0.3);
+  white-space: nowrap;
+}
+
+.book-now-btn:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 20px rgba(255, 87, 34, 0.4);
+}
+
+.book-now-btn:active {
+  transform: translateY(0);
+}
+
+/* Responsive Design */
+@media (max-width: 1024px) {
+  .rooms-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
 @media (max-width: 768px) {
-  .policies-toggle {
-    padding: 10px;
+  .room-types-container {
+    padding: 30px 16px;
   }
 
-  .policies-title {
-    font-size: 13px;
+  .room-types-title {
+    font-size: 28px;
   }
 
-  .policies-content {
-    padding: 12px;
+  .room-types-subtitle {
+    font-size: 14px;
   }
 
-  .policy-text {
-    font-size: 12px;
+  .rooms-grid {
+    gap: 24px;
+    grid-template-columns: 1fr;
+  }
+
+  .room-image-container {
+    height: 240px;
+  }
+
+  .room-image {
+    height: 240px;
+  }
+
+  .room-name {
+    font-size: 20px;
+  }
+
+  .room-specs {
+    grid-template-columns: repeat(2, 1fr);
+  }
+
+  .amenities-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .room-footer {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 16px;
+  }
+
+  .pricing-section {
+    align-items: center;
+    text-align: center;
+  }
+
+  .book-now-btn {
+    width: 100%;
+    padding: 16px;
+  }
+
+  .non-refundable-badge {
+    top: 16px;
+    right: 16px;
+    padding: 8px 14px;
+    font-size: 10px;
+    letter-spacing: 0.8px;
+  }
+
+  .price-option {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 12px;
+  }
+
+  .price-option-right {
+    align-items: flex-start;
+  }
+}
+
+@media (max-width: 480px) {
+  .room-types-title {
+    font-size: 24px;
+  }
+
+  .room-content {
+    padding: 20px;
+  }
+
+  .current-price {
+    font-size: 24px;
+  }
+
+  .non-refundable-badge {
+    font-size: 10px;
+    padding: 7px 12px;
+    top: 14px;
+    right: 14px;
+    letter-spacing: 0.6px;
+  }
+
+  .slick-arrow {
+    width: 28px;
+    height: 28px;
+  }
+
+  .slick-arrow svg {
+    font-size: 10px;
+  }
+
+  .price-container {
+    flex-direction: column;
+    align-items: center;
+    gap: 4px;
+  }
+
+  .option-price {
+    font-size: 18px;
   }
 }

@@ -1,39 +1,39 @@
 import React, { useState, useMemo } from "react";
-import { Swiper, SwiperSlide } from "swiper/react";
-import { Navigation, Pagination, Autoplay } from "swiper/modules";
-import "swiper/css";
-import "swiper/css/navigation";
-import "swiper/css/pagination";
+import Slider from "react-slick";
+import "slick-carousel/slick/slick.css";
+import "slick-carousel/slick/slick-theme.css";
 import {
   FaBed,
-  FaRuler,
   FaUsers,
-  FaWifi,
-  FaSnowflake,
-  FaTv,
-  FaCoffee,
-  FaBath,
-  FaCouch,
   FaCheckCircle,
   FaChevronLeft,
   FaChevronRight,
   FaUtensils,
+  FaInfoCircle,
+  FaChevronDown,
+  FaChevronUp,
 } from "react-icons/fa";
-import { MdBalcony, MdKingBed } from "react-icons/md";
+import { MdKingBed } from "react-icons/md";
 import "./RoomTypes.css";
 import { useHotelContext } from "../../Context/Hotel_context";
-import { FaInfoCircle, FaChevronDown, FaChevronUp } from "react-icons/fa";
 
 const RoomTypes = () => {
   const { rooms_rate_data, rooms_rate_loading } = useHotelContext();
 
   const [expandedPolicies, setExpandedPolicies] = useState({});
+  const [selectedRates, setSelectedRates] = useState({});
 
-  // Add this function to toggle policies
   const togglePolicies = (roomId) => {
     setExpandedPolicies((prev) => ({
       ...prev,
       [roomId]: !prev[roomId],
+    }));
+  };
+
+  const selectRate = (roomId, rateIndex) => {
+    setSelectedRates((prev) => ({
+      ...prev,
+      [roomId]: rateIndex,
     }));
   };
 
@@ -100,12 +100,6 @@ const RoomTypes = () => {
 
       rates.sort((a, b) => a.finalRate - b.finalRate);
 
-      // Get the cheapest rate
-      const cheapestRate = rates[0];
-      const hasBreakfast = rates.some(
-        (r) => r.boardBasis?.type === "BedAndBreakfast"
-      );
-
       const amenities = [];
       if (stdRoom.facilities && Array.isArray(stdRoom.facilities)) {
         stdRoom.facilities.forEach((f) => {
@@ -135,25 +129,14 @@ const RoomTypes = () => {
 
       // Limit to 8 amenities
       const finalAmenities = amenities.slice(0, 8);
-
       // Extract image URLs
       const imageLinks = stdRoom.images?.[0]?.links || [];
-
       parsedRooms.push({
         id: stdRoomId,
-        optionId: cheapestRate.optionId,
         name: stdRoom.name || room.name || "Standard Room",
         description:
           room.description ||
           `Comfortable ${stdRoom.name || "room"} with modern amenities`,
-        price: cheapestRate.finalRate || 0,
-        currency: cheapestRate.currency || "INR",
-        availability: parseInt(cheapestRate.availability) || 0,
-        refundable: cheapestRate.refundable || false,
-        boardBasis: cheapestRate.boardBasis || {
-          description: "Room Only",
-          type: "RoomOnly",
-        },
         maxGuests: parseInt(stdRoom.maxGuestAllowed) || 2,
         maxAdults: parseInt(stdRoom.maxAdultAllowed) || 2,
         maxChildren: parseInt(stdRoom.maxChildrenAllowed) || 0,
@@ -161,16 +144,39 @@ const RoomTypes = () => {
         amenities: finalAmenities,
         facilities: stdRoom.facilities || [],
         beds: stdRoom.beds || [],
-        hasBreakfast: hasBreakfast,
         allRates: rates,
-        cancellationPolicies: cheapestRate.cancellationPolicies || [],
-        policies: cheapestRate.policies || [],
       });
     });
 
     console.log("Parsed rooms:", parsedRooms);
     return parsedRooms;
   }, [rooms_rate_data]);
+
+  // Custom Arrow Components
+  const NextArrow = ({ onClick }) => (
+    <div className="slick-arrow slick-next" onClick={onClick}>
+      <FaChevronRight />
+    </div>
+  );
+
+  const PrevArrow = ({ onClick }) => (
+    <div className="slick-arrow slick-prev" onClick={onClick}>
+      <FaChevronLeft />
+    </div>
+  );
+
+  const sliderSettings = {
+    dots: true,
+    infinite: true,
+    speed: 500,
+    slidesToShow: 1,
+    slidesToScroll: 1,
+    autoplay: true,
+    autoplaySpeed: 4000,
+    pauseOnHover: true,
+    nextArrow: <NextArrow />,
+    prevArrow: <PrevArrow />,
+  };
 
   if (rooms_rate_loading) {
     return (
@@ -206,33 +212,17 @@ const RoomTypes = () => {
         {roomsData.map((room) => {
           const imageUrls = room.images.map((img) => img.url);
           const hasImages = imageUrls.length > 0;
+          const selectedRateIndex = selectedRates[room.id] || 0;
+          const selectedRate = room.allRates[selectedRateIndex];
 
           return (
             <div key={room.id} className="room-card">
-              {/* Swiper Image Carousel */}
+              {/* Slider Image Carousel */}
               <div className="room-image-container">
                 {hasImages ? (
-                  <Swiper
-                    modules={[Navigation, Pagination, Autoplay]}
-                    // navigation={{
-                    //   nextEl: `.swiper-button-next-${room.id}`,
-                    //   prevEl: `.swiper-button-prev-${room.id}`,
-                    // }}
-                    pagination={{
-                      clickable: true,
-                      dynamicBullets: true,
-                    }}
-                    autoplay={{
-                      delay: 4000,
-                      disableOnInteraction: false,
-                      pauseOnMouseEnter: true,
-                    }}
-                    loop={imageUrls.length > 1}
-                    speed={500}
-                    className="room-swiper"
-                  >
+                  <Slider {...sliderSettings}>
                     {imageUrls.map((image, index) => (
-                      <SwiperSlide key={index}>
+                      <div key={index}>
                         <img
                           src={image}
                           alt={`${room.name} - View ${index + 1}`}
@@ -242,9 +232,9 @@ const RoomTypes = () => {
                               "https://images.unsplash.com/photo-1566665797739-1674de7a421a?w=800&h=600&fit=crop";
                           }}
                         />
-                      </SwiperSlide>
+                      </div>
                     ))}
-                  </Swiper>
+                  </Slider>
                 ) : (
                   <div className="room-image-placeholder">
                     <FaBed className="placeholder-icon" />
@@ -252,23 +242,8 @@ const RoomTypes = () => {
                   </div>
                 )}
 
-                {!room.refundable && (
+                {!selectedRate.refundable && (
                   <div className="non-refundable-badge">Non-Refundable</div>
-                )}
-
-                {imageUrls.length > 1 && (
-                  <>
-                    <div
-                      className={`swiper-button-prev swiper-button-prev-${room.id}`}
-                    >
-                      <FaChevronLeft />
-                    </div>
-                    <div
-                      className={`swiper-button-next swiper-button-next-${room.id}`}
-                    >
-                      <FaChevronRight />
-                    </div>
-                  </>
                 )}
               </div>
 
@@ -311,16 +286,6 @@ const RoomTypes = () => {
                       </div>
                     </div>
                   )}
-
-                  <div className="spec-item">
-                    <FaUtensils className="spec-icon" />
-                    <div className="spec-content">
-                      <span className="spec-label">Board Basis</span>
-                      <span className="spec-value">
-                        {room.boardBasis.description}
-                      </span>
-                    </div>
-                  </div>
                 </div>
 
                 {/* Amenities */}
@@ -338,29 +303,53 @@ const RoomTypes = () => {
                   </div>
                 )}
 
-                {/* Additional Info */}
-                <div className="room-features">
-                  <h4 className="features-title">Booking Details</h4>
-                  <div className="features-list">
-                    {room.refundable ? (
-                      <span className="feature-tag feature-tag-success">
-                        Refundable
-                      </span>
-                    ) : (
-                      <span className="feature-tag feature-tag-warning">
-                        Non-Refundable
-                      </span>
-                    )}
-                    {room.hasBreakfast && (
-                      <span className="feature-tag">Breakfast Available</span>
-                    )}
-                    <span className="feature-tag">
-                      {room.availability} rooms available
-                    </span>
+                {/* Price Options - NEW SECTION */}
+                <div className="price-options-section">
+                  <h4 className="price-options-title">Select Your Plan</h4>
+                  <div className="price-options-list">
+                    {room.allRates.map((rate, index) => (
+                      <div
+                        key={index}
+                        className={`price-option ${
+                          selectedRateIndex === index
+                            ? "price-option-selected"
+                            : ""
+                        }`}
+                        onClick={() => selectRate(room.id, index)}
+                      >
+                        <div className="price-option-left">
+                          <div className="price-option-meal">
+                            <FaUtensils className="meal-icon" />
+                            <span className="meal-text">
+                              {rate.boardBasis.description}
+                            </span>
+                          </div>
+                          <div className="price-option-details">
+                            <span className="availability-text">
+                              {rate.availability} rooms available
+                            </span>
+                            {!rate.refundable && (
+                              <span className="refund-text">
+                                Non-Refundable
+                              </span>
+                            )}
+                          </div>
+                        </div>
+                        <div className="price-option-right">
+                          <span className="option-price">
+                            ₹{rate.finalRate.toLocaleString()}
+                          </span>
+                          <span className="option-currency">
+                            {rate.currency}
+                          </span>
+                        </div>
+                      </div>
+                    ))}
                   </div>
                 </div>
 
-                {room.policies && room.policies.length > 0 && (
+                {/* Policies */}
+                {selectedRate.policies && selectedRate.policies.length > 0 && (
                   <div className="room-policies-section">
                     <div
                       className="policies-toggle"
@@ -379,8 +368,7 @@ const RoomTypes = () => {
 
                     {expandedPolicies[room.id] && (
                       <div className="policies-content">
-                        {/* Room Policies */}
-                        {room.policies.map((policy, index) => (
+                        {selectedRate.policies.map((policy, index) => (
                           <div key={index} className="policy-item">
                             <div className="policy-type">{policy.type}</div>
                             <div className="policy-text">{policy.text}</div>
@@ -392,15 +380,15 @@ const RoomTypes = () => {
                 )}
 
                 {/* Cancellation Policy */}
-                {room.cancellationPolicies &&
-                  room.cancellationPolicies.length > 0 && (
+                {selectedRate.cancellationPolicies &&
+                  selectedRate.cancellationPolicies.length > 0 && (
                     <div className="cancellation-info">
                       <p className="cancellation-text">
                         <strong>Cancellation:</strong> Charges of ₹
-                        {room.cancellationPolicies[0].estimatedValue.toLocaleString()}{" "}
+                        {selectedRate.cancellationPolicies[0].estimatedValue.toLocaleString()}{" "}
                         apply from{" "}
                         {new Date(
-                          room.cancellationPolicies[0].start
+                          selectedRate.cancellationPolicies[0].start
                         ).toLocaleDateString()}
                       </p>
                     </div>
@@ -411,9 +399,11 @@ const RoomTypes = () => {
                   <div className="pricing-section">
                     <div className="price-container">
                       <span className="current-price">
-                        ₹{room.price.toLocaleString()}
+                        ₹{selectedRate.finalRate.toLocaleString()}
                       </span>
-                      <span className="currency-code">{room.currency}</span>
+                      <span className="currency-code">
+                        {selectedRate.currency}
+                      </span>
                     </div>
                     <span className="price-note">Per night incl. taxes</span>
                   </div>

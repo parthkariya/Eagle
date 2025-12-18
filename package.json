@@ -37,8 +37,10 @@
     "react-router-dom": "^6.28.1",
     "react-scripts": "5.0.1",
     "react-select": "^5.10.1",
+    "react-slick": "^0.31.0",
     "react-toastify": "^11.0.5",
     "reactjs-social-login": "^2.6.3",
+    "slick-carousel": "^1.8.1",
     "styled-components": "^6.1.19",
     "swiper": "^11.2.6"
   },

@@ -11,7 +11,7 @@
 .hotel-header {
   display: flex;
   justify-content: space-between;
-  align-items: flex-start;
+  align-items: center;
   margin-bottom: 30px;
   margin-top: 30px;
   gap: 40px;
@@ -19,7 +19,6 @@
 
 .hotel-info {
   flex: 1;
-  align-self: center;
   display: flex;
   flex-direction: column;
   gap: 0.2rem;
