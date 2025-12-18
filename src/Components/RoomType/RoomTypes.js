@@ -22,9 +22,20 @@ import {
 import { MdBalcony, MdKingBed } from "react-icons/md";
 import "./RoomTypes.css";
 import { useHotelContext } from "../../Context/Hotel_context";
+import { FaInfoCircle, FaChevronDown, FaChevronUp } from "react-icons/fa";
 
 const RoomTypes = () => {
   const { rooms_rate_data, rooms_rate_loading } = useHotelContext();
+
+  const [expandedPolicies, setExpandedPolicies] = useState({});
+
+  // Add this function to toggle policies
+  const togglePolicies = (roomId) => {
+    setExpandedPolicies((prev) => ({
+      ...prev,
+      [roomId]: !prev[roomId],
+    }));
+  };
 
   // Parse and structure the room data from API
   const roomsData = useMemo(() => {
@@ -355,6 +366,37 @@ const RoomTypes = () => {
                     </span>
                   </div>
                 </div>
+
+                {room.policies && room.policies.length > 0 && (
+                  <div className="room-policies-section">
+                    <div
+                      className="policies-toggle"
+                      onClick={() => togglePolicies(room.id)}
+                    >
+                      <div className="policies-toggle-left">
+                        <FaInfoCircle className="policies-icon" />
+                        <span className="policies-title">Room Policies</span>
+                      </div>
+                      {expandedPolicies[room.id] ? (
+                        <FaChevronUp className="policies-chevron" />
+                      ) : (
+                        <FaChevronDown className="policies-chevron" />
+                      )}
+                    </div>
+
+                    {expandedPolicies[room.id] && (
+                      <div className="policies-content">
+                        {/* Room Policies */}
+                        {room.policies.map((policy, index) => (
+                          <div key={index} className="policy-item">
+                            <div className="policy-type">{policy.type}</div>
+                            <div className="policy-text">{policy.text}</div>
+                          </div>
+                        ))}
+                      </div>
+                    )}
+                  </div>
+                )}
 
                 {/* Cancellation Policy */}
                 {room.cancellationPolicies &&
