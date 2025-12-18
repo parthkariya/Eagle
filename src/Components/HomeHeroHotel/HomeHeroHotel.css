@@ -178,7 +178,7 @@
 .hotel-location {
   color: #666;
   font-size: 14px;
-  margin: 0 0 12px 0;
+  margin: 0 0 4px 0;
 }
 
 /* Rating Container */
@@ -186,7 +186,8 @@
   display: flex;
   align-items: center;
   gap: 8px;
-  margin-top: 10px;
+  margin-top: 8px;
+  margin-bottom: 8px;
 }
 
 .rating-badge {
@@ -204,9 +205,110 @@
 }
 
 .stars {
-  color: #333;
+  color: #ffa500;
   font-size: 14px;
   letter-spacing: 1px;
+}
+
+/* Rate Details Section */
+.rate-details-section {
+  margin-top: 12px;
+  padding-top: 12px;
+  border-top: 1px solid #f0f0f0;
+}
+
+.board-basis {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin-bottom: 10px;
+  padding: 6px 10px;
+  background: #f8f9fa;
+  border-radius: 4px;
+  width: fit-content;
+}
+
+.label-icon {
+  font-size: 14px;
+  color: #666;
+}
+
+.board-basis-text {
+  font-size: 13px;
+  font-weight: 500;
+  color: #333;
+}
+
+/* Amenities Tags */
+.amenities-tags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin-bottom: 10px;
+}
+
+.amenity-tag {
+  display: inline-flex;
+  align-items: center;
+  padding: 5px 10px;
+  border-radius: 4px;
+  font-size: 12px;
+  font-weight: 500;
+  gap: 5px;
+  border: 1px solid;
+}
+
+.amenity-tag.breakfast {
+  background: #fff8f0;
+  color: #d84315;
+  border-color: #ffccbc;
+}
+
+.amenity-tag.cancellation {
+  background: #f1f8f4;
+  color: #2e7d32;
+  border-color: #c8e6c9;
+}
+
+.amenity-tag.refundable {
+  background: #f0f7ff;
+  color: #1976d2;
+  border-color: #bbdefb;
+}
+
+.amenity-tag.pay-hotel {
+  background: #f8f0ff;
+  color: #7b1fa2;
+  border-color: #e1bee7;
+}
+
+/* Offers Section */
+.offers-section {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  margin-top: 10px;
+}
+
+.offer-badge {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 10px;
+  background: #fffbea;
+  border-radius: 4px;
+  border-left: 3px solid #f59e0b;
+}
+
+.offer-icon {
+  font-size: 13px;
+  color: #f59e0b;
+}
+
+.offer-text {
+  font-size: 12px;
+  font-weight: 600;
+  color: #92400e;
 }
 
 /* Comparison Deals List */
@@ -258,13 +360,25 @@
 
 /* Right Column: Main Agoda Price Deal */
 .agoda-price-column {
-  width: 200px;
+  width: 220px;
   padding: 20px;
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: center;
   border-left: 1px solid #eee;
+  gap: 12px;
+}
+
+.non-refundable-badge {
+  background: #fff3e0;
+  color: #e65100;
+  padding: 6px 12px;
+  border-radius: 4px;
+  font-size: 12px;
+  font-weight: 600;
+  text-align: center;
+  width: 100%;
 }
 
 .discount-badge {
@@ -274,11 +388,11 @@
   border-radius: 4px;
   font-size: 13px;
   font-weight: 500;
-  margin-bottom: 20px;
+  margin-bottom: 12px;
 }
 
 .price-container {
-  text-align: right;
+  text-align: center;
   width: 100%;
 }
 
@@ -300,8 +414,8 @@
 .price {
   display: flex;
   align-items: flex-start;
-  justify-content: flex-end;
-  margin-bottom: 8px;
+  justify-content: center;
+  margin-bottom: 4px;
 }
 
 .currency {
@@ -318,6 +432,19 @@
   line-height: 1;
 }
 
+.price-subtext {
+  color: #666;
+  font-size: 12px;
+  margin-bottom: 8px;
+}
+
+.original-price {
+  text-decoration: line-through;
+  color: #999;
+  font-size: 14px;
+  margin-bottom: 12px;
+}
+
 .breakfast-info {
   color: #0a8c4e;
   font-size: 13px;
@@ -329,17 +456,23 @@
   background: #ff5722;
   color: white;
   border: none;
-  /* padding: 12px 24px; */
-  border-radius: 4px;
+  border-radius: 6px;
   font-size: 16px;
   font-weight: 600;
   cursor: pointer;
-  transition: background 0.2s;
+  transition: all 0.3s ease;
   width: 100%;
+  box-shadow: 0 2px 8px rgba(255, 87, 34, 0.3);
 }
 
 .view-deal-btn:hover {
   background: #f4511e;
+  box-shadow: 0 4px 12px rgba(255, 87, 34, 0.4);
+  transform: translateY(-2px);
+}
+
+.view-deal-btn:active {
+  transform: translateY(0);
 }
 
 /* Responsive Design */
@@ -380,5 +513,32 @@
 
   .price {
     justify-content: flex-start;
+  }
+
+  .amenities-tags {
+    flex-wrap: wrap;
+  }
+}
+
+@media (max-width: 600px) {
+  .hotel-card {
+    margin: 20px 10px;
+  }
+
+  .hotel-name {
+    font-size: 18px;
+  }
+
+  .amenity-tag {
+    font-size: 11px;
+    padding: 5px 10px;
+  }
+
+  .offer-text {
+    font-size: 12px;
+  }
+
+  .amount {
+    font-size: 28px;
   }
 }

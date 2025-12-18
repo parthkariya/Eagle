@@ -39,6 +39,11 @@
 .hotel-address {
   font-size: 16px;
   color: #333;
+  margin-bottom: 8px;
+}
+.hotel-address2 {
+  font-size: 16px;
+  color: #333;
   margin-bottom: 15px;
 }
 

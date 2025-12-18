@@ -1,4 +1,4 @@
-import React, { useState, useMemo } from "react";
+import React, { useState, useMemo, useEffect } from "react";
 import Modal from "react-modal";
 import {
   FaRunning,
@@ -16,13 +16,16 @@ import {
   FaCalendarAlt,
   FaChild,
   FaUser,
+  FaNewspaper,
 } from "react-icons/fa";
 import { MdDashboard, MdAccessTime, MdEventNote } from "react-icons/md";
-import { GiLion, GiForest, GiPartyPopper } from "react-icons/gi";
+import { GiLion, GiForest, GiPartyPopper, GiElevator } from "react-icons/gi";
 import { BsBuildingFill, BsClockHistory } from "react-icons/bs";
 import "./HotelBookingDetails.css";
 import RoomTypes from "../../Components/RoomType/RoomTypes";
 import { useLocation } from "react-router-dom";
+import { FaRegNewspaper } from "react-icons/fa6";
+import { useHotelContext } from "../../Context/Hotel_context";
 
 Modal.setAppElement("#root");
 
@@ -32,29 +35,50 @@ function HotelBookingDetails() {
 
   const location = useLocation();
   const [hotelData, setHotelData] = useState(location.state?.hotelData);
-
   console.log("Hotel Data:", hotelData);
-  console.log("Hotel Images:", hotelData?.images);
 
-  // Group images by caption dynamically
-  const groupedImages = useMemo(() => {
-    if (!hotelData?.images || !Array.isArray(hotelData.images)) {
-      console.log("No images found in hotelData");
-      return {};
+  const hotelId = hotelData?.id;
+
+  const { GetRoomsAndRates, rooms_rate_loading } = useHotelContext();
+
+  useEffect(() => {
+    const traceId = localStorage.getItem("hotelTraceID");
+    if (!traceId || !hotelId) {
+      console.warn("traceId or hotelId missing");
+      return;
     }
+    const params = {
+      traceId,
+      hotelId,
+    };
+
+    // console.log("pppp", params);
+
+    GetRoomsAndRates(params);
+  }, []);
+
+  const groupedImages = useMemo(() => {
+    if (!hotelData?.images) return {};
 
     const groups = {};
 
-    hotelData.images.forEach((image, idx) => {
-      console.log(`Image ${idx}:`, image);
-      const caption = image.caption || "Other";
-      if (!groups[caption]) {
-        groups[caption] = [];
-      }
-      groups[caption].push(image);
-    });
+    hotelData.images
+      .filter(
+        (image) =>
+          Array.isArray(image.links) &&
+          image.links.some((link) => link.size === "Xl")
+      )
+      .forEach((image) => {
+        const groupKey =
+          image.caption?.trim() || image.category?.trim() || "Other";
 
-    console.log("Grouped Images:", groups);
+        if (!groups[groupKey]) {
+          groups[groupKey] = [];
+        }
+
+        groups[groupKey].push(image);
+      });
+
     return groups;
   }, [hotelData?.images]);
 
@@ -65,26 +89,23 @@ function HotelBookingDetails() {
       label: key,
       count: groupedImages[key].length,
     }));
-    console.log("Categories:", cats);
     return cats;
   }, [groupedImages]);
 
-  // Get the best quality image URL
   const getImageUrl = (links) => {
-    console.log("links", links);
-
-    if (!links || links.length === 0) {
-      console.log("No links found");
-      return "";
-    }
-    const xxl = links.find((link) => link.size === "Xxl");
+    if (!links || links.length === 0) return "";
+    // const xxl = links.find((link) => link.size === "Xxl");
     const xl = links.find((link) => link.size === "Xl");
-    const standard = links.find((link) => link.size === "Standard");
-    const url = xxl?.url || xl?.url || standard?.url || links[0]?.url || "";
-    console.log("url", url);
-
-    return url;
+    return xl?.url || links[0]?.url || "";
   };
+
+  // const getImageUrl = (links) => {
+  //   if (!links || !Array.isArray(links)) {
+  //     return "";
+  //   }
+  //   const xl = links.find((link) => link.size === "Xl");
+  //   return xl ? xl.url : "";
+  // };
 
   // Get images for modal based on active tab
   const getImagesByTab = () => {
@@ -92,36 +113,24 @@ function HotelBookingDetails() {
       return hotelData?.images || [];
     }
 
-    // Find the category by matching the key
-    const categoryLabel = Object.keys(groupedImages).find(
-      (label) => label.toLowerCase().replace(/\s+/g, "") === activeTab
-    );
-
-    if (categoryLabel) {
-      console.log(
-        `Getting images for category: ${categoryLabel}`,
-        groupedImages[categoryLabel]
-      );
-      return groupedImages[categoryLabel] || [];
+    const category = categories.find((cat) => cat.key === activeTab);
+    if (category) {
+      return groupedImages[category.label] || [];
     }
 
     return [];
   };
 
   // Get grid display images (first 5 categories)
-
   const getGridDisplayData = () => {
     const displayCategories = categories.slice(0, 5);
-    console.log("displayCategories", displayCategories);
-
     return displayCategories.map((cat) => ({
       ...cat,
       image: groupedImages[cat.label][0],
     }));
   };
 
-  const openModal = (tab = "all") => {
-    setActiveTab(tab);
+  const openModal = () => {
     setIsModalOpen(true);
   };
 
@@ -132,8 +141,47 @@ function HotelBookingDetails() {
   const totalImages = hotelData?.images?.length || 0;
   const gridData = getGridDisplayData();
 
-  console.log("Grid Data:", gridData);
-  console.log("Total Images:", totalImages);
+  const getFacilityIcon = (facilityName) => {
+    const name = facilityName.toLowerCase();
+
+    // Map facility names to icons
+    if (name.includes("wi-fi") || name.includes("wifi")) {
+      return <FaWifi className="facility-icon" />;
+    } else if (
+      name.includes("restaurant") ||
+      name.includes("café") ||
+      name.includes("cafe")
+    ) {
+      return <FaUtensils className="facility-icon" />;
+    } else if (
+      name.includes("reception") ||
+      name.includes("front desk") ||
+      name.includes("concierge")
+    ) {
+      return <FaConciergeBell className="facility-icon" />;
+    } else if (name.includes("shuttle") || name.includes("airport")) {
+      return <FaCar className="facility-icon" />;
+    } else if (name.includes("car park") || name.includes("parking")) {
+      return <FaCar className="facility-icon" />;
+    } else if (
+      name.includes("laundry") ||
+      name.includes("housekeeping") ||
+      name.includes("dryer")
+    ) {
+      return <FaBroom className="facility-icon" />;
+    } else if (name.includes("pool") || name.includes("swimming")) {
+      return <FaSwimmingPool className="facility-icon" />;
+    } else if (name.includes("conference") || name.includes("meeting")) {
+      return <MdDashboard className="facility-icon" />;
+    } else if (name.includes("newspapers")) {
+      return <FaRegNewspaper className="facility-icon" />;
+    } else if (name.includes("lift access")) {
+      return <GiElevator className="facility-icon" />;
+    } else {
+      // Default icon for unmatched facilities
+      return <FaConciergeBell className="facility-icon" />;
+    }
+  };
 
   return (
     <div className="hotel-container">
@@ -150,6 +198,7 @@ function HotelBookingDetails() {
             </span>
           </h1>
           <p className="hotel-address">{hotelData?.contact?.address?.line1}</p>
+          {/* <div className="hotel-address2">{hotelData?.contact?.phones[0]}</div> */}
           <div className="review-badge">
             <span className="score">8.7</span>
             <span className="review-text">Very good</span>
@@ -166,13 +215,10 @@ function HotelBookingDetails() {
       </div>
 
       {/* Dynamic Gallery Grid */}
-      {gridData.length > 0 ? (
+      {gridData.length > 0 && (
         <div className="gallery-grid">
           {/* Main Image */}
-          <div
-            className="gallery-item main-image"
-            onClick={() => openModal("all")}
-          >
+          <div className="gallery-item main-image" onClick={openModal}>
             <img
               src={getImageUrl(gridData[0]?.image?.links)}
               alt={gridData[0]?.label}
@@ -182,47 +228,33 @@ function HotelBookingDetails() {
 
           {/* Other Category Images */}
           {gridData.slice(1, 5).map((item, index) => (
-            <div
-              key={item.key}
-              className="gallery-item"
-              onClick={() => openModal(item.key)}
-            >
+            <div key={item.key} className="gallery-item" onClick={openModal}>
               <img src={getImageUrl(item.image?.links)} alt={item.label} />
               <div className="photo-label">
                 {item.label} ({item.count})
               </div>
               {index === 3 && (
-                <button
-                  className="view-all-btn"
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    openModal("all");
-                  }}
-                >
+                <button className="view-all-btn" onClick={openModal}>
                   View all photos
                 </button>
               )}
             </div>
           ))}
         </div>
-      ) : (
-        <div style={{ padding: "20px", textAlign: "center" }}>
-          <p>No images available</p>
-        </div>
       )}
 
       {/* About Section */}
       <div className="about-section">
         <h2 className="section-title">About us</h2>
-        <p className="about-text">
-          Get your trip off to a great start with a stay at this property, which
-          offers free Wi-Fi in all rooms. Conveniently situated in the Sasan Gir
-          part of Sasan Gir, this property puts you close to attractions and
-          interesting dining options. Don't leave before paying a visit to the
-          famous Gir National Park. Rated with 5 stars, this high-quality
-          property provides guests with access to massage, restaurant and
-          fitness center on-site.
-        </p>
+        {hotelData.descriptions &&
+          hotelData.descriptions.map((description, index) => (
+            <div key={index}>
+              {description.type !== "General" && (
+                <h3 className="description-type">{description.type}</h3>
+              )}
+              <p className="about-text">{description.text}</p>
+            </div>
+          ))}
       </div>
 
       {/* Highlights Section */}
@@ -256,38 +288,13 @@ function HotelBookingDetails() {
       <div className="facilities-section">
         <h2 className="section-title">Facilities</h2>
         <div className="facilities-grid">
-          <div className="facility-item">
-            <FaSwimmingPool className="facility-icon" />
-            <span>Swimming pool</span>
-          </div>
-          <div className="facility-item">
-            <FaWifi className="facility-icon" />
-            <span>Free Wi-Fi</span>
-          </div>
-          <div className="facility-item">
-            <FaUtensils className="facility-icon" />
-            <span>Restaurants</span>
-          </div>
-          <div className="facility-item">
-            <FaConciergeBell className="facility-icon" />
-            <span>Room service</span>
-          </div>
-          <div className="facility-item">
-            <MdDashboard className="facility-icon" />
-            <span>Front desk [24-hour]</span>
-          </div>
-          <div className="facility-item">
-            <FaCar className="facility-icon" />
-            <span>Shuttle service</span>
-          </div>
-          <div className="facility-item">
-            <FaCar className="facility-icon" />
-            <span>Car park</span>
-          </div>
-          <div className="facility-item">
-            <FaBroom className="facility-icon" />
-            <span>Daily housekeeping</span>
-          </div>
+          {hotelData.facilities &&
+            hotelData.facilities.map((facility) => (
+              <div key={facility.id} className="facility-item">
+                {/* {getFacilityIcon(facility.name)} */}
+                <span>{facility.name}</span>
+              </div>
+            ))}
         </div>
       </div>
 

@@ -1,5 +1,8 @@
 import {
   CLEAR_SEARCHED_HOTEL,
+  GET_ROOMS_RATE_BEGIN,
+  GET_ROOMS_RATE_ERROR,
+  GET_ROOMS_RATE_SUCCESS,
   HOTEL_SEARCH_BEGIN,
   HOTEL_SEARCH_ERROR,
   HOTEL_SEARCH_SUCCESS,
@@ -18,14 +21,12 @@ const hotel_reducer = (state, action) => {
         ...state,
         hotel_loading: true,
       };
-
     case HOTEL_SEARCH_SUCCESS:
       return {
         ...state,
         hotel_loading: false,
         hotel_data: action.payload,
       };
-
     case HOTEL_SEARCH_ERROR:
       return {
         ...state,
@@ -48,6 +49,7 @@ const hotel_reducer = (state, action) => {
       return {
         ...state,
         main_hotel_loading: false,
+        Hotel_Main_data: [],
       };
 
     case STATIC_CONTENT_BEGIN:
@@ -61,12 +63,29 @@ const hotel_reducer = (state, action) => {
         Static_content_data: action.payload,
         static_content_load: false,
       };
-
     case STATIC_CONTENT_ERROR:
       return {
         ...state,
         Static_content_data: [],
         static_content_load: false,
+      };
+
+    case GET_ROOMS_RATE_BEGIN:
+      return {
+        ...state,
+        rooms_rate_loading: true,
+      };
+    case GET_ROOMS_RATE_SUCCESS:
+      return {
+        ...state,
+        rooms_rate_data: action.payload,
+        rooms_rate_loading: false,
+      };
+    case GET_ROOMS_RATE_ERROR:
+      return {
+        ...state,
+        rooms_rate_loading: false,
+        rooms_rate_data: {},
       };
 
     case CLEAR_SEARCHED_HOTEL:

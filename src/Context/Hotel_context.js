@@ -3,6 +3,9 @@ import { createContext, useContext, useReducer } from "react";
 import hotel_reducer from "../Reducer/Hotel_reducer";
 import {
   CLEAR_SEARCHED_HOTEL,
+  GET_ROOMS_RATE_BEGIN,
+  GET_ROOMS_RATE_ERROR,
+  GET_ROOMS_RATE_SUCCESS,
   HOTEL_SEARCH_BEGIN,
   HOTEL_SEARCH_ERROR,
   HOTEL_SEARCH_SUCCESS,
@@ -14,6 +17,7 @@ import {
   STATIC_CONTENT_SUCCESS,
 } from "../Actions";
 import {
+  getRoomsandrates,
   locationAutosuggestApi,
   SearchHotelMainApi,
   StaticContentApi,
@@ -26,6 +30,8 @@ const initialState = {
   main_hotel_loading: false,
   Static_content_data: [],
   static_content_load: false,
+  rooms_rate_data: {},
+  rooms_rate_loading: false,
 };
 
 const HotelContext = createContext();
@@ -122,6 +128,31 @@ export const HotelProvider = ({ children }) => {
       });
   };
 
+  const GetRoomsAndRates = async (params) => {
+    const token = localStorage.getItem("accessToken");
+    dispatch({ type: GET_ROOMS_RATE_BEGIN });
+
+    axios
+      .post(proxy + getRoomsandrates, params, {
+        headers: {
+          Authorization: "Bearer " + token,
+          source: "website",
+        },
+      })
+      .then((res) => {
+        if (res.data.error === false) {
+          dispatch({
+            type: GET_ROOMS_RATE_SUCCESS,
+            payload: res?.data?.results,
+          });
+        } else dispatch({ type: GET_ROOMS_RATE_ERROR });
+      })
+      .catch((err) => {
+        dispatch({ type: GET_ROOMS_RATE_ERROR });
+        console.log("Error in rooms and rate api ", err);
+      });
+  };
+
   const clearHotelData = () => {
     dispatch({ type: CLEAR_SEARCHED_HOTEL });
   };
@@ -134,6 +165,7 @@ export const HotelProvider = ({ children }) => {
         clearHotelData,
         SearchHotelMain,
         StaticContentAPi,
+        GetRoomsAndRates,
       }}
     >
       {children}
