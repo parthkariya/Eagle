@@ -42,6 +42,7 @@ function HotelBookingDetails() {
   const { GetRoomsAndRates, rooms_rate_loading } = useHotelContext();
 
   useEffect(() => {
+    window.scroll(0, 0);
     const traceId = localStorage.getItem("hotelTraceID");
     if (!traceId || !hotelId) {
       console.warn("traceId or hotelId missing");

@@ -153,6 +153,10 @@ export const HotelProvider = ({ children }) => {
       });
   };
 
+  const PriceCheckApi = async (params) => {
+    const token = localStorage.getItem("accessToken");
+  };
+
   const clearHotelData = () => {
     dispatch({ type: CLEAR_SEARCHED_HOTEL });
   };

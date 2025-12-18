@@ -48,14 +48,11 @@ const RoomTypes = () => {
     }
 
     const parsedRooms = [];
-
-    // Group options by standardized room ID
     const roomGroups = {};
 
     Object.entries(options).forEach(([optionId, optionData]) => {
       const { rate } = optionData;
 
-      // Validate rate structure
       if (!rate || !rate.occupancies || rate.occupancies.length === 0) {
         console.log(`Invalid rate structure for option ${optionId}`);
         return;
@@ -87,11 +84,9 @@ const RoomTypes = () => {
       });
     });
 
-    // Convert groups to array format
     Object.entries(roomGroups).forEach(([stdRoomId, group]) => {
       const { stdRoom, room, rates } = group;
 
-      // Sort rates by price (lowest first)
       rates.sort((a, b) => a.finalRate - b.finalRate);
 
       // Get the cheapest rate
@@ -100,7 +95,6 @@ const RoomTypes = () => {
         (r) => r.boardBasis?.type === "BedAndBreakfast"
       );
 
-      // Extract amenities from facilities
       const amenities = [];
       if (stdRoom.facilities && Array.isArray(stdRoom.facilities)) {
         stdRoom.facilities.forEach((f) => {
@@ -110,7 +104,6 @@ const RoomTypes = () => {
         });
       }
 
-      // Default amenities if none provided or too few
       if (amenities.length < 6) {
         const defaultAmenities = [
           "Free Wi-Fi",
