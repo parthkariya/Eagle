@@ -467,7 +467,7 @@ function HotelBookingDetails() {
           },
         }}
       >
-        <div className="modal-header">
+        <div className="modal-headerrr">
           <h2 className="modal-title">
             <div className="modal-tabs">
               <button
@@ -487,7 +487,7 @@ function HotelBookingDetails() {
               ))}
             </div>
           </h2>
-          <button className="close-btn" onClick={closeModal}>
+          <button className="cloj-btn" onClick={closeModal}>
             ×
           </button>
         </div>

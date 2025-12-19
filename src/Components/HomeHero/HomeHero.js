@@ -318,6 +318,7 @@ const HomeHero = () => {
   const [rooms, setRooms] = useState(1);
   const [adults, setAdults] = useState(2);
   const [children, setChildren] = useState(0);
+  const [childrenAges, setChildrenAges] = useState([]);
   const [staycondition, setStayCondition] = useState(false);
 
   const handleReturnFlightTabChange = (newValue) => {
@@ -484,8 +485,25 @@ const HomeHero = () => {
     } else if (type === "adults") {
       setAdults((prev) => Math.max(1, prev + delta));
     } else if (type === "children") {
-      setChildren((prev) => Math.max(0, prev + delta));
+      setChildren((prev) => {
+        const newCount = Math.max(0, prev + delta);
+        if (newCount > prev) {
+          setChildrenAges([
+            ...childrenAges,
+            ...Array(newCount - prev).fill(""),
+          ]);
+        } else if (newCount < prev) {
+          setChildrenAges(childrenAges.slice(0, newCount));
+        }
+        return newCount;
+      });
     }
+  };
+
+  const handleChildAge = (index, age) => {
+    const newAges = [...childrenAges];
+    newAges[index] = age;
+    setChildrenAges(newAges);
   };
 
   const handleSelect2 = (item) => {
@@ -1919,10 +1937,10 @@ const HomeHero = () => {
   const buildOccupancies = () => {
     const adultsPerRoom = Math.floor(adults / rooms);
     const remainingAdults = adults % rooms;
-
+    const ages = [...childrenAges];
     return Array.from({ length: rooms }).map((_, index) => ({
       numOfAdults: adultsPerRoom + (index < remainingAdults ? 1 : 0),
-      childAges: [],
+      childAges: ages.splice(0, Math.ceil(ages.length / (rooms - index))),
     }));
   };
 
@@ -1933,6 +1951,8 @@ const HomeHero = () => {
       toast.warning("Please select both check-in and check-out dates.");
     } else if (dateRange[0].isAfter(dateRange[1])) {
       toast.warning("Check-out date must be after check-in date.");
+    } else if (children > 0 && childrenAges == []) {
+      toast.warning("children's age is complesory");
     } else {
       const payload = {
         checkIn: moment(dateRange[0].toDate()).format("YYYY-MM-DD"),
@@ -2229,6 +2249,39 @@ const HomeHero = () => {
                               </button>
                             </div>
                           </div>
+
+                          {/* Children Ages */}
+                          {children > 0 && (
+                            <div className="children-ages-section">
+                              <div className="ages-header">Children's Ages</div>
+                              {Array.from({ length: children }).map(
+                                (_, index) => (
+                                  <div key={index} className="age-input-row">
+                                    <span className="age-label">
+                                      Child {index + 1}
+                                    </span>
+                                    <select
+                                      className="age-select"
+                                      value={childrenAges[index] || ""}
+                                      onChange={(e) =>
+                                        handleChildAge(index, e.target.value)
+                                      }
+                                    >
+                                      <option value="">Age</option>
+                                      {Array.from(
+                                        { length: 18 },
+                                        (_, i) => i
+                                      ).map((age) => (
+                                        <option key={age} value={age}>
+                                          {age} {age === 1 ? "year" : "years"}
+                                        </option>
+                                      ))}
+                                    </select>
+                                  </div>
+                                )
+                              )}
+                            </div>
+                          )}
                         </div>
                       )}
                     </div>

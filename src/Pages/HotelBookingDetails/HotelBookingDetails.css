@@ -426,7 +426,7 @@
 }
 
 /* Modal Styles */
-.modal-header {
+.modal-headerrr {
   display: flex;
   align-items: center;
   justify-content: space-between;
@@ -441,7 +441,7 @@
   margin: 0;
 }
 
-.close-btn {
+.cloj-btn {
   background: none;
   border: none;
   font-size: 28px;
