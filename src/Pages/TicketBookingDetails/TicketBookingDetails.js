@@ -1694,7 +1694,7 @@ const TicketBookingDetails = () => {
             )}
 
             <div className="row justify-content-center mt-4">
-              <div className="col-12 col-lg-7 order-1 order-lg-1">
+              <div className="col-12 col-lg-7 order-1 order-lg-1 mb-4">
                 <div className="row mt-3">
                   <div className="col-12">
                     {timebaki !== null && timebaki > 0 && (
@@ -1802,7 +1802,7 @@ const TicketBookingDetails = () => {
                         </div>
                       </div>
                     )}
-                    <div className="w-100">
+                    <div className="w-100 mb-4">
                       <div className="card shadow-lg border-0 h-100 w-100 card_flight">
                         {/* Header */}
                         <div
@@ -2949,67 +2949,6 @@ const TicketBookingDetails = () => {
                         ))}
                       </div>
                     </div>
-
-                    <div
-                      className="row justify-content-center my-3 my-lg-5"
-                      style={{ display: !addonCondition ? "inherit" : "none" }}
-                    >
-                      <div className="col-12 d-flex align-items-center justify-content-center gap-2">
-                        <label className="custom-checkbox d-flex align-items-center gap-2">
-                          <input
-                            type="checkbox"
-                            checked={check}
-                            onChange={togglecheck}
-                            className="d-none"
-                          />
-                          <span className="checkmark"></span>
-                          <span className="fw-bold text-muted">
-                            I agree with the Terms & Conditions
-                          </span>
-                        </label>
-                      </div>
-                      <div
-                        style={{
-                          cursor: check ? "pointer" : "not-allowed",
-                        }}
-                        className="col-2 mx-auto btnn text-center sbmitbtn"
-                        onClick={() => {
-                          AddPassengerDetailsToApi();
-
-                          const allPassengers = [
-                            ...travelers,
-                            ...childtravelers,
-                            ...infanttravelers,
-                          ];
-                          const validation =
-                            item?.fareIdentifier?.code !== "airIQ_fare"
-                              ? validatePassengers(allPassengers)
-                              : validatePassengersAiriq(allPassengers);
-                          if (!validation.isValid) {
-                            Notification(
-                              "warning",
-                              "Field Required",
-                              validation.message
-                            );
-                            return;
-                          }
-
-                          if (
-                            check &&
-                            item?.fareIdentifier?.code !== "airIQ_fare"
-                          ) {
-                            openModalasking();
-                            console.log("true airiq");
-                            // handleSavePassenger();
-                          } else {
-                            console.log("false airiq");
-                            handleSavePassengerAiriq();
-                          }
-                        }}
-                      >
-                        {passenger_loading ? "Loading..." : "SUBMIT"}
-                      </div>
-                    </div>
                   </>
                 )}
                 {activeTab === "seats" && <SeatMap />}
@@ -3433,7 +3372,7 @@ const TicketBookingDetails = () => {
                                           className="selected-option d-block"
                                         >
                                           {seat.seatNo}{" "}
-                                          <span className="price">
+                                          <span className="price price_addon">
                                             ₹{seat.amt}
                                           </span>
                                         </span>
@@ -3457,7 +3396,7 @@ const TicketBookingDetails = () => {
                                           className="selected-option d-block"
                                         >
                                           {meal.dsc}{" "}
-                                          <span className="price">
+                                          <span className="price price_addon">
                                             ₹{meal.amt}
                                           </span>
                                         </span>
@@ -3481,7 +3420,7 @@ const TicketBookingDetails = () => {
                                           className="selected-option d-block"
                                         >
                                           {baggage.dsc}{" "}
-                                          <span className="price">
+                                          <span className="price price_addon">
                                             ₹{baggage.amt}
                                           </span>
                                         </span>
@@ -3516,9 +3455,74 @@ const TicketBookingDetails = () => {
                             </div>
                           </div>
 
+                          <div
+                            className="row justify-content-center mt-2"
+                            style={{
+                              display: !addonCondition ? "inherit" : "none",
+                            }}
+                          >
+                            <div className="col-12 d-flex align-items-center gap-2">
+                              <label className="custom-checkbox d-flex align-items-center gap-2">
+                                <input
+                                  type="checkbox"
+                                  checked={check}
+                                  onChange={togglecheck}
+                                  className="d-none"
+                                />
+                                <span className="checkmark"></span>
+                                <span className="fw-bold text-muted">
+                                  I agree with the Terms & Conditions
+                                </span>
+                              </label>
+                            </div>
+                            <div
+                              style={{
+                                cursor: check ? "pointer" : "not-allowed",
+                                width: "95%",
+                              }}
+                              className="col-2 mx-auto btnn text-center sbmitbtn"
+                              onClick={() => {
+                                AddPassengerDetailsToApi();
+
+                                const allPassengers = [
+                                  ...travelers,
+                                  ...childtravelers,
+                                  ...infanttravelers,
+                                ];
+                                const validation =
+                                  item?.fareIdentifier?.code !== "airIQ_fare"
+                                    ? validatePassengers(allPassengers)
+                                    : validatePassengersAiriq(allPassengers);
+                                if (!validation.isValid) {
+                                  Notification(
+                                    "warning",
+                                    "Field Required",
+                                    validation.message
+                                  );
+                                  return;
+                                }
+
+                                if (
+                                  check &&
+                                  item?.fareIdentifier?.code !== "airIQ_fare"
+                                ) {
+                                  openModalasking();
+                                  console.log("true airiq");
+                                  // handleSavePassenger();
+                                } else {
+                                  console.log("false airiq");
+                                  handleSavePassengerAiriq();
+                                }
+                              }}
+                            >
+                              {passenger_loading ? "Loading..." : "SUBMIT"}
+                            </div>
+                          </div>
+
                           <button
                             style={{
                               display: !addonCondition ? "none" : "block",
+                              width: "100%",
                             }}
                             className="btn-proceed"
                             disabled={!selectedSeats}

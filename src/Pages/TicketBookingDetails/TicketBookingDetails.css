@@ -28,13 +28,14 @@
   padding: 10px;
   text-align: center;
   vertical-align: middle;
-  height: 50px;
+  /* height: 50px; */
 }
 
 .pricee-tag h2 {
   font-size: 25px;
   font-weight: bold;
   color: #e8381b;
+  margin-bottom: 0px !important;
 }
 
 .flight-box {
@@ -71,7 +72,7 @@
   font-weight: 800;
   color: var(--color-white);
   border-radius: 8px;
-  margin: 1.5rem 0;
+  margin: 1.2rem 0;
   align-self: center;
   /* align-self: center;
   display: flex;
@@ -1305,4 +1306,9 @@
 .addon-trigger-container {
   padding: 50px;
   text-align: center;
+}
+
+.price_addon {
+  font-size: 18px !important;
+  font-weight: 600 !important;
 }

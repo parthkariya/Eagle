@@ -2863,3 +2863,9 @@
 .hotel-results-dropdown::-webkit-scrollbar-thumb:hover {
   background: #999;
 }
+
+.disabled-tab {
+  /* opacity: 0.5; */
+  cursor: not-allowed;
+  pointer-events: none;
+}

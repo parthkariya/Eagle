@@ -2001,8 +2001,12 @@ const HomeHero = () => {
               {tabs.map((tab) => (
                 <div
                   key={tab.key}
-                  className="tab-wrapper"
+                  className={`tab-wrapper ${
+                    tab.key === "stays" ? "disabled-tab" : ""
+                  }`}
                   onClick={() => {
+                    if (tab.key === "stays") return;
+
                     TabSelection(tab.key);
                     setSelectedtab(tab.key);
                     setFrom("");
@@ -3649,7 +3653,7 @@ const HomeHero = () => {
                                   </div>
                                 </div>
 
-                                <div className="d-flex align-items-center justify-content-center justify-content-lg-between my-3">
+                                <div className="d-flex align-items-center justify-content-center justify-content-lg-between my-3 d-none">
                                   <div>
                                     <div className="d-flex gap-1 mx-3 d-none">
                                       <div
@@ -4400,8 +4404,8 @@ const HomeHero = () => {
                                           {/* Card Content */}
                                           <div
                                             style={{
-                                              paddingTop: "44px",
-                                              paddingBottom: "20px",
+                                              paddingTop: "40px",
+                                              paddingBottom: "15px",
                                               paddingLeft: "12px",
                                               paddingRight: "12px",
                                               textAlign: "center",
@@ -6587,8 +6591,8 @@ const HomeHero = () => {
                                           {/* Card Content */}
                                           <div
                                             style={{
-                                              paddingTop: "44px",
-                                              paddingBottom: "20px",
+                                              paddingTop: "40px",
+                                              paddingBottom: "15px",
                                               paddingLeft: "12px",
                                               paddingRight: "12px",
                                               textAlign: "center",
@@ -7824,7 +7828,10 @@ const HomeHero = () => {
                 {totalPages > 1 &&
                   !(filtered === true && filteredFlights?.length === 0) && (
                     <>
-                      <div className="d-flex align-items-center mb-2 mt-2">
+                      <div
+                        className="d-flex align-items-center mb-2 mt-2"
+                        style={{ margin: "0 auto", width: "80%" }}
+                      >
                         <label htmlFor="entries" className="me-2">
                           Show
                         </label>
