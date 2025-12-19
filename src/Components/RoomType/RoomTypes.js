@@ -2,6 +2,8 @@ import React, { useState, useMemo } from "react";
 import Slider from "react-slick";
 import "slick-carousel/slick/slick.css";
 import "slick-carousel/slick/slick-theme.css";
+import { Check, X, User, CreditCard, Info } from "lucide-react";
+
 import {
   FaBed,
   FaUsers,
@@ -18,13 +20,18 @@ import "./RoomTypes.css";
 import { useHotelContext } from "../../Context/Hotel_context";
 
 const RoomTypes = ({ hotelID }) => {
-  const { rooms_rate_data, rooms_rate_loading, PriceCheckApi } =
-    useHotelContext();
+  const {
+    rooms_rate_data,
+    rooms_rate_loading,
+    PriceCheckApi,
+    price_check_data,
+    price_check_loading,
+  } = useHotelContext();
 
   const [expandedPolicies, setExpandedPolicies] = useState({});
   const [selectedRates, setSelectedRates] = useState({});
-  const [selectedOptionId, setSelectedOptionId] = useState("");
   const [hotelId, setHotelId] = useState(String(hotelID));
+  const [isOpen, setIsOpen] = useState(false);
 
   const togglePolicies = (roomId) => {
     setExpandedPolicies((prev) => ({
@@ -33,29 +40,65 @@ const RoomTypes = ({ hotelID }) => {
     }));
   };
 
+  const hasPriceData =
+    price_check_data &&
+    price_check_data.options &&
+    Object.keys(price_check_data.options).length > 0 &&
+    price_check_data.rooms;
+
+  let optionKey, option, rate, occupancy, room;
+
+  if (hasPriceData) {
+    optionKey = Object.keys(price_check_data.options)[0];
+    option = price_check_data.options[optionKey];
+    rate = option.rate;
+    occupancy = rate.occupancies[0];
+    room = price_check_data.rooms[occupancy.roomId];
+  }
+  const formatDate = (dateString) => {
+    const date = new Date(dateString);
+    return date.toLocaleDateString("en-IN", {
+      day: "numeric",
+      month: "short",
+      year: "numeric",
+      hour: "2-digit",
+      minute: "2-digit",
+    });
+  };
+
   const selectRate = (roomId, room, rateIndex) => {
-    setSelectedOptionId(room?.optionId);
     setSelectedRates((prev) => ({
       ...prev,
       [roomId]: rateIndex,
     }));
   };
+  const handleBookNow = (roomIndex) => {
+    const room = roomsData[roomIndex];
 
-  const handleBookNow = () => {
+    if (!room) return;
+
+    const rateIndex = selectedRates[room.id] ?? 0;
+    const optionId = room.allRates?.[rateIndex]?.optionId;
+
+    if (!optionId) {
+      console.error("Option ID not found");
+      return;
+    }
+
     const traceId = localStorage.getItem("hotelTraceID");
     if (!traceId) {
-      console.error("Trace ID not found in localStorage");
+      console.error("Trace ID not found");
       return;
     }
-    if (!selectedOptionId) {
-      console.error("Option ID missing");
-      return;
-    }
+
     const payload = {
-      traceId: traceId,
-      optionId: selectedOptionId,
-      hotelId: hotelId,
+      traceId,
+      optionId,
+      hotelId,
     };
+
+    setIsOpen(true);
+
     PriceCheckApi(payload);
   };
 
@@ -227,7 +270,7 @@ const RoomTypes = ({ hotelID }) => {
       </div>
 
       <div className="rooms-grid">
-        {roomsData.map((room) => {
+        {roomsData.map((room, ind) => {
           const imageUrls = room.images.map((img) => img.url);
           const hasImages = imageUrls.length > 0;
           const selectedRateIndex = selectedRates[room.id] || 0;
@@ -329,7 +372,9 @@ const RoomTypes = ({ hotelID }) => {
                             ? "price-option-selected"
                             : ""
                         }`}
-                        onClick={() => selectRate(room.id, rate, index)}
+                        onClick={() => {
+                          selectRate(room.id, rate, index);
+                        }}
                       >
                         <div className="price-option-left">
                           <div className="price-option-meal">
@@ -423,7 +468,7 @@ const RoomTypes = ({ hotelID }) => {
                   </div>
                   <button
                     className="book-now-btn"
-                    onClick={() => handleBookNow()}
+                    onClick={() => handleBookNow(ind)}
                   >
                     Select
                   </button>
@@ -433,6 +478,157 @@ const RoomTypes = ({ hotelID }) => {
           );
         })}
       </div>
+      {isOpen && (
+        <div className="booking-modal-overlay" onClick={() => setIsOpen(false)}>
+          <div
+            className="booking-modal-content"
+            onClick={(e) => e.stopPropagation()}
+          >
+            {price_check_loading || !hasPriceData ? (
+              <>
+                <div className="room-types-container">
+                  <div className="loading-container">
+                    <div className="loading-spinner"></div>
+                    <p>Loading ...</p>
+                  </div>
+                </div>
+              </>
+            ) : (
+              <>
+                <div className="modal-header">
+                  <button
+                    className="close-btn"
+                    onClick={() => setIsOpen(false)}
+                  >
+                    <X size={20} />
+                  </button>
+                  <h2 className="room-title">{room.name}</h2>
+
+                  <div className="availability-badge">
+                    <Check size={16} />
+                    {rate.availability} rooms available
+                  </div>
+                </div>
+
+                <div className="modal-body">
+                  <div className="price-section">
+                    <div className="price-label">Total Price</div>
+                    <h1 className="price-amount">
+                      ₹{rate.finalRate.toLocaleString("en-IN")}
+                    </h1>
+                    {!price_check_data.priceChangeData.isPriceChanged && (
+                      <div className="price-status">
+                        <Check size={16} />
+                        Price Confirmed
+                      </div>
+                    )}
+                  </div>
+
+                  <div className="info-section">
+                    <h3 className="info-title">
+                      <User size={18} />
+                      Guest Details
+                    </h3>
+                    <div className="info-grid">
+                      <div className="info-item">
+                        <span className="info-label">Adults</span>
+                        <span className="info-value">
+                          {occupancy.numOfAdults} Guests
+                        </span>
+                      </div>
+                      <div className="info-item">
+                        <span className="info-label">Children</span>
+                        <span className="info-value">
+                          {occupancy.numOfChildren} Children
+                        </span>
+                      </div>
+                      <div className="info-item">
+                        <span className="info-label">Board Basis</span>
+                        <span className="info-value">
+                          {rate.boardBasis.description}
+                        </span>
+                      </div>
+                      <div className="info-item">
+                        <span className="info-label">Smoking</span>
+                        <span className="info-value">
+                          {room.smokingAllowed ? "Allowed" : "Not Allowed"}
+                        </span>
+                      </div>
+                    </div>
+                  </div>
+
+                  <div className="info-section">
+                    <h3 className="info-title">
+                      <CreditCard size={18} />
+                      Booking Information
+                    </h3>
+                    <div className="info-grid">
+                      <div className="info-item">
+                        <span className="info-label">Refundability</span>
+                        <span className="badge badge-danger">
+                          {rate.refundability}
+                        </span>
+                      </div>
+                      <div className="info-item">
+                        <span className="info-label">Package Rate</span>
+                        <span className="badge badge-info">
+                          {rate.isPackageRate ? "Yes" : "No"}
+                        </span>
+                      </div>
+                      <div className="info-item">
+                        <span className="info-label">Passport Required</span>
+                        <span className="badge badge-success">
+                          {rate.IsPassportMandatory ? "Yes" : "No"}
+                        </span>
+                      </div>
+                      <div className="info-item">
+                        <span className="info-label">PAN Required</span>
+                        <span className="badge badge-success">
+                          {rate.IsPANMandatory ? "Yes" : "No"}
+                        </span>
+                      </div>
+                    </div>
+                  </div>
+
+                  <div className="policies-section">
+                    <h3 className="info-title">
+                      <Info size={18} />
+                      Hotel Policies
+                    </h3>
+                    {rate.policies.map((policy, index) => (
+                      <div key={index} className="policy-item">
+                        <div className="policy-type">{policy.type}</div>
+                        <p className="policy-text">{policy.text}</p>
+                      </div>
+                    ))}
+                  </div>
+
+                  {rate.cancellationPolicies.length > 0 && (
+                    <div className="cancellation-policy">
+                      <h4 className="cancellation-title">
+                        Cancellation Policy
+                      </h4>
+                      <p className="cancellation-text">
+                        Cancellation charges of ₹
+                        {rate.cancellationPolicies[0].estimatedValue.toLocaleString(
+                          "en-IN"
+                        )}{" "}
+                        apply from{" "}
+                        {formatDate(rate.cancellationPolicies[0].start)}{" "}
+                        onwards.
+                      </p>
+                    </div>
+                  )}
+
+                  <button className="confirm-btn-price-check">
+                    Proceed to Book
+                  </button>
+                </div>
+              </>
+            )}
+          </div>
+        </div>
+      )}
     </div>
   );
 };
