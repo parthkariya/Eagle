@@ -1947,26 +1947,44 @@ const HomeHero = () => {
   const HandleHotelSearch = async () => {
     if (!selectedHotel) {
       toast.warning("Please select a hotel from the dropdown.");
-    } else if (!dateRange || dateRange.length !== 2) {
+      return;
+    }
+
+    if (!dateRange || dateRange.length !== 2) {
       toast.warning("Please select both check-in and check-out dates.");
-    } else if (dateRange[0].isAfter(dateRange[1])) {
+      return;
+    }
+
+    if (dateRange[0].isAfter(dateRange[1])) {
       toast.warning("Check-out date must be after check-in date.");
-    } else if (children > 0 && childrenAges == []) {
-      toast.warning("children's age is complesory");
-    } else {
-      const payload = {
-        checkIn: moment(dateRange[0].toDate()).format("YYYY-MM-DD"),
-        checkOut: moment(dateRange[1].toDate()).format("YYYY-MM-DD"),
-        nationality: "IN",
-        occupancies: buildOccupancies(),
-        // locationId: selectedHotel?.locationId || "228381",
-        hotelId: String(selectedHotel?.referenceId),
-        page: 1,
-        pageSize: 100,
-        traceId: null,
-      };
-      SearchHotelMain(payload);
+      return;
+    }
+
+    if (children > 0 && (!childrenAges || childrenAges.length === 0)) {
+      toast.warning("Children's age is compulsory");
+      return;
+    }
+
+    const payload = {
+      checkIn: moment(dateRange[0].toDate()).format("YYYY-MM-DD"),
+      checkOut: moment(dateRange[1].toDate()).format("YYYY-MM-DD"),
+      nationality: "IN",
+      occupancies: buildOccupancies(),
+      hotelId: String(selectedHotel?.referenceId),
+      page: 1,
+      pageSize: 100,
+      traceId: null,
+    };
+
+    try {
+      // ✅ First API
+      await SearchHotelMain(payload);
+
+      // ✅ Call only if search is successful
       StaticContentAPi(selectedHotel?.referenceId);
+    } catch (error) {
+      // ❌ StaticContentAPi will NOT be called
+      console.log("Search failed, skipping static content API");
     }
   };
 
@@ -2001,11 +2019,12 @@ const HomeHero = () => {
               {tabs.map((tab) => (
                 <div
                   key={tab.key}
-                  className={`tab-wrapper ${
-                    tab.key === "stays" ? "disabled-tab" : ""
-                  }`}
+                  // className={`tab-wrapper ${
+                  //   tab.key === "stays" ? "disabled-tab" : ""
+                  // }`}
+                  className="tab-wrapper"
                   onClick={() => {
-                    if (tab.key === "stays") return;
+                    // if (tab.key === "stays") return;
 
                     TabSelection(tab.key);
                     setSelectedtab(tab.key);

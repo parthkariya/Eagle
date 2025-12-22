@@ -1,6 +1,7 @@
 import axios from "axios";
 import { createContext, useContext, useReducer } from "react";
 import hotel_reducer from "../Reducer/Hotel_reducer";
+import { toast } from "react-toastify";
 import {
   CLEAR_SEARCHED_HOTEL,
   GET_ROOMS_RATE_BEGIN,
@@ -82,29 +83,40 @@ export const HotelProvider = ({ children }) => {
   const SearchHotelMain = async (params) => {
     const token = localStorage.getItem("accessToken");
     dispatch({ type: MAIN_SEARCH_BEGIN });
+
     try {
-      axios
-        .post(SearchHotelMainApi, params, {
-          headers: {
-            Authorization: "Bearer " + token,
-            source: "website",
-          },
-        })
-        .then((res) => {
-          if (res.data.error === false) {
-            dispatch({
-              type: MAIN_SEARCH_SUCCESS,
-              payload: res?.data?.results?.data,
-            });
-            localStorage.setItem("hotelTraceID", res.data?.results?.traceId);
-            return res?.data?.results?.data;
-          } else {
-            dispatch({ type: MAIN_SEARCH_ERROR });
-          }
+      const res = await axios.post(SearchHotelMainApi, params, {
+        headers: {
+          Authorization: "Bearer " + token,
+          source: "website",
+        },
+      });
+
+      if (res.data?.error === false) {
+        dispatch({
+          type: MAIN_SEARCH_SUCCESS,
+          payload: res.data?.results?.data,
         });
+
+        localStorage.setItem("hotelTraceID", res.data?.results?.traceId);
+        return res.data?.results?.data; // ✅ success
+      } else {
+        dispatch({ type: MAIN_SEARCH_ERROR });
+        throw new Error(res.data?.message || "Search API failed");
+      }
     } catch (error) {
       dispatch({ type: MAIN_SEARCH_ERROR });
-      console.log("Error in Main Search API ", error);
+
+      const errorMessage =
+        error?.response?.data?.error?.message ||
+        error?.response?.data?.message ||
+        error.message ||
+        "Something went wrong. Please try again.";
+
+      toast.error(errorMessage);
+      console.error("Error in Main Search API:", error);
+
+      throw error; // ✅ important
     }
   };
 
