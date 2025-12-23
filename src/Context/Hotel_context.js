@@ -19,6 +19,7 @@ import {
   STATIC_CONTENT_BEGIN,
   STATIC_CONTENT_ERROR,
   STATIC_CONTENT_SUCCESS,
+  CLEAR_STATIC_DATA,
 } from "../Actions";
 import {
   getRoomsandrates,
@@ -201,8 +202,16 @@ export const HotelProvider = ({ children }) => {
       });
   };
 
+  const HotelRoombooking = async (params) => {
+    const token = localStorage.getItem("accessToken");
+  };
+
   const clearHotelData = () => {
     dispatch({ type: CLEAR_SEARCHED_HOTEL });
+  };
+
+  const clearStaticData = () => {
+    dispatch({ type: CLEAR_STATIC_DATA });
   };
 
   return (
@@ -215,6 +224,7 @@ export const HotelProvider = ({ children }) => {
         StaticContentAPi,
         GetRoomsAndRates,
         PriceCheckApi,
+        clearStaticData,
       }}
     >
       {children}

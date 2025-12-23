@@ -483,20 +483,32 @@ const HomeHero = () => {
 
   const handleCounter = (type, delta) => {
     if (type === "rooms") {
-      setRooms((prev) => Math.max(1, prev + delta));
+      setRooms((prevRooms) => {
+        const newRooms = Math.max(1, prevRooms + delta);
+        const maxAdults = newRooms * 3;
+
+        setAdults((prevAdults) => Math.min(prevAdults, maxAdults));
+
+        return newRooms;
+      });
     } else if (type === "adults") {
-      setAdults((prev) => Math.max(1, prev + delta));
+      setAdults((prev) => {
+        const maxAdults = rooms * 3;
+        return Math.max(1, Math.min(prev + delta, maxAdults));
+      });
     } else if (type === "children") {
       setChildren((prev) => {
         const newCount = Math.max(0, prev + delta);
+
         if (newCount > prev) {
-          setChildrenAges([
-            ...childrenAges,
+          setChildrenAges((prevAges) => [
+            ...prevAges,
             ...Array(newCount - prev).fill(""),
           ]);
         } else if (newCount < prev) {
-          setChildrenAges(childrenAges.slice(0, newCount));
+          setChildrenAges((prevAges) => prevAges.slice(0, newCount));
         }
+
         return newCount;
       });
     }
@@ -1037,6 +1049,7 @@ const HomeHero = () => {
     clearHotelData,
     SearchHotelMain,
     StaticContentAPi,
+    clearStaticData,
   } = useHotelContext();
 
   useEffect(() => {
@@ -1968,13 +1981,30 @@ const HomeHero = () => {
   };
 
   const buildOccupancies = () => {
-    const adultsPerRoom = Math.floor(adults / rooms);
-    const remainingAdults = adults % rooms;
-    const ages = [...childrenAges];
-    return Array.from({ length: rooms }).map((_, index) => ({
-      numOfAdults: adultsPerRoom + (index < remainingAdults ? 1 : 0),
-      childAges: ages.splice(0, Math.ceil(ages.length / (rooms - index))),
-    }));
+    const MAX_ADULTS_PER_ROOM = 3;
+
+    let remainingAdults = adults;
+    let remainingChildrenAges = [...childrenAges];
+
+    return Array.from({ length: rooms }).map((_, index) => {
+      // Adults per room (max 3)
+      const numOfAdults = Math.min(MAX_ADULTS_PER_ROOM, remainingAdults);
+
+      remainingAdults -= numOfAdults;
+
+      // Split children evenly across remaining rooms
+      const remainingRooms = rooms - index;
+      const childrenForThisRoom = Math.ceil(
+        remainingChildrenAges.length / remainingRooms
+      );
+
+      const childAges = remainingChildrenAges.splice(0, childrenForThisRoom);
+
+      return {
+        numOfAdults,
+        childAges,
+      };
+    });
   };
 
   const HandleHotelSearch = async () => {
@@ -1994,6 +2024,7 @@ const HomeHero = () => {
       toast.warning("Children's age is compulsory");
       return;
     }
+    clearStaticData();
     const payload = {
       checkIn: moment(dateRange[0].toDate()).format("YYYY-MM-DD"),
       checkOut: moment(dateRange[1].toDate()).format("YYYY-MM-DD"),
@@ -2239,7 +2270,8 @@ const HomeHero = () => {
                     <div className="guests-selector-wrapper">
                       <div className="guests-display" onClick={toggleDropdown}>
                         <span className="guests-text">
-                          {rooms} room, {adults + children} guest
+                          {rooms} room,
+                          {adults + children} guest
                           {adults + children !== 1 ? "s" : ""}
                         </span>
                       </div>
@@ -2282,6 +2314,7 @@ const HomeHero = () => {
                               <button
                                 className="counter-button"
                                 onClick={() => handleCounter("adults", 1)}
+                                disabled={adults >= rooms * 3}
                               >
                                 +
                               </button>

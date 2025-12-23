@@ -32,13 +32,9 @@ Modal.setAppElement("#root");
 function HotelBookingDetails() {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [activeTab, setActiveTab] = useState("all");
-
   const location = useLocation();
   const [hotelData, setHotelData] = useState(location.state?.hotelData);
-  console.log("Hotel Data:", hotelData);
-
   const hotelId = hotelData?.id;
-
   const { GetRoomsAndRates, rooms_rate_loading } = useHotelContext();
 
   useEffect(() => {
@@ -52,9 +48,7 @@ function HotelBookingDetails() {
       traceId,
       hotelId,
     };
-
-    // console.log("pppp", params);
-
+    //console.log("pppp", params);
     GetRoomsAndRates(params);
   }, []);
 
@@ -109,6 +103,7 @@ function HotelBookingDetails() {
   // };
 
   // Get images for modal based on active tab
+
   const getImagesByTab = () => {
     if (activeTab === "all") {
       return hotelData?.images || [];

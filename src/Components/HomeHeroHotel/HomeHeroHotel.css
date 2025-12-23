@@ -487,6 +487,11 @@
     width: 100%;
   }
 
+  .hotel-list {
+    max-width: 80%;
+    margin: 0 auto;
+  }
+
   .hotel-swiper .swiper-slide img {
     border-radius: 8px 8px 0 0;
   }
@@ -536,6 +541,9 @@
 
   .offer-text {
     font-size: 12px;
+  }
+  .hotel-list {
+    max-width: 90%;
   }
 
   .amount {

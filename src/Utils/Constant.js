@@ -126,3 +126,6 @@ export const getRoomsandrates =
 
 export const priceCheckurl =
   "https://hotel-volt-api-sandbox.travclan.com/api/v1/price-check";
+
+export const bookRoomHotelUrl =
+  "https://hotel-volt-api-sandbox.travclan.com/api/v1/book";
