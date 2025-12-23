@@ -123,30 +123,35 @@ export const HotelProvider = ({ children }) => {
   const StaticContentAPi = async (hotelId) => {
     const token = localStorage.getItem("accessToken");
     dispatch({ type: STATIC_CONTENT_BEGIN });
-    axios
-      .get(`${proxy}${StaticContentApi}/${hotelId}/static-content`, {
-        headers: {
-          Authorization: "Bearer " + token,
-          "Authorization-Type": "external-service",
-          source: "website",
-        },
-      })
-      .then((res) => {
-        if (res.data?.error === false) {
-          dispatch({
-            type: STATIC_CONTENT_SUCCESS,
-            payload: res?.data?.results[0]?.data,
-          });
-        } else {
-          dispatch({ type: STATIC_CONTENT_ERROR });
-        }
-      })
-      .catch((err) => {
-        dispatch({ type: STATIC_CONTENT_ERROR });
-        console.log("Error in Static content api", err);
-      });
-  };
 
+    try {
+      const res = await axios.get(
+        `${proxy}${StaticContentApi}/${hotelId}/static-content`,
+        {
+          headers: {
+            Authorization: "Bearer " + token,
+            "Authorization-Type": "external-service",
+            source: "website",
+          },
+        }
+      );
+
+      if (res.data?.error === false) {
+        dispatch({
+          type: STATIC_CONTENT_SUCCESS,
+          payload: {
+            hotelId,
+            data: res?.data?.results[0]?.data?.[0],
+          },
+        });
+      } else {
+        dispatch({ type: STATIC_CONTENT_ERROR });
+      }
+    } catch (err) {
+      dispatch({ type: STATIC_CONTENT_ERROR });
+      console.log("Error in Static content api", err);
+    }
+  };
   const GetRoomsAndRates = async (params) => {
     const token = localStorage.getItem("accessToken");
     dispatch({ type: GET_ROOMS_RATE_BEGIN });

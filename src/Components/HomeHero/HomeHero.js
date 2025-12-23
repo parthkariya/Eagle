@@ -129,8 +129,10 @@ const HomeHero = () => {
 
   const [selectedOption, setSelectedOption] = useState(options[0]);
   const [selected, setSelected] = useState(0);
-  const [from, setFrom] = useState("");
-  const [to, setTo] = useState("");
+  const [from, setFrom] = useState(null);
+  const [to, setTo] = useState(null);
+  const [searchedHotelIDs, setSearchHotelIds] = useState([]);
+  const storedHotelIdsRef = useRef(new Set());
   const [isSwapping, setIsSwapping] = useState(false);
   const [isDropdownOpenTraveler, setIsDropdownOpenTravellers] = useState(false);
   const [isDropdownOpenCabin, setIsDropdownOpenCabin] = useState(false);
@@ -536,6 +538,7 @@ const HomeHero = () => {
 
     setDate1(formattedDatee);
     setSelectedDate(date);
+    localStorage.setItem("selectedDateFlight", date);
 
     if (selected == 1) {
       getReturnDate(formattedDate, 1, getArrCityCode);
@@ -1023,6 +1026,8 @@ const HomeHero = () => {
     itinerary_loading,
     ClearFlightData,
     flightAirIq_Data,
+    handleFlightTo,
+    handleFlightFrom,
   } = useFlightContext();
 
   const {
@@ -1769,11 +1774,32 @@ const HomeHero = () => {
     const saved =
       JSON.parse(localStorage.getItem("recentAirportsDestination")) || [];
     setRecentDestinations(saved);
+
+    const saveFromFlight = localStorage.getItem("FlightselectedOrigin");
+    if (saveFromFlight) {
+      setFrom(JSON.parse(saveFromFlight));
+    }
+    const saveToFlight = localStorage.getItem("FlightselectedDes");
+    if (saveToFlight) {
+      setTo(JSON.parse(saveToFlight));
+    }
+
+    const saveDateFlight = localStorage.getItem("selectedDateFlight");
+    if (saveDateFlight) {
+      setSelectedDate(saveDateFlight);
+      setDate1(saveDateFlight);
+    }
   }, []);
 
   const handleSelectOrigin = (selected) => {
-    if (!selected) return;
+    if (!selected) {
+      setFrom(null);
+      localStorage.removeItem("FlightselectedOrigin");
+      return;
+    }
     setFrom(selected);
+    localStorage.setItem("FlightselectedOrigin", JSON.stringify(selected));
+    handleFlightFrom(selected);
 
     const updated = [
       selected,
@@ -1785,8 +1811,15 @@ const HomeHero = () => {
   };
 
   const handleSelectDestination = (selected) => {
-    if (!selected) return;
+    if (!selected) {
+      setTo(null);
+      localStorage.removeItem("FlightselectedDes");
+      return;
+    }
+    handleFlightTo(selected);
     setTo(selected);
+    localStorage.setItem("FlightselectedDes", JSON.stringify(selected));
+
     dateAvailability(selected.value);
 
     const updated = [
@@ -1949,22 +1982,18 @@ const HomeHero = () => {
       toast.warning("Please select a hotel from the dropdown.");
       return;
     }
-
     if (!dateRange || dateRange.length !== 2) {
       toast.warning("Please select both check-in and check-out dates.");
       return;
     }
-
     if (dateRange[0].isAfter(dateRange[1])) {
       toast.warning("Check-out date must be after check-in date.");
       return;
     }
-
     if (children > 0 && (!childrenAges || childrenAges.length === 0)) {
       toast.warning("Children's age is compulsory");
       return;
     }
-
     const payload = {
       checkIn: moment(dateRange[0].toDate()).format("YYYY-MM-DD"),
       checkOut: moment(dateRange[1].toDate()).format("YYYY-MM-DD"),
@@ -1977,14 +2006,21 @@ const HomeHero = () => {
     };
 
     try {
-      // ✅ First API
-      await SearchHotelMain(payload);
-
-      // ✅ Call only if search is successful
-      StaticContentAPi(selectedHotel?.referenceId);
+      const data = await SearchHotelMain(payload);
+      const incomingIds = data?.map((item) => item.id) || [];
+      const newIds = incomingIds.filter((id) => {
+        if (!storedHotelIdsRef.current.has(id)) {
+          storedHotelIdsRef.current.add(id);
+          return true;
+        }
+        return false;
+      });
+      setSearchHotelIds((prev) => [...prev, ...newIds]);
+      if (newIds.length > 0) {
+        await Promise.all(newIds.map((hotelId) => StaticContentAPi(hotelId)));
+      }
     } catch (error) {
-      // ❌ StaticContentAPi will NOT be called
-      console.log("Search failed, skipping static content API");
+      console.log("Search failed or static content API failed", error);
     }
   };
 
@@ -2532,11 +2568,11 @@ const HomeHero = () => {
                       );
                     }}
                     // disabledDate={disableAllExceptApiDates}
-                    value={
-                      selectedDate || defaultMonth
-                        ? dayjs(selectedDate || defaultMonth)
-                        : null
-                    }
+                    // value={
+                    //   selectedDate || defaultMonth
+                    //     ? dayjs(selectedDate || defaultMonth)
+                    //     : null
+                    // }
                     suffixIcon={null}
                   />
                 </div>
@@ -3672,7 +3708,7 @@ const HomeHero = () => {
                                   </div>
                                 </div>
 
-                                <div className="d-flex align-items-center justify-content-center justify-content-lg-between my-3 d-none">
+                                <div className="d-flex align-items-center justify-content-center justify-content-lg-between">
                                   <div>
                                     <div className="d-flex gap-1 mx-3 d-none">
                                       <div
@@ -4701,6 +4737,7 @@ const HomeHero = () => {
                                                   fontSize: "14px",
                                                   textAlign: "center",
                                                   cursor: "pointer",
+                                                  marginBottom: "0.2rem",
                                                 }}
                                               >
                                                 View Flight Details
@@ -4840,7 +4877,7 @@ const HomeHero = () => {
                                                 <div
                                                   style={{
                                                     height: "18px",
-                                                    marginTop: "4px",
+                                                    // marginTop: "4px",
                                                   }}
                                                 ></div>
 
@@ -5473,22 +5510,24 @@ const HomeHero = () => {
                                   </div>
 
                                   {/* AirIQ Book Button */}
-                                  <div
-                                    className="res_mob_view_detail_btn"
-                                    onClick={() => {
-                                      setFlightProName("airiq");
-                                      openModal(item);
-                                    }}
-                                    style={{
-                                      color: "#ff690f",
-                                      fontWeight: "600",
-                                      fontSize: "14px",
-                                      textAlign: "center",
-                                      cursor: "pointer",
-                                    }}
-                                  >
-                                    View Flight Details
-                                  </div>
+                                  {item?.airIQPrice && (
+                                    <div
+                                      className="res_mob_view_detail_btn"
+                                      onClick={() => {
+                                        setFlightProName("airiq");
+                                        openModal(item);
+                                      }}
+                                      style={{
+                                        color: "#ff690f",
+                                        fontWeight: "600",
+                                        fontSize: "14px",
+                                        textAlign: "center",
+                                        cursor: "pointer",
+                                      }}
+                                    >
+                                      View Flight Details
+                                    </div>
+                                  )}
                                 </div>
                                 {/* <div className="d-flex gap-2 w-100 justify-content-between"> */}
                                 {/* TravClan Book Button */}
@@ -7027,7 +7066,7 @@ const HomeHero = () => {
                                                 <div
                                                   style={{
                                                     height: "18px",
-                                                    marginTop: "4px",
+                                                    // marginTop: "4px",
                                                   }}
                                                 ></div>
 
@@ -7849,7 +7888,7 @@ const HomeHero = () => {
                     <>
                       <div
                         className="d-flex align-items-center mb-2 mt-2"
-                        style={{ margin: "0 auto", width: "80%" }}
+                        style={{ margin: "0 auto", width: "98%" }}
                       >
                         <label htmlFor="entries" className="me-2">
                           Show
@@ -9220,8 +9259,7 @@ const HomeHero = () => {
         </>
       )}
 
-      {staycondition && <HomeHeroHotel />}
-
+      {staycondition && selectedtab === "stays" && <HomeHeroHotel />}
       {/* Drawer Modal for Responsive*/}
 
       <Modal
@@ -9266,6 +9304,29 @@ const HomeHero = () => {
                   <div className="flight-details-title">Flight Details</div>
                   <div className="departure-title">Departure Flight</div>
 
+                  {flightProName === "travclan" ? (
+                    <>
+                      <div>
+                        <Chip
+                          label={
+                            selectedItem?.iR === true
+                              ? "Refundable"
+                              : "Non-Refundable"
+                          }
+                          variant="outlined"
+                          sx={{
+                            color: selectedItem?.iR === true ? "green" : "gray",
+                            backgroundColor:
+                              selectedItem?.iR === true ? "#e0f7e9" : "inherit",
+                            borderColor:
+                              selectedItem?.iR === true ? "#4caf50" : "inherit",
+                          }}
+                        />
+                      </div>
+                    </>
+                  ) : (
+                    <></>
+                  )}
                   <div className="flight-card-container">
                     <div className="flight-card">
                       {/* Date Header */}
@@ -9381,39 +9442,199 @@ const HomeHero = () => {
                     </div>
                   </div>
 
+                  {/* Technical Stops Summary Section */}
+                  {flightProName === "travclan" ? (
+                    <>
+                      <div className="fw-bold fs-5 mt-3">Technical Stops</div>
+                      <div className="container my-3">
+                        <div className="flight-cardok p-3 shadow-sm rounded">
+                          {selectedItem?.sg?.some((seg) => seg.sO) ? (
+                            <div>
+                              <div
+                                className="alert alert-warning mb-3"
+                                role="alert"
+                              >
+                                <h6 className="alert-heading mb-2">
+                                  <i className="bi bi-exclamation-triangle-fill me-2"></i>
+                                  This flight includes technical stops
+                                </h6>
+                                <p className="mb-0 small">
+                                  Technical stops are brief stops made by
+                                  aircraft for operational reasons such as
+                                  refueling or crew changes. Passengers
+                                  typically remain on board during these stops.
+                                </p>
+                              </div>
+
+                              {selectedItem?.sg.map(
+                                (seg, idx) =>
+                                  seg.sO && (
+                                    <div
+                                      key={idx}
+                                      className="border rounded p-2 mb-2 bg-light"
+                                    >
+                                      <div className="row">
+                                        <div className="col-md-6">
+                                          <small className="text-muted">
+                                            Stop Location
+                                          </small>
+                                          <div className="fw-semibold">
+                                            {seg.sP || "N/A"}
+                                          </div>
+                                        </div>
+                                        <div className="col-md-6">
+                                          <small className="text-muted">
+                                            Stop Duration
+                                          </small>
+                                          <div className="fw-semibold">
+                                            {seg.sD
+                                              ? `${Math.floor(seg.sD / 60)}h ${
+                                                  seg.sD % 60
+                                                }m`
+                                              : "N/A"}
+                                          </div>
+                                        </div>
+                                      </div>
+                                      <div className="row mt-2">
+                                        <div className="col-md-6">
+                                          <small className="text-muted">
+                                            Arrival at Stop
+                                          </small>
+                                          <div>
+                                            {seg.sPAT &&
+                                            moment(seg.sPAT).isValid()
+                                              ? moment(seg.sPAT).format(
+                                                  "hh:mm A, DD MMM YYYY"
+                                                )
+                                              : "N/A"}
+                                          </div>
+                                        </div>
+                                        <div className="col-md-6">
+                                          <small className="text-muted">
+                                            Departure from Stop
+                                          </small>
+                                          <div>
+                                            {seg.sPDT &&
+                                            moment(seg.sPDT).isValid()
+                                              ? moment(seg.sPDT).format(
+                                                  "hh:mm A, DD MMM YYYY"
+                                                )
+                                              : "N/A"}
+                                          </div>
+                                        </div>
+                                      </div>
+                                    </div>
+                                  )
+                              )}
+                            </div>
+                          ) : (
+                            <div className="text-center py-3">
+                              <div className="text-success mb-2">
+                                <i
+                                  className="bi bi-check-circle-fill"
+                                  style={{
+                                    fontSize: "2rem",
+                                  }}
+                                ></i>
+                              </div>
+                              <h6 className="text-muted mb-0">
+                                No Technical Stops
+                              </h6>
+                              <small className="text-muted">
+                                This flight operates without any technical stops
+                              </small>
+                            </div>
+                          )}
+                        </div>
+                      </div>
+                    </>
+                  ) : (
+                    <></>
+                  )}
+
                   {/* Fare Details */}
                   <div className="fare-details-title">Fare Details</div>
                   <div className="fare-card-container">
                     <div className="fare-card">
-                      <div className="baggage-info">
-                        <BsFillHandbagFill color="orangered" size={15} />
-                        <div className="baggage-text">
-                          {selectedItem?.sg[0]?.cBg} Cabin bag allowance
+                      {/* Cabin Baggage */}
+                      <div className="d-flex align-items-center gap-2 mb-2">
+                        <div>
+                          <BsFillHandbagFill color="orangered" size={15} />
+                        </div>
+                        <div style={{ lineHeight: 1, fontSize: "0.80rem" }}>
+                          {flightProName === "travclan" ? (
+                            <>
+                              {selectedItem?.baggage?.travclan?.cabin || "N/A"}{" "}
+                              Cabin Baggage
+                            </>
+                          ) : flightProName === "airiq" ? (
+                            <>
+                              {selectedItem?.baggage?.airiq?.cabin || "N/A"}{" "}
+                              Cabin Baggage
+                            </>
+                          ) : (
+                            <>
+                              {selectedItem?.baggage?.travclan?.cabin || "N/A"}{" "}
+                              | {selectedItem?.baggage?.airiq?.cabin || "N/A"}{" "}
+                              Cabin Baggage
+                            </>
+                          )}
                         </div>
                       </div>
-                      <div className="baggage-info">
-                        <BsFillLuggageFill color="orangered" size={15} />
-                        <div className="baggage-text">
-                          {selectedItem?.sg[0]?.bg} Check-in bag allowance
+
+                      {/* Check-in Baggage */}
+                      <div className="d-flex align-items-center gap-2 mb-3">
+                        <div>
+                          <BsFillLuggageFill color="orangered" size={15} />
+                        </div>
+                        <div style={{ lineHeight: 1, fontSize: "0.75rem" }}>
+                          {flightProName === "travclan" ? (
+                            <>
+                              {selectedItem?.baggage?.travclan?.checkIn ||
+                                "N/A"}{" "}
+                              Check-in Baggage
+                            </>
+                          ) : flightProName === "airiq" ? (
+                            <>
+                              {selectedItem?.baggage?.airiq?.checkIn || "N/A"}{" "}
+                              Check-in Baggage
+                            </>
+                          ) : (
+                            <>
+                              TravClan:{" "}
+                              {selectedItem?.baggage?.travclan?.checkIn ||
+                                "N/A"}{" "}
+                              | AirIQ:{" "}
+                              {selectedItem?.baggage?.airiq?.checkIn || "N/A"}{" "}
+                              Check-in Baggage
+                            </>
+                          )}
                         </div>
                       </div>
-                      <div className="fare-rules-section">
-                        <h6 className="fare-rules-title">Fare Rules</h6>
-                        {fare_rules_Loading ? (
-                          <Box sx={{ width: "100%" }}>
-                            <Skeleton variant="text" height={20} />
-                            <Skeleton variant="text" height={20} />
-                            <Skeleton variant="text" height={20} />
-                          </Box>
-                        ) : (
-                          <div
-                            className="fare-rules-content"
-                            dangerouslySetInnerHTML={{
-                              __html: fare_rules[0]?.fareRuleDetail,
-                            }}
-                          />
-                        )}
-                      </div>
+
+                      {/* Fare Rules - Only show when flightProName is travclan */}
+                      {flightProName === "travclan" && (
+                        <div className="fare-rules-section">
+                          <h6 className="fare-rules-title fw-bold">
+                            Fare Rules
+                          </h6>
+                          {fare_rules_Loading ? (
+                            <Box sx={{ width: "100%" }}>
+                              <Skeleton variant="text" height={20} />
+                              <Skeleton variant="text" height={20} />
+                              <Skeleton variant="text" height={20} />
+                            </Box>
+                          ) : (
+                            <div
+                              className="fare-rules-content"
+                              style={{ fontSize: "0.8rem", lineHeight: 1.4 }}
+                              dangerouslySetInnerHTML={{
+                                __html: fare_rules[0]?.fareRuleDetail,
+                              }}
+                            />
+                          )}
+                        </div>
+                      )}
                     </div>
                   </div>
                 </div>

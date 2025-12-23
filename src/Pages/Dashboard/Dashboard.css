@@ -1439,7 +1439,6 @@
     border-radius: 0;
     margin: 0;
   }
-
   .booking-modal-overlay {
     padding: 0;
   }
@@ -1452,8 +1451,8 @@
   }
 
   .modal-header {
-    padding-top: 20px;
-    padding-bottom: 16px;
+    padding-top: 20px !important;
+    padding-bottom: 16px !important;
   }
 
   .modal-title {
@@ -1976,7 +1975,6 @@
     text-align: left;
   }
 
-
   .flight-header,
   .flight-route,
   .flight-details,
@@ -1986,19 +1984,19 @@
     padding: 0px;
   }
 
-  .flight-item.success{
+  .flight-item.success {
     padding: 1rem;
   }
 
-  .flight_header_dash__modal{
+  .flight_header_dash__modal {
     flex-direction: row !important;
   }
 
-    /* .flight-item{
+  /* .flight-item{
 
     } */
 
-  .flight-header{
+  .flight-header {
     margin-bottom: 0px;
   }
 }

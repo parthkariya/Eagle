@@ -595,7 +595,7 @@
 }
 
 .flightsavailable2 {
-  width: 80%;
+  width: 98%;
   margin: 0.5rem auto;
   background-color: whitesmoke;
   border-radius: 10px;
@@ -1864,7 +1864,7 @@
   border: none;
   font-size: 2rem;
   cursor: pointer;
-  color: #666;
+  color: var(--color-white);
   padding: 0;
   width: 30px;
   height: 30px;
@@ -2084,6 +2084,10 @@
 
   .modal-body {
     padding: 0 1rem 1rem 1rem;
+  }
+
+  .flight-card-resp {
+    padding: 0px !important;
   }
 }
 

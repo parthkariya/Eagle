@@ -5,14 +5,10 @@ import axios from "axios";
 import {
   ACCEPT_HEADER,
   ACCEPT_HEADER1,
-  getFare,
   GetPassengerDetails,
-  newFlightApi,
   newFlightApi_dynamic,
   PassengerDetails_url,
-  reprice,
   searchcurl,
-  walletApi,
 } from "../Utils/Constant";
 import {
   BOOKING_BEGIN,
@@ -52,6 +48,8 @@ import {
   WALLET_API_BEGIN,
   WALLET_API_ERROR,
   WALLET_API_SUCCESS,
+  FLIGHT_SET_FROM,
+  FLIGHT_SET_TO,
 } from "../Actions";
 import Notification from "../Utils/Notification";
 
@@ -81,6 +79,8 @@ const initialState = {
   passenger_Details: [],
   passenger_loading_details: false,
   add_passenger_loading: false,
+  flight_from: null,
+  flight_to: null,
 };
 
 const FlightContext = createContext();
@@ -375,6 +375,14 @@ export const FlightProvider = ({ children }) => {
       });
   };
 
+  const handleFlightFrom = (from) => {
+    dispatch({ type: FLIGHT_SET_FROM, payload: from });
+  };
+
+  const handleFlightTo = (to) => {
+    dispatch({ type: FLIGHT_SET_TO, payload: to });
+  };
+
   return (
     <FlightContext.Provider
       value={{
@@ -393,6 +401,8 @@ export const FlightProvider = ({ children }) => {
         FlightSearchAiriq,
         GetPassengersDetails,
         PassengerDetails,
+        handleFlightFrom,
+        handleFlightTo,
       }}
     >
       {children}

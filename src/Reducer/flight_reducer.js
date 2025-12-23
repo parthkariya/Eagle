@@ -15,6 +15,8 @@ import {
   FLIGHT_SEARCH_BEGIN,
   FLIGHT_SEARCH_ERROR,
   FLIGHT_SEARCH_SUCCESS,
+  FLIGHT_SET_FROM,
+  FLIGHT_SET_TO,
   GET_BOOKING_BEGIN,
   GET_BOOKING_ERROR,
   GET_BOOKING_SUCCESS,
@@ -211,6 +213,13 @@ const flight_reducer = (state, action) => {
   }
   if (action.type == PASSENGER_DETAILS_ERROR) {
     return { ...state, add_passenger_loading: false };
+  }
+
+  if (action.type === FLIGHT_SET_FROM) {
+    return { ...state, flight_from: action.payload };
+  }
+  if (action.type === FLIGHT_SET_TO) {
+    return { ...state, flight_to: action.payload };
   }
 };
 
