@@ -498,7 +498,7 @@ const RoomTypes = ({ hotelID }) => {
                                 ? "price-option-selected"
                                 : ""
                             }`}
-                            onClick={() => selectRate(room.id, index)}
+                            onClick={() => selectRate(room.id, rate, index)}
                           >
                             <div className="price-option-left">
                               <div className="price-option-meal">
