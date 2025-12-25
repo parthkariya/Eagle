@@ -32,7 +32,6 @@
   display: flex;
   align-items: center;
   justify-content: space-between;
-  height: 500px;
   z-index: -10 !important;
 }
 
@@ -1658,7 +1657,7 @@
     width: 100%;
     display: flex;
     align-items: start;
-    height: 675px;
+    /* height: 675px; */
     /* z-index: -10 !important; */
   }
   .flighttime2,
@@ -2375,7 +2374,6 @@
 }
 
 .filter-header {
-  background: linear-gradient(135deg, #ff690f 0%, #ff8534 100%);
   color: white;
   padding: 1.5rem 1rem;
   position: sticky;

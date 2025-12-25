@@ -20,8 +20,12 @@ import {
   STATIC_CONTENT_ERROR,
   STATIC_CONTENT_SUCCESS,
   CLEAR_STATIC_DATA,
+  ROOM_BOOKING_BEGIN,
+  ROOM_BOOKING_ERROR,
+  ROOM_BOOKING_SUCCESS,
 } from "../Actions";
 import {
+  bookRoomHotelUrl,
   getRoomsandrates,
   locationAutosuggestApi,
   priceCheckurl,
@@ -41,6 +45,8 @@ const initialState = {
   price_check_data: {},
   price_check_loading: false,
   hasSearched: false,
+  booked_data: [],
+  booking_loading: false,
 };
 
 const HotelContext = createContext();
@@ -202,8 +208,26 @@ export const HotelProvider = ({ children }) => {
       });
   };
 
-  const HotelRoombooking = async (params) => {
+  const HotelRoomBooking = async (params) => {
     const token = localStorage.getItem("accessToken");
+    dispatch({ type: ROOM_BOOKING_BEGIN });
+    axios
+      .post(bookRoomHotelUrl, params, {
+        headers: {
+          Authorization: "Bearer " + token,
+          source: "website",
+        },
+      })
+      .then((res) => {
+        if (res.data.error === false) {
+          dispatch({ type: ROOM_BOOKING_SUCCESS, payload: res?.data?.results });
+          return res?.data?.results;
+        } else dispatch({ type: ROOM_BOOKING_ERROR });
+      })
+      .catch((err) => {
+        console.log("Error in Room booking Api", err);
+        dispatch({ type: ROOM_BOOKING_ERROR });
+      });
   };
 
   const clearHotelData = () => {
@@ -224,6 +248,7 @@ export const HotelProvider = ({ children }) => {
         StaticContentAPi,
         GetRoomsAndRates,
         PriceCheckApi,
+        HotelRoomBooking,
         clearStaticData,
       }}
     >

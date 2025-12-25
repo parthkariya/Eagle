@@ -13,6 +13,9 @@ import {
   MAIN_SEARCH_BEGIN,
   MAIN_SEARCH_ERROR,
   MAIN_SEARCH_SUCCESS,
+  ROOM_BOOKING_BEGIN,
+  ROOM_BOOKING_ERROR,
+  ROOM_BOOKING_SUCCESS,
   STATIC_CONTENT_BEGIN,
   STATIC_CONTENT_ERROR,
   STATIC_CONTENT_SUCCESS,
@@ -115,6 +118,24 @@ const hotel_reducer = (state, action) => {
         ...state,
         price_check_loading: false,
         price_check_data: {},
+      };
+
+    case ROOM_BOOKING_BEGIN:
+      return {
+        ...state,
+        booking_loading: true,
+      };
+    case ROOM_BOOKING_SUCCESS:
+      return {
+        ...state,
+        booked_data: action.payload,
+        booking_loading: false,
+      };
+    case ROOM_BOOKING_ERROR:
+      return {
+        ...state,
+        booked_data: [],
+        booking_loading: false,
       };
 
     case CLEAR_SEARCHED_HOTEL:

@@ -193,13 +193,16 @@ const HomeHeroHotel = () => {
                             {formatPrice(rate.finalRate)}
                           </span>
                         </div>
-                        <div className="price-subtext">Total price</div>
-
-                        {rate.finalRate !== rate.pRpNFinalRate && (
-                          <div className="original-price">
-                            ₹{formatPrice(rate.pRpNFinalRate)}
+                        <div className="total_price_flex">
+                          <div className="price-subtext">Total price</div>
+                          <div>
+                            {rate.finalRate !== rate.pRpNFinalRate && (
+                              <div className="original-price">
+                                ₹{formatPrice(rate.pRpNFinalRate)}
+                              </div>
+                            )}
                           </div>
-                        )}
+                        </div>
                       </div>
                     </>
                   )}

@@ -2,8 +2,8 @@ import React, { useState, useMemo, useEffect } from "react";
 import Slider from "react-slick";
 import "slick-carousel/slick/slick.css";
 import "slick-carousel/slick/slick-theme.css";
-import { Check, X, User, CreditCard, Info } from "lucide-react";
-
+import { Check, X, User, CreditCard, Info, Users } from "lucide-react";
+import { DatePicker } from "antd";
 import {
   FaBed,
   FaUsers,
@@ -19,6 +19,8 @@ import { MdKingBed } from "react-icons/md";
 import "./RoomTypes.css";
 import { useHotelContext } from "../../Context/Hotel_context";
 import Modal from "react-modal";
+import dayjs from "dayjs";
+import { toast } from "react-toastify";
 
 Modal.setAppElement("#root");
 
@@ -29,6 +31,9 @@ const RoomTypes = ({ hotelID }) => {
     PriceCheckApi,
     price_check_data,
     price_check_loading,
+    HotelRoomBooking,
+    booked_data,
+    booking_loading,
   } = useHotelContext();
 
   console.log("price_check_data", price_check_data);
@@ -39,90 +44,130 @@ const RoomTypes = ({ hotelID }) => {
   const [hotelId] = useState(String(hotelID));
   const [isOpen, setIsOpen] = useState(false);
   const [isOpenBookmodal, setIsOpenBookModal] = useState(false);
-  const [specialRequests, setSpecialRequests] = useState("");
-  const [guests, setGuests] = useState([]);
+  const [specialRequests, setSpecialRequests] = useState([]);
+  const [roomGuests, setRoomGuests] = useState([]);
+  const [selectedOptionID, setSelectedOptionID] = useState("");
+  const [isRateModalOpen, setIsRateModalOpen] = useState(false);
+  const [activeRoom, setActiveRoom] = useState(null);
 
-  const numOfAdults = Number(
-    Object.values(price_check_data?.options || {})[0]?.rate?.occupancies?.[0]
-      ?.numOfAdults || 1
-  );
+  const createAdultGuest = (isLeadGuest = false) => {
+    if (isLeadGuest) {
+      return {
+        title: "Mr",
+        firstName: "",
+        middleName: "",
+        lastName: "",
+        isLeadGuest: true,
+        type: "adult",
 
-  const createAdultGuest = (isLeadGuest = false) => ({
-    title: "Mr",
-    firstName: "",
-    middleName: "",
-    lastName: "",
-    isLeadGuest,
-    type: "adult",
+        email: "",
+        isdCode: "91",
+        contactNumber: "",
 
-    email: isLeadGuest ? "" : "",
-    isdCode: isLeadGuest ? "91" : "",
-    contactNumber: isLeadGuest ? "" : "",
+        age: "",
+        passportNumber: "",
+        passportExpiry: "",
+        passportIssue: "",
 
-    age: "",
-    passportNumber: "",
-    passportExpiry: "",
-    passportIssue: "",
-    panCardNumber: "",
-    panCardName: "",
-  });
+        panCardNumber: "",
+        panCardName: "",
+      };
+    }
+    // NON-LEAD GUEST
+    return {
+      title: "Mr",
+      firstName: "",
+      middleName: "",
+      lastName: "",
+      isLeadGuest: false,
+      type: "adult",
+      age: "",
+      passportNumber: "",
+      passportExpiry: "",
+      panCardNumber: "",
+    };
+  };
 
   useEffect(() => {
-    if (!numOfAdults) return;
-    const generatedGuests = Array.from({ length: numOfAdults }, (_, index) =>
-      createAdultGuest(index === 0)
-    );
-    setGuests(generatedGuests);
-  }, [numOfAdults]);
+    const occupancies =
+      Object.values(price_check_data?.options || {})[0]?.rate?.occupancies ||
+      [];
+    if (!occupancies.length) return;
+    const rooms = occupancies.map((occ) => {
+      const adultCount = Number(occ.numOfAdults) || 1;
 
-  const handleGuestChange = (guestIndex, field, value) => {
-    setGuests((prev) => {
+      return {
+        roomId: occ.roomId,
+        guests: Array.from({ length: adultCount }, (_, index) =>
+          createAdultGuest(index === 0)
+        ),
+      };
+    });
+
+    setRoomGuests(rooms);
+  }, [price_check_data]);
+
+  const handleGuestChange = (roomIndex, guestIndex, field, value) => {
+    setRoomGuests((prev) => {
       const updated = [...prev];
-      updated[guestIndex] = {
-        ...updated[guestIndex],
+      updated[roomIndex].guests[guestIndex] = {
+        ...updated[roomIndex].guests[guestIndex],
         [field]: value,
       };
       return updated;
     });
   };
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
+    const traceIdd = await localStorage.getItem("hotelTraceID");
     e.preventDefault();
-
     const payload = {
-      specialRequests: specialRequests || null,
-      optionId: "abc",
-      traceId: "",
+      specialRequests: specialRequests.length ? specialRequests : null,
+      optionId: selectedOptionID,
+      traceId: traceIdd,
       hotelId: hotelID,
-      guests: guests.map((guest) => ({
-        title: guest.title,
-        firstName: guest.firstName,
-        middleName: guest.middleName || null,
-        lastName: guest.lastName,
-        isLeadGuest: guest.isLeadGuest,
-        type: guest.type,
-        email: guest.isLeadGuest ? guest.email : undefined,
-        isdCode: guest.isLeadGuest ? guest.isdCode : undefined,
-        contactNumber: guest.isLeadGuest ? guest.contactNumber : undefined,
-        age: guest.age || null,
-        passportNumber: guest.passportNumber || null,
-        passportExpiry: guest.passportExpiry || null,
-        passportIssue: guest.isLeadGuest
-          ? guest.passportIssue || null
-          : undefined,
-        passportFrontImage: guest.isLeadGuest
-          ? guest.passportFrontImage || null
-          : undefined,
-        passportBackImage: guest.isLeadGuest
-          ? guest.passportBackImage || null
-          : undefined,
-        panCardNumber: guest.panCardNumber || null,
-        panCardName: guest.isLeadGuest ? guest.panCardName || null : undefined,
+      roomDetails: roomGuests.map((room) => ({
+        roomId: room.roomId,
+        guests: room.guests.map((guest) => {
+          const baseGuest = {
+            title: guest.title,
+            firstName: guest.firstName,
+            middleName: guest.middleName || null,
+            lastName: guest.lastName,
+            isLeadGuest: guest.isLeadGuest,
+            type: guest.type,
+
+            age: guest.age || null,
+            passportNumber: guest.passportNumber || null,
+            passportExpiry: guest.passportExpiry || null,
+            panCardNumber: guest.panCardNumber || null,
+          };
+
+          // ✅ Add extra fields ONLY for lead guest
+          if (guest.isLeadGuest) {
+            return {
+              ...baseGuest,
+              email: guest.email || null,
+              isdCode: guest.isdCode || "91",
+              contactNumber: guest.contactNumber || null,
+              passportIssue: guest.passportIssue || null,
+              passportFrontImage: guest.passportFrontImage || null,
+              passportBackImage: guest.passportBackImage || null,
+              panCardName: guest.panCardName || null,
+            };
+          }
+
+          return baseGuest;
+        }),
       })),
     };
 
     console.log("Booking Payload:", JSON.stringify(payload, null, 2));
-    alert("Booking submitted! Check console for payload.");
+    const data = HotelRoomBooking(payload);
+    if (data) {
+      setIsOpenBookModal(false);
+      // toast.success("Booking confirmed! Your hotel room is reserved.");
+    }
   };
 
   const togglePolicies = (roomId) => {
@@ -138,24 +183,40 @@ const RoomTypes = ({ hotelID }) => {
     Object.keys(price_check_data.options).length > 0 &&
     price_check_data.rooms;
 
-  let optionKey, option, rate, occupancy, room;
+  let optionKey, option, rate;
 
   if (hasPriceData) {
     optionKey = Object.keys(price_check_data.options)[0];
     option = price_check_data.options[optionKey];
     rate = option.rate;
-    occupancy = rate.occupancies[0];
-    room = price_check_data.rooms[occupancy.roomId];
   }
   const formatDate = (dateString) => {
-    const date = new Date(dateString);
-    return date.toLocaleDateString("en-IN", {
-      day: "numeric",
-      month: "short",
+    return new Date(dateString).toLocaleDateString("en-IN", {
       year: "numeric",
-      hour: "2-digit",
-      minute: "2-digit",
+      month: "long",
+      day: "numeric",
     });
+  };
+
+  const getRoomOccupancies = () => {
+    if (!hasPriceData) return [];
+
+    const roomGroups = {};
+
+    rate.occupancies.forEach((occupancy) => {
+      const room = price_check_data.rooms[occupancy.roomId];
+
+      if (!roomGroups[occupancy.roomId]) {
+        roomGroups[occupancy.roomId] = {
+          room: room,
+          occupancies: [],
+        };
+      }
+
+      roomGroups[occupancy.roomId].occupancies.push(occupancy);
+    });
+
+    return Object.values(roomGroups);
   };
 
   const selectRate = (roomId, room, rateIndex) => {
@@ -169,6 +230,7 @@ const RoomTypes = ({ hotelID }) => {
     if (!room) return;
     const rateIndex = selectedRates[room.id] ?? 0;
     const optionId = room.allRates?.[rateIndex]?.optionId;
+    setSelectedOptionID(optionId);
 
     if (!optionId) {
       console.error("Option ID not found");
@@ -186,17 +248,13 @@ const RoomTypes = ({ hotelID }) => {
       optionId,
       hotelId,
     };
-
     setIsOpen(true);
-
     PriceCheckApi(payload);
   };
 
   const roomsData = useMemo(() => {
     if (!rooms_rate_data) return [];
-
     const { options, rooms, standardizedRooms } = rooms_rate_data;
-
     if (
       !options ||
       !rooms ||
@@ -316,17 +374,17 @@ const RoomTypes = ({ hotelID }) => {
     infinite: roomsData.length > 1,
     speed: 500,
     slidesToScroll: 1,
-    autoplay: roomsData.length > 3, // Only autoplay if multiple cards make sense
+    // autoplay: roomsData.length > 3, // Only autoplay if multiple cards make sense
     autoplaySpeed: 5000,
     pauseOnHover: true,
-    arrows: true,
+    arrows: false,
     nextArrow: roomsData.length > 1 ? <NextArrow /> : null,
     prevArrow: roomsData.length > 1 ? <PrevArrow /> : null,
-    slidesToShow: 3, // Default for largest screens (>1280px)
+    slidesToShow: 2,
     slidesToScroll: 1,
     responsive: [
       {
-        breakpoint: 1280, // 1025px to 1280px → show 2 cards
+        breakpoint: 1280,
         settings: {
           slidesToShow: 2,
           slidesToScroll: 1,
@@ -396,7 +454,7 @@ const RoomTypes = ({ hotelID }) => {
           {roomsData.map((room, ind) => {
             const imageUrls = room.images.map((img) => img.url);
             const hasImages = imageUrls.length > 0;
-            const selectedRateIndex = selectedRates[room.id] || 0;
+            const selectedRateIndex = selectedRates[room.id] ?? 0;
             const selectedRate = room.allRates[selectedRateIndex];
 
             return (
@@ -485,102 +543,6 @@ const RoomTypes = ({ hotelID }) => {
                         </div>
                       </div>
                     )}
-
-                    {/* Price Options */}
-                    <div className="price-options-section">
-                      <h4 className="price-options-title">Select Your Plan</h4>
-                      <div className="price-options-list">
-                        {room.allRates.map((rate, index) => (
-                          <div
-                            key={index}
-                            className={`price-option ${
-                              selectedRateIndex === index
-                                ? "price-option-selected"
-                                : ""
-                            }`}
-                            onClick={() => selectRate(room.id, rate, index)}
-                          >
-                            <div className="price-option-left">
-                              <div className="price-option-meal">
-                                <FaUtensils className="meal-icon" />
-                                <span className="meal-text">
-                                  {rate.boardBasis.description}
-                                </span>
-                              </div>
-                              <div className="price-option-details">
-                                <span className="availability-text">
-                                  {rate.availability} rooms available
-                                </span>
-                                {!rate.refundable && (
-                                  <span className="refund-text">
-                                    Non-Refundable
-                                  </span>
-                                )}
-                              </div>
-                            </div>
-                            <div className="price-option-right">
-                              <span className="option-price">
-                                ₹{rate.finalRate.toLocaleString()}
-                              </span>
-                            </div>
-                          </div>
-                        ))}
-                      </div>
-                    </div>
-
-                    {/* Policies Toggle */}
-                    {selectedRate.policies &&
-                      selectedRate.policies.length > 0 && (
-                        <div className="room-policies-section">
-                          <div
-                            className="policies-toggle"
-                            onClick={() => togglePolicies(room.id)}
-                          >
-                            <div className="policies-toggle-left">
-                              <FaInfoCircle className="policies-icon" />
-                              <span className="policies-title">
-                                Room Policies
-                              </span>
-                            </div>
-                            {expandedPolicies[room.id] ? (
-                              <FaChevronUp className="policies-chevron" />
-                            ) : (
-                              <FaChevronDown className="policies-chevron" />
-                            )}
-                          </div>
-
-                          {expandedPolicies[room.id] && (
-                            <div className="policies-content">
-                              {selectedRate.policies.map((policy, index) => (
-                                <div key={index} className="policy-item">
-                                  <div className="policy-type">
-                                    {policy.type}
-                                  </div>
-                                  <div className="policy-text">
-                                    {policy.text}
-                                  </div>
-                                </div>
-                              ))}
-                            </div>
-                          )}
-                        </div>
-                      )}
-
-                    {/* Cancellation Info */}
-                    {selectedRate.cancellationPolicies &&
-                      selectedRate.cancellationPolicies.length > 0 && (
-                        <div className="cancellation-info">
-                          <p className="cancellation-text">
-                            <strong>Cancellation:</strong> Charges of ₹
-                            {selectedRate.cancellationPolicies[0].estimatedValue.toLocaleString()}{" "}
-                            apply from{" "}
-                            {new Date(
-                              selectedRate.cancellationPolicies[0].start
-                            ).toLocaleDateString("en-IN")}
-                          </p>
-                        </div>
-                      )}
-
                     {/* Footer - Price & Book Button */}
                     <div className="room-footer">
                       <div className="pricing-section">
@@ -595,9 +557,12 @@ const RoomTypes = ({ hotelID }) => {
                       </div>
                       <button
                         className="book-now-btn"
-                        onClick={() => handleBookNow(ind)}
+                        onClick={() => {
+                          setActiveRoom(room);
+                          setIsRateModalOpen(true);
+                        }}
                       >
-                        Select
+                        View Prices
                       </button>
                     </div>
                   </div>
@@ -632,7 +597,7 @@ const RoomTypes = ({ hotelID }) => {
                   >
                     <X size={20} />
                   </button>
-                  <h2 className="room-title">{room.name}</h2>
+                  <h2 className="room-title">Booking Details</h2>
 
                   <div className="availability-badge">
                     <Check size={16} />
@@ -653,46 +618,81 @@ const RoomTypes = ({ hotelID }) => {
                       </div>
                     )}
                   </div>
-
+                  {/* Room-wise Guest Details */}
                   <div className="info-section">
                     <h3 className="info-title">
-                      <User size={18} />
-                      Guest Details
+                      <Users size={18} />
+                      Room & Guest Details
+                    </h3>
+
+                    {getRoomOccupancies().map((roomGroup, index) => (
+                      <div
+                        key={roomGroup.room.id}
+                        className="room-occupancy-card"
+                      >
+                        <div className="room-occupancy-header">
+                          <h4 className="room-name">
+                            Room {index + 1}: {roomGroup.room.name}
+                          </h4>
+                          <span className="room-count-badge">
+                            {roomGroup.occupancies.length}{" "}
+                            {roomGroup.occupancies.length === 1
+                              ? "Booking"
+                              : "Bookings"}
+                          </span>
+                        </div>
+
+                        {roomGroup.occupancies.map((occupancy, occIndex) => (
+                          <div key={occIndex} className="occupancy-item">
+                            <div className="occupancy-guests">
+                              <User size={16} />
+                              <span className="guest-info">
+                                <strong>{occupancy.numOfAdults}</strong> Adult
+                                {occupancy.numOfAdults > 1 ? "s" : ""}
+                                {occupancy.numOfChildren > 0 && (
+                                  <>
+                                    , <strong>{occupancy.numOfChildren}</strong>{" "}
+                                    Child
+                                    {occupancy.numOfChildren > 1 ? "ren" : ""}
+                                  </>
+                                )}
+                              </span>
+                            </div>
+                            {roomGroup.occupancies.length > 1 && (
+                              <span className="occupancy-label">
+                                Booking #{occIndex + 1}
+                              </span>
+                            )}
+                          </div>
+                        ))}
+
+                        <div className="room-details-grid">
+                          <div className="room-detail-item">
+                            <span className="detail-label">Smoking</span>
+                            <span className="detail-value">
+                              {roomGroup.room.smokingAllowed
+                                ? "Allowed"
+                                : "Not Allowed"}
+                            </span>
+                          </div>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+
+                  {/* General Booking Info */}
+                  <div className="info-section">
+                    <h3 className="info-title">
+                      <Info size={18} />
+                      General Information
                     </h3>
                     <div className="info-grid">
-                      <div className="info-item">
-                        <span className="info-label">Adults</span>
-                        <span className="info-value">
-                          {occupancy.numOfAdults} Guests
-                        </span>
-                      </div>
-                      <div className="info-item">
-                        <span className="info-label">Children</span>
-                        <span className="info-value">
-                          {occupancy.numOfChildren} Children
-                        </span>
-                      </div>
                       <div className="info-item">
                         <span className="info-label">Board Basis</span>
                         <span className="info-value">
                           {rate.boardBasis.description}
                         </span>
                       </div>
-                      <div className="info-item">
-                        <span className="info-label">Smoking</span>
-                        <span className="info-value">
-                          {room.smokingAllowed ? "Allowed" : "Not Allowed"}
-                        </span>
-                      </div>
-                    </div>
-                  </div>
-
-                  <div className="info-section">
-                    <h3 className="info-title">
-                      <CreditCard size={18} />
-                      Booking Information
-                    </h3>
-                    <div className="info-grid">
                       <div className="info-item">
                         <span className="info-label">Refundability</span>
                         <span className="badge badge-danger">
@@ -709,12 +709,6 @@ const RoomTypes = ({ hotelID }) => {
                         <span className="info-label">Passport Required</span>
                         <span className="badge badge-success">
                           {rate.IsPassportMandatory ? "Yes" : "No"}
-                        </span>
-                      </div>
-                      <div className="info-item">
-                        <span className="info-label">PAN Required</span>
-                        <span className="badge badge-success">
-                          {rate.IsPANMandatory ? "Yes" : "No"}
                         </span>
                       </div>
                     </div>
@@ -788,7 +782,6 @@ const RoomTypes = ({ hotelID }) => {
                 <button
                   className="bottom-sheet-close"
                   onClick={() => setIsOpenBookModal(false)}
-                  aria-label="Close"
                 >
                   ×
                 </button>
@@ -797,40 +790,46 @@ const RoomTypes = ({ hotelID }) => {
               {/* Scrollable Content */}
               <div className="bottom-sheet-content">
                 <div className="booking-form">
-                  {/* Booking Details Section */}
+                  {/* Booking Details */}
                   <div className="form-section">
                     <h3 className="section-title">Booking Details</h3>
-                    <div className="form-group">
-                      <label className="form-label">Special Requests</label>
-                      <textarea
-                        value={specialRequests}
-                        onChange={(e) => setSpecialRequests(e.target.value)}
-                        placeholder="Any special requests?"
-                        rows="3"
-                        className="form-input form-textarea"
-                      />
-                    </div>
+                    <textarea
+                      value={specialRequests}
+                      onChange={(e) => setSpecialRequests(e.target.value)}
+                      placeholder="Any special requests?"
+                      rows="3"
+                      className="form-input form-textarea"
+                    />
                   </div>
 
-                  {/* Guest Cards */}
-                  {guests.map((guest, guestIndex) => (
-                    <div key={guestIndex} className="form-section">
-                      <h3 className="section-title">
-                        Guest {guestIndex + 1}
-                        {guest.isLeadGuest && (
-                          <span className="lead-badge">Lead Guest</span>
-                        )}
-                      </h3>
+                  {/* ROOMS LOOP */}
+                  {roomGuests.map((room, roomIndex) => (
+                    <div key={room.roomId} className="form-section">
+                      <h3 className="section-title">Room {roomIndex + 1}</h3>
 
-                      <div className="guest-card">
-                        <div className="form-row">
-                          <div className="form-group">
-                            <label className="form-label">Title *</label>
+                      {/* GUESTS LOOP */}
+                      {room.guests.map((guest, guestIndex) => (
+                        <div key={guestIndex} className="guest-card">
+                          <h4
+                            style={{
+                              display: "flex",
+                              alignItems: "center",
+                              gap: 10,
+                            }}
+                          >
+                            Guest {guestIndex + 1}
+                            {guest.isLeadGuest && (
+                              <span className="lead-badge">Lead Guest</span>
+                            )}
+                          </h4>
+
+                          {/* Common fields for ALL guests */}
+                          <div className="form-row">
                             <select
-                              required
                               value={guest.title}
                               onChange={(e) =>
                                 handleGuestChange(
+                                  roomIndex,
                                   guestIndex,
                                   "title",
                                   e.target.value
@@ -843,174 +842,62 @@ const RoomTypes = ({ hotelID }) => {
                               <option value="Ms">Ms</option>
                               <option value="Miss">Miss</option>
                             </select>
-                          </div>
 
-                          <div className="form-group">
-                            <label className="form-label">First Name *</label>
                             <input
                               type="text"
-                              required
                               value={guest.firstName}
+                              placeholder="First Name"
                               onChange={(e) =>
                                 handleGuestChange(
+                                  roomIndex,
                                   guestIndex,
                                   "firstName",
                                   e.target.value
                                 )
                               }
-                              placeholder="First name"
                               className="form-input"
                             />
                           </div>
-                        </div>
 
-                        <div className="form-row">
-                          <div className="form-group">
-                            <label className="form-label">Middle Name</label>
+                          <div className="form-row">
                             <input
                               type="text"
-                              value={guest.middleName}
+                              value={guest.middleName || ""}
+                              placeholder="Middle Name"
                               onChange={(e) =>
                                 handleGuestChange(
+                                  roomIndex,
                                   guestIndex,
                                   "middleName",
                                   e.target.value
                                 )
                               }
-                              placeholder="Middle name"
                               className="form-input"
                             />
-                          </div>
 
-                          <div className="form-group">
-                            <label className="form-label">Last Name *</label>
                             <input
                               type="text"
-                              required
                               value={guest.lastName}
+                              placeholder="Last Name"
                               onChange={(e) =>
                                 handleGuestChange(
+                                  roomIndex,
                                   guestIndex,
                                   "lastName",
                                   e.target.value
                                 )
                               }
-                              placeholder="Last name"
                               className="form-input"
                             />
                           </div>
-                        </div>
 
-                        {guest.isLeadGuest && (
-                          <>
-                            <div className="form-group">
-                              <label className="form-label">Email *</label>
-                              <input
-                                type="email"
-                                required
-                                value={guest.email}
-                                onChange={(e) =>
-                                  handleGuestChange(
-                                    guestIndex,
-                                    "email",
-                                    e.target.value
-                                  )
-                                }
-                                placeholder="email@example.com"
-                                className="form-input"
-                              />
-                            </div>
-
-                            <div className="form-row">
-                              <div className="form-group form-group-small">
-                                <label className="form-label">ISD Code *</label>
-                                <input
-                                  type="text"
-                                  required
-                                  value={guest.isdCode}
-                                  onChange={(e) =>
-                                    handleGuestChange(
-                                      guestIndex,
-                                      "isdCode",
-                                      e.target.value
-                                    )
-                                  }
-                                  placeholder="+91"
-                                  className="form-input"
-                                />
-                              </div>
-
-                              <div className="form-group">
-                                <label className="form-label">
-                                  Contact Number *
-                                </label>
-                                <input
-                                  type="tel"
-                                  required
-                                  value={guest.contactNumber}
-                                  onChange={(e) =>
-                                    handleGuestChange(
-                                      guestIndex,
-                                      "contactNumber",
-                                      e.target.value
-                                    )
-                                  }
-                                  placeholder="Contact number"
-                                  className="form-input"
-                                />
-                              </div>
-                            </div>
-
-                            <div className="form-row">
-                              <div className="form-group">
-                                <label className="form-label">
-                                  PAN Card Number
-                                </label>
-                                <input
-                                  type="text"
-                                  value={guest.panCardNumber}
-                                  onChange={(e) =>
-                                    handleGuestChange(
-                                      guestIndex,
-                                      "panCardNumber",
-                                      e.target.value
-                                    )
-                                  }
-                                  placeholder="PAN number"
-                                  className="form-input"
-                                />
-                              </div>
-
-                              <div className="form-group">
-                                <label className="form-label">
-                                  PAN Card Name
-                                </label>
-                                <input
-                                  type="text"
-                                  value={guest.panCardName}
-                                  onChange={(e) =>
-                                    handleGuestChange(
-                                      guestIndex,
-                                      "panCardName",
-                                      e.target.value
-                                    )
-                                  }
-                                  placeholder="Name on PAN"
-                                  className="form-input"
-                                />
-                              </div>
-                            </div>
-                          </>
-                        )}
-
-                        <div className="form-row">
-                          <div className="form-group">
-                            <label className="form-label">Age</label>
+                          <div className="form-row">
                             <input
                               type="number"
-                              value={guest.age}
+                              value={guest.age || ""}
                               onChange={(e) =>
                                 handleGuestChange(
+                                  roomIndex,
                                   guestIndex,
                                   "age",
                                   e.target.value
@@ -1019,66 +906,367 @@ const RoomTypes = ({ hotelID }) => {
                               placeholder="Age"
                               className="form-input"
                             />
-                          </div>
 
-                          <div className="form-group">
-                            <label className="form-label">
-                              Passport Number
-                            </label>
                             <input
                               type="text"
-                              value={guest.passportNumber}
+                              value={guest.passportNumber || ""}
                               onChange={(e) =>
                                 handleGuestChange(
+                                  roomIndex,
                                   guestIndex,
                                   "passportNumber",
                                   e.target.value
                                 )
                               }
-                              placeholder="Passport number"
+                              placeholder="Passport Number"
                               className="form-input"
                             />
                           </div>
-                        </div>
 
-                        <div className="form-group">
-                          <label className="form-label">Passport Expiry</label>
-                          <input
-                            type="date"
-                            value={guest.passportExpiry}
-                            onChange={(e) =>
-                              handleGuestChange(
-                                guestIndex,
-                                "passportExpiry",
-                                e.target.value
-                              )
-                            }
-                            className="form-input"
-                          />
+                          <div className="form-row">
+                            <DatePicker
+                              placeholder="Passport Expiry Date"
+                              className="form-input"
+                              format="DD-MM-YYYY"
+                              getPopupContainer={(trigger) =>
+                                trigger.parentElement
+                              }
+                              value={
+                                guest.passportExpiry
+                                  ? dayjs(guest.passportExpiry)
+                                  : null
+                              }
+                              onChange={(date) =>
+                                handleGuestChange(
+                                  roomIndex,
+                                  guestIndex,
+                                  "passportExpiry",
+                                  date ? date.format("YYYY-MM-DD") : ""
+                                )
+                              }
+                            />
+
+                            <input
+                              type="text"
+                              value={guest.panCardNumber || ""}
+                              onChange={(e) =>
+                                handleGuestChange(
+                                  roomIndex,
+                                  guestIndex,
+                                  "panCardNumber",
+                                  e.target.value
+                                )
+                              }
+                              placeholder="PAN Number"
+                              className="form-input"
+                            />
+                          </div>
+
+                          {/* ADDITIONAL FIELDS FOR LEAD GUEST ONLY */}
+                          {guest.isLeadGuest && (
+                            <>
+                              <div className="form-row">
+                                <input
+                                  type="email"
+                                  value={guest.email || ""}
+                                  onChange={(e) =>
+                                    handleGuestChange(
+                                      roomIndex,
+                                      guestIndex,
+                                      "email",
+                                      e.target.value
+                                    )
+                                  }
+                                  placeholder="Email"
+                                  className="form-input"
+                                />
+                              </div>
+
+                              <div className="form-row">
+                                <input
+                                  type="text"
+                                  value={guest.isdCode || "91"}
+                                  onChange={(e) =>
+                                    handleGuestChange(
+                                      roomIndex,
+                                      guestIndex,
+                                      "isdCode",
+                                      e.target.value
+                                    )
+                                  }
+                                  placeholder="ISD Code"
+                                  className="form-input"
+                                  style={{ flex: "0 0 100px" }}
+                                />
+                                <input
+                                  type="tel"
+                                  value={guest.contactNumber || ""}
+                                  onChange={(e) =>
+                                    handleGuestChange(
+                                      roomIndex,
+                                      guestIndex,
+                                      "contactNumber",
+                                      e.target.value
+                                    )
+                                  }
+                                  placeholder="Contact Number"
+                                  className="form-input"
+                                />
+                              </div>
+
+                              <div className="form-row">
+                                <input
+                                  type="text"
+                                  value={guest.panCardName || ""}
+                                  onChange={(e) =>
+                                    handleGuestChange(
+                                      roomIndex,
+                                      guestIndex,
+                                      "panCardName",
+                                      e.target.value
+                                    )
+                                  }
+                                  placeholder="PAN Card Name"
+                                  className="form-input"
+                                />
+                                <DatePicker
+                                  placeholder="Passport Issue Date"
+                                  className="form-input"
+                                  format="DD-MM-YYYY"
+                                  getPopupContainer={(trigger) =>
+                                    trigger.parentElement
+                                  }
+                                  value={
+                                    guest.passportIssue
+                                      ? dayjs(guest.passportIssue)
+                                      : null
+                                  }
+                                  onChange={(date) =>
+                                    handleGuestChange(
+                                      roomIndex,
+                                      guestIndex,
+                                      "passportIssue",
+                                      date ? date.format("YYYY-MM-DD") : ""
+                                    )
+                                  }
+                                />
+                              </div>
+
+                              <div className="form-row">
+                                {/* Passport Front */}
+                                <div
+                                  className="form-input file-picker"
+                                  onClick={() =>
+                                    document
+                                      .getElementById(
+                                        `passportFront-${roomIndex}-${guestIndex}`
+                                      )
+                                      .click()
+                                  }
+                                >
+                                  {guest.passportFrontImage ? (
+                                    <span>{guest.passportFrontImage.name}</span>
+                                  ) : (
+                                    <span>Passport Front Image</span>
+                                  )}
+                                </div>
+
+                                <input
+                                  type="file"
+                                  id={`passportFront-${roomIndex}-${guestIndex}`}
+                                  accept="image/*"
+                                  hidden
+                                  onChange={(e) =>
+                                    handleGuestChange(
+                                      roomIndex,
+                                      guestIndex,
+                                      "passportFrontImage",
+                                      e.target.files[0]
+                                    )
+                                  }
+                                />
+
+                                {/* Passport Back */}
+                                <div
+                                  className="form-input file-picker"
+                                  onClick={() =>
+                                    document
+                                      .getElementById(
+                                        `passportBack-${roomIndex}-${guestIndex}`
+                                      )
+                                      .click()
+                                  }
+                                >
+                                  {guest.passportBackImage ? (
+                                    <span>{guest.passportBackImage.name}</span>
+                                  ) : (
+                                    <span>Passport Back Image</span>
+                                  )}
+                                </div>
+
+                                <input
+                                  type="file"
+                                  id={`passportBack-${roomIndex}-${guestIndex}`}
+                                  accept="image/*"
+                                  hidden
+                                  onChange={(e) =>
+                                    handleGuestChange(
+                                      roomIndex,
+                                      guestIndex,
+                                      "passportBackImage",
+                                      e.target.files[0]
+                                    )
+                                  }
+                                />
+                              </div>
+                            </>
+                          )}
                         </div>
-                      </div>
+                      ))}
                     </div>
                   ))}
                 </div>
               </div>
 
-              {/* Fixed Action Buttons */}
+              {/* Actions */}
               <div className="bottom-sheet-actions">
                 <button
-                  type="button"
                   className="btn-cancel-hotel"
                   onClick={() => setIsOpenBookModal(false)}
                 >
                   Cancel
                 </button>
-                <button
-                  type="button"
-                  className="btn-submit-hotel"
-                  onClick={handleSubmit}
-                >
+                <button className="btn-submit-hotel" onClick={handleSubmit}>
                   Book Now
                 </button>
               </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {isRateModalOpen && activeRoom && (
+        <div
+          className="booking-modal-overlay"
+          onClick={() => setIsRateModalOpen(false)}
+        >
+          <div
+            className="booking-modal-content large"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <div className="modal-header modal-price-header">
+              <h2>{activeRoom.name}</h2>
+              <button
+                className="close-btn"
+                onClick={() => setIsRateModalOpen(false)}
+              >
+                ×
+              </button>
+            </div>
+
+            {/* Price Options */}
+            <div className="price-options-section">
+              <h4 className="price-options-title">Select Your Plan</h4>
+
+              {activeRoom.allRates.map((rate, index) => (
+                <div
+                  key={index}
+                  className={`price-option ${
+                    (selectedRates[activeRoom.id] ?? 0) === index
+                      ? "price-option-selected"
+                      : ""
+                  }`}
+                  onClick={() => selectRate(activeRoom.id, rate, index)}
+                >
+                  <div className="price-option-left">
+                    <FaUtensils />
+                    <span>{rate.boardBasis.description}</span>
+
+                    {!rate.refundable && (
+                      <span className="refund-text">Non-Refundable</span>
+                    )}
+                  </div>
+
+                  <div className="price-option-right">
+                    ₹{rate.finalRate.toLocaleString()}
+                  </div>
+                </div>
+              ))}
+            </div>
+
+            {/* Policies Card */}
+            {activeRoom.allRates[selectedRates[activeRoom.id] || 0]?.policies
+              ?.length > 0 && (
+              <div className="policy-card">
+                <div
+                  className="policy-header"
+                  onClick={() => togglePolicies(activeRoom.id)}
+                >
+                  <div className="policy-title">
+                    <FaInfoCircle />
+                    <span>Room Policies</span>
+                  </div>
+
+                  <FaChevronUp
+                    className={
+                      expandedPolicies[activeRoom.id] ? "rotate" : "rotate-down"
+                    }
+                  />
+                </div>
+
+                {expandedPolicies[activeRoom.id] && (
+                  <div className="policy-body">
+                    {activeRoom.allRates[
+                      selectedRates[activeRoom.id] || 0
+                    ].policies.map((policy, index) => (
+                      <div key={index} className="policy-info-box">
+                        <strong>{policy.type}</strong>
+                        <p>{policy.text}</p>
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </div>
+            )}
+
+            {/* Cancellation Box */}
+            {activeRoom.allRates[selectedRates[activeRoom.id] ?? 0]
+              ?.cancellationPolicies?.length > 0 && (
+              <div className="cancellation-box">
+                <strong>Cancellation:</strong> Charges of ₹
+                {activeRoom.allRates[
+                  selectedRates[activeRoom.id] || 0
+                ].cancellationPolicies[0].estimatedValue.toLocaleString()}{" "}
+                apply from{" "}
+                {new Date(
+                  activeRoom.allRates[
+                    selectedRates[activeRoom.id] || 0
+                  ].cancellationPolicies[0].start
+                ).toLocaleDateString("en-IN")}
+              </div>
+            )}
+
+            <div className="modal-footer sticky-footer">
+              <div className="modal-price">
+                ₹
+                {activeRoom.allRates[
+                  selectedRates[activeRoom.id] ?? 0
+                ].finalRate.toLocaleString()}
+                <span> / night</span>
+                <p className="tax-note">Per night incl. taxes</p>
+              </div>
+
+              <button
+                className="book-now-btn"
+                onClick={() => {
+                  setIsRateModalOpen(false);
+                  handleBookNow(
+                    roomsData.findIndex((r) => r.id === activeRoom.id)
+                  );
+                }}
+              >
+                Select
+              </button>
             </div>
           </div>
         </div>
