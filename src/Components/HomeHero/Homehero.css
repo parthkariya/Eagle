@@ -2539,7 +2539,6 @@
 /* Bus Card Styles */
 
 /* Hotel  Stays css */
-
 .search-box {
   background-color: white;
   border-radius: 8px;
@@ -2870,4 +2869,34 @@
   /* opacity: 0.5; */
   cursor: not-allowed;
   pointer-events: none;
+}
+
+@media (max-width: 730px) {
+  .search-row {
+    flex-direction: column;
+    gap: 1rem;
+    align-items: center;
+    justify-content: center;
+  }
+  .location-input-wrapper {
+    width: 100%;
+    /* box-shadow: rgba(100, 100, 111, 0.2) 0px 7px 29px 0px; */
+    padding: 8px;
+    /* border-radius: 8px; */
+    border-bottom: 1px solid rgb(174, 173, 173);
+  }
+  .search-button-stay {
+    width: 100%;
+    padding: 8px;
+  }
+  .date-picker-wrapper {
+    border: none;
+  }
+  .guests-selector-wrapper {
+    border: none;
+  }
+
+  .guests-dropdown {
+    left: -60px;
+  }
 }

@@ -21,6 +21,7 @@ import { useHotelContext } from "../../Context/Hotel_context";
 import Modal from "react-modal";
 import dayjs from "dayjs";
 import { toast } from "react-toastify";
+import { bookRoomHotelUrl, priceCheckurl } from "../../Utils/Constant";
 
 Modal.setAppElement("#root");
 
@@ -44,7 +45,7 @@ const RoomTypes = ({ hotelID }) => {
   const [hotelId] = useState(String(hotelID));
   const [isOpen, setIsOpen] = useState(false);
   const [isOpenBookmodal, setIsOpenBookModal] = useState(false);
-  const [specialRequests, setSpecialRequests] = useState([]);
+  const [specialRequests, setSpecialRequests] = useState("");
   const [roomGuests, setRoomGuests] = useState([]);
   const [selectedOptionID, setSelectedOptionID] = useState("");
   const [isRateModalOpen, setIsRateModalOpen] = useState(false);
@@ -119,54 +120,108 @@ const RoomTypes = ({ hotelID }) => {
   };
 
   const handleSubmit = async (e) => {
-    const traceIdd = await localStorage.getItem("hotelTraceID");
     e.preventDefault();
-    const payload = {
-      specialRequests: specialRequests.length ? specialRequests : null,
-      optionId: selectedOptionID,
-      traceId: traceIdd,
-      hotelId: hotelID,
-      roomDetails: roomGuests.map((room) => ({
-        roomId: room.roomId,
-        guests: room.guests.map((guest) => {
-          const baseGuest = {
-            title: guest.title,
-            firstName: guest.firstName,
-            middleName: guest.middleName || null,
-            lastName: guest.lastName,
-            isLeadGuest: guest.isLeadGuest,
-            type: guest.type,
 
-            age: guest.age || null,
-            passportNumber: guest.passportNumber || null,
-            passportExpiry: guest.passportExpiry || null,
-            panCardNumber: guest.panCardNumber || null,
-          };
+    // Validation - stop at first error
+    for (let roomIndex = 0; roomIndex < roomGuests.length; roomIndex++) {
+      const room = roomGuests[roomIndex];
 
-          // ✅ Add extra fields ONLY for lead guest
-          if (guest.isLeadGuest) {
-            return {
-              ...baseGuest,
-              email: guest.email || null,
-              isdCode: guest.isdCode || "91",
-              contactNumber: guest.contactNumber || null,
-              passportIssue: guest.passportIssue || null,
-              passportFrontImage: guest.passportFrontImage || null,
-              passportBackImage: guest.passportBackImage || null,
-              panCardName: guest.panCardName || null,
-            };
+      for (let guestIndex = 0; guestIndex < room.guests.length; guestIndex++) {
+        const guest = room.guests[guestIndex];
+
+        if (guest.isLeadGuest) {
+          const roomLabel = `Room ${roomIndex + 1}`;
+
+          if (!guest.firstName?.trim()) {
+            toast.error(`${roomLabel}: Lead guest first name is required`);
+            return;
           }
+          if (!guest.lastName?.trim()) {
+            toast.error(`${roomLabel}: Lead guest last name is required`);
+            return;
+          }
+          if (!guest.email?.trim()) {
+            toast.error(`${roomLabel}: Lead guest email is required`);
+            return;
+          }
+          if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(guest.email)) {
+            toast.error(`${roomLabel}: Please enter a valid email address`);
+            return;
+          }
+          if (!guest.contactNumber?.trim()) {
+            toast.error(`${roomLabel}: Lead guest contact number is required`);
+            return;
+          }
+          if (!/^\d{10}$/.test(guest.contactNumber)) {
+            toast.error(
+              `${roomLabel}: Please enter a valid 10-digit contact number`
+            );
+            return;
+          }
+        }
+      }
+    }
 
-          return baseGuest;
-        }),
-      })),
-    };
+    try {
+      const traceIdd = await localStorage.getItem("hotelTraceID");
+      const payload = {
+        type: "POST",
+        url: bookRoomHotelUrl,
+        url_token: `Bearer ${tokennn}`,
+        specialRequests: specialRequests.trim()
+          ? [{ remarks: specialRequests.trim() }]
+          : null,
+        optionId: selectedOptionID,
+        traceId: traceIdd,
+        hotelId: hotelID,
+        roomDetails: roomGuests.map((room) => ({
+          roomId: room.roomId,
+          guests: room.guests.map((guest) => {
+            const baseGuest = {
+              title: guest.title,
+              firstName: guest.firstName,
+              middleName: guest.middleName || null,
+              lastName: guest.lastName,
+              isLeadGuest: guest.isLeadGuest,
+              type: guest.type,
 
-    console.log("Booking Payload:", JSON.stringify(payload, null, 2));
-    const data = HotelRoomBooking(payload);
-    if (data) {
-      setIsOpenBookModal(false);
-      // toast.success("Booking confirmed! Your hotel room is reserved.");
+              age: guest.age || null,
+              passportNumber: guest.passportNumber || null,
+              passportExpiry: guest.passportExpiry || null,
+              panCardNumber: guest.panCardNumber || null,
+            };
+
+            // ✅ Add extra fields ONLY for lead guest
+            if (guest.isLeadGuest) {
+              return {
+                ...baseGuest,
+                email: guest.email || null,
+                isdCode: guest.isdCode || "91",
+                contactNumber: guest.contactNumber || null,
+                passportIssue: guest.passportIssue || null,
+                passportFrontImage: guest.passportFrontImage || null,
+                passportBackImage: guest.passportBackImage || null,
+                panCardName: guest.panCardName || null,
+              };
+            }
+
+            return baseGuest;
+          }),
+        })),
+      };
+
+      const bookingResult = await HotelRoomBooking(payload);
+
+      console.log("booking rejult ", bookingResult);
+
+      const isConfirmed = bookingResult?.[0]?.data?.[0]?.status === "Confirmed";
+      if (isConfirmed) {
+        setIsOpenBookModal(false);
+        toast.success("Booking confirmed! Your hotel room is reserved.");
+      }
+    } catch (error) {
+      console.error("Booking error:", error);
+      toast.error("An error occurred while booking. Please try again.");
     }
   };
 
@@ -225,7 +280,9 @@ const RoomTypes = ({ hotelID }) => {
       [roomId]: rateIndex,
     }));
   };
-  const handleBookNow = (roomIndex) => {
+
+  const tokennn = localStorage.getItem("accessToken");
+  const handleBookNow = async (roomIndex) => {
     const room = roomsData[roomIndex];
     if (!room) return;
     const rateIndex = selectedRates[room.id] ?? 0;
@@ -244,12 +301,21 @@ const RoomTypes = ({ hotelID }) => {
     }
 
     const payload = {
+      type: "POST",
+      url: priceCheckurl,
+      url_token: `Bearer ${tokennn}`,
       traceId,
       optionId,
       hotelId,
     };
     setIsOpen(true);
-    PriceCheckApi(payload);
+    const res = await PriceCheckApi(payload);
+    if (res?.expired) {
+      toast.error("Results expired. Please search again.");
+      setIsOpen(false); // ❌ Close modal
+      setIsOpenBookModal(false); // ❌ Prevent booking
+      return;
+    }
   };
 
   const roomsData = useMemo(() => {
@@ -370,11 +436,10 @@ const RoomTypes = ({ hotelID }) => {
   };
 
   const roomCardsSettings = {
-    dots: true,
+    dots: false,
     infinite: roomsData.length > 1,
     speed: 500,
     slidesToScroll: 1,
-    // autoplay: roomsData.length > 3, // Only autoplay if multiple cards make sense
     autoplaySpeed: 5000,
     pauseOnHover: true,
     arrows: false,
@@ -391,20 +456,19 @@ const RoomTypes = ({ hotelID }) => {
         },
       },
       {
-        breakpoint: 1024, // 769px to 1024px → show 2 cards
+        breakpoint: 1024,
         settings: {
           slidesToShow: 2,
           slidesToScroll: 1,
         },
       },
       {
-        breakpoint: 768, // ≤768px → show 1 card
+        breakpoint: 768,
         settings: {
           slidesToShow: 1,
           slidesToScroll: 1,
-          centerMode: true,
-          centerPadding: "30px",
-          arrows: true,
+          centerMode: false, // 🔥 important
+          centerPadding: "0px",
         },
       },
       {
@@ -412,8 +476,8 @@ const RoomTypes = ({ hotelID }) => {
         settings: {
           slidesToShow: 1,
           slidesToScroll: 1,
-          centerMode: true,
-          centerPadding: "20px",
+          centerMode: false,
+          centerPadding: "0px",
         },
       },
     ],
@@ -1136,8 +1200,12 @@ const RoomTypes = ({ hotelID }) => {
                 >
                   Cancel
                 </button>
-                <button className="btn-submit-hotel" onClick={handleSubmit}>
-                  Book Now
+                <button
+                  className="btn-submit-hotel"
+                  onClick={handleSubmit}
+                  disabled={booking_loading}
+                >
+                  {booking_loading ? "Booking..." : "Book Now"}
                 </button>
               </div>
             </div>
@@ -1209,7 +1277,7 @@ const RoomTypes = ({ hotelID }) => {
 
                   <FaChevronUp
                     className={
-                      expandedPolicies[activeRoom.id] ? "rotate" : "rotate-down"
+                      expandedPolicies[activeRoom.id] ? "rotate-down" : "rotate"
                     }
                   />
                 </div>

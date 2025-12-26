@@ -129,3 +129,5 @@ export const priceCheckurl =
 
 export const bookRoomHotelUrl =
   "https://hotel-volt-api-sandbox.travclan.com/api/v1/book";
+
+export const dynamic_hotels_curl_url = BaseUrl2 + "dynamic_hotels_curl";

@@ -186,7 +186,7 @@ const HomeHeroHotel = () => {
                         </div>
                       )}
 
-                      <div className="price-container">
+                      <div className="price-containerrr">
                         <div className="price">
                           <span className="currency">₹</span>
                           <span className="amount">

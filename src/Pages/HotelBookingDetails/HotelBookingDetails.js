@@ -26,6 +26,7 @@ import RoomTypes from "../../Components/RoomType/RoomTypes";
 import { useLocation } from "react-router-dom";
 import { FaRegNewspaper } from "react-icons/fa6";
 import { useHotelContext } from "../../Context/Hotel_context";
+import { getRoomsandrates } from "../../Utils/Constant";
 
 Modal.setAppElement("#root");
 
@@ -36,7 +37,7 @@ function HotelBookingDetails() {
   const [hotelData, setHotelData] = useState(location.state?.hotelData);
   const hotelId = hotelData?.id;
   const { GetRoomsAndRates, rooms_rate_loading } = useHotelContext();
-
+  const tokennn = localStorage.getItem("accessToken");
   useEffect(() => {
     window.scroll(0, 0);
     const traceId = localStorage.getItem("hotelTraceID");
@@ -45,6 +46,9 @@ function HotelBookingDetails() {
       return;
     }
     const params = {
+      type: "POST",
+      url: getRoomsandrates,
+      url_token: `Bearer ${tokennn}`,
       traceId,
       hotelId,
     };
@@ -311,15 +315,20 @@ function HotelBookingDetails() {
       {/* Facilities Section */}
       <div className="facilities-section">
         <h2 className="section-title">Facilities</h2>
-        <div className="facilities-grid">
-          {hotelData.facilities &&
-            hotelData.facilities.map((facility) => (
+        {hotelData.facilities && hotelData.facilities.length > 0 ? (
+          <div className="facilities-grid">
+            {hotelData.facilities.map((facility) => (
               <div key={facility.id} className="facility-item">
                 {/* {getFacilityIcon(facility.name)} */}
                 <span>{facility.name}</span>
               </div>
             ))}
-        </div>
+          </div>
+        ) : (
+          <div className="no-data-message">
+            <p>No facilities information available</p>
+          </div>
+        )}
       </div>
 
       {/* Closest Landmarks Section */}

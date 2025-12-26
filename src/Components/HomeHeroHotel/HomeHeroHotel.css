@@ -391,7 +391,7 @@
   margin-bottom: 12px;
 }
 
-.price-container {
+.price-containerrr {
   text-align: center;
   width: 100%;
 }
@@ -428,6 +428,8 @@
 .total_price_flex {
   display: flex;
   gap: 0.5rem;
+  align-items: center;
+  justify-content: center;
 }
 
 .amount {
@@ -516,9 +518,11 @@
     padding: 20px;
   }
 
-  .price-container {
-    text-align: left;
+  .price-containerrr {
+    /* text-align: left; */
     width: 100%;
+    display: flex;
+    flex-direction: column;
   }
 
   .price {

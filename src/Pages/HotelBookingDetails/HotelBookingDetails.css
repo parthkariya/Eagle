@@ -276,6 +276,17 @@
   flex-shrink: 0;
 }
 
+.no-data-message {
+  text-align: center;
+  padding: 30px 20px;
+  color: #6c757d;
+  font-size: 15px;
+}
+
+.no-data-message p {
+  margin: 0;
+}
+
 /* About Section */
 .about-section {
   margin-bottom: 25px;
@@ -467,7 +478,6 @@
   gap: 8px;
   padding: 16px 20px;
   overflow-x: auto;
-  flex-shrink: 0;
 }
 
 .modal-tabs::-webkit-scrollbar {
@@ -674,5 +684,13 @@
   .landmarks-section {
     padding: 15px;
     margin-bottom: 20px;
+  }
+
+  .modal-headerrr {
+    overflow-x: scroll;
+  }
+
+  .cloj-btn {
+    display: none;
   }
 }

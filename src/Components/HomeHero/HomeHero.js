@@ -3,7 +3,6 @@ import "./Homehero.css";
 import "bootstrap/dist/css/bootstrap.min.css";
 import images from "../../Constants/images";
 import Modal from "react-modal";
-
 import {
   FaPlaneDeparture,
   FaBed,
@@ -47,9 +46,11 @@ import {
   getFare,
   getRoutes,
   getSources,
+  locationAutosuggestApi,
   recent_search,
   seararrangementdetails,
   searchcurl,
+  SearchHotelMainApi,
   sectorscurl,
   supplieravailabilitycurl,
   suppliersearchcurl,
@@ -1052,16 +1053,22 @@ const HomeHero = () => {
     clearStaticData,
   } = useHotelContext();
 
+  const tokennn = localStorage.getItem("accessToken");
   useEffect(() => {
     if (!hotelSearchtext.trim()) {
       clearHotelData();
       return;
     }
-
     if (hotelSearchtext.length < 3) return;
-
     const delay = setTimeout(() => {
-      LocationSearchHotel(hotelSearchtext);
+      const formdata = new FormData();
+      formdata.append("type", "GET");
+      formdata.append(
+        "url",
+        `${locationAutosuggestApi}?searchString=${hotelSearchtext}`
+      );
+      formdata.append("url_token", `Bearer ${tokennn}`);
+      LocationSearchHotel(formdata);
     }, 500);
 
     return () => clearTimeout(delay);
@@ -2025,7 +2032,11 @@ const HomeHero = () => {
       return;
     }
     clearStaticData();
+    storedHotelIdsRef.current.clear();
     const payload = {
+      type: "POST",
+      url: SearchHotelMainApi,
+      url_token: `Bearer ${tokennn}`,
       checkIn: moment(dateRange[0].toDate()).format("YYYY-MM-DD"),
       checkOut: moment(dateRange[1].toDate()).format("YYYY-MM-DD"),
       nationality: "IN",
@@ -2086,12 +2097,12 @@ const HomeHero = () => {
               {tabs.map((tab) => (
                 <div
                   key={tab.key}
-                  // className={`tab-wrapper ${
-                  //   tab.key === "stays" ? "disabled-tab" : ""
-                  // }`}
-                  className="tab-wrapper"
+                  className={`tab-wrapper ${
+                    tab.key === "car" ? "disabled-tab" : ""
+                  }`}
+                  // className="tab-wrapper"
                   onClick={() => {
-                    // if (tab.key === "stays") return;
+                    if (tab.key === "car") return;
 
                     TabSelection(tab.key);
                     setSelectedtab(tab.key);

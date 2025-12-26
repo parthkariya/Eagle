@@ -25,9 +25,12 @@ import {
   ROOM_BOOKING_SUCCESS,
 } from "../Actions";
 import {
+  ACCEPT_HEADER,
   bookRoomHotelUrl,
+  dynamic_hotels_curl_url,
   getRoomsandrates,
   locationAutosuggestApi,
+  newFlightApi_dynamic,
   priceCheckurl,
   SearchHotelMainApi,
   StaticContentApi,
@@ -56,22 +59,13 @@ const proxy = "https://cors-anywhere.herokuapp.com/";
 export const HotelProvider = ({ children }) => {
   const [state, dispatch] = useReducer(hotel_reducer, initialState);
 
-  const LocationSearchHotel = async (searchString) => {
-    if (!searchString?.trim()) return;
-
+  const LocationSearchHotel = async (formdata) => {
+    // if (!searchString?.trim()) return;
     dispatch({ type: HOTEL_SEARCH_BEGIN });
-
     try {
-      const token = localStorage.getItem("accessToken");
-      const response = await axios.get(proxy + locationAutosuggestApi, {
-        params: {
-          searchString: searchString,
-        },
+      const response = await axios.post(dynamic_hotels_curl_url, formdata, {
         headers: {
-          Authorization: "Bearer " + token,
-          accept: "application/json",
-          "Authorization-Type": "external-service",
-          source: "website",
+          Accept: ACCEPT_HEADER,
         },
       });
 
@@ -92,10 +86,9 @@ export const HotelProvider = ({ children }) => {
     dispatch({ type: MAIN_SEARCH_BEGIN });
 
     try {
-      const res = await axios.post(SearchHotelMainApi, params, {
+      const res = await axios.post(dynamic_hotels_curl_url, params, {
         headers: {
-          Authorization: "Bearer " + token,
-          source: "website",
+          Accept: ACCEPT_HEADER,
         },
       });
 
@@ -119,11 +112,10 @@ export const HotelProvider = ({ children }) => {
         error?.response?.data?.message ||
         error.message ||
         "Something went wrong. Please try again.";
-
       toast.error(errorMessage);
       console.error("Error in Main Search API:", error);
 
-      throw error; // ✅ important
+      throw error;
     }
   };
 
@@ -132,16 +124,16 @@ export const HotelProvider = ({ children }) => {
     dispatch({ type: STATIC_CONTENT_BEGIN });
 
     try {
-      const res = await axios.get(
-        `${proxy}${StaticContentApi}/${hotelId}/static-content`,
-        {
-          headers: {
-            Authorization: "Bearer " + token,
-            "Authorization-Type": "external-service",
-            source: "website",
-          },
-        }
-      );
+      const formdata = new FormData();
+      formdata.append("type", "GET");
+      formdata.append("url", `${StaticContentApi}/${hotelId}/static-content`);
+      formdata.append("url_token", `Bearer ${token}`);
+
+      const res = await axios.post(dynamic_hotels_curl_url, formdata, {
+        headers: {
+          Accept: ACCEPT_HEADER,
+        },
+      });
 
       if (res.data?.error === false) {
         dispatch({
@@ -159,15 +151,15 @@ export const HotelProvider = ({ children }) => {
       console.log("Error in Static content api", err);
     }
   };
+
   const GetRoomsAndRates = async (params) => {
     const token = localStorage.getItem("accessToken");
     dispatch({ type: GET_ROOMS_RATE_BEGIN });
 
     axios
-      .post(proxy + getRoomsandrates, params, {
+      .post(dynamic_hotels_curl_url, params, {
         headers: {
-          Authorization: "Bearer " + token,
-          source: "website",
+          Accept: ACCEPT_HEADER,
         },
       })
       .then((res) => {
@@ -185,49 +177,64 @@ export const HotelProvider = ({ children }) => {
   };
 
   const PriceCheckApi = async (params) => {
-    const token = localStorage.getItem("accessToken");
-    dispatch({ type: HOTEL_PRICE_CHECK_BEGIN });
-    axios
-      .post(priceCheckurl, params, {
+    try {
+      const token = localStorage.getItem("accessToken");
+      dispatch({ type: HOTEL_PRICE_CHECK_BEGIN });
+
+      const res = await axios.post(dynamic_hotels_curl_url, params, {
         headers: {
-          Authorization: "Bearer " + token,
-          source: "website",
+          Accept: ACCEPT_HEADER,
         },
-      })
-      .then((res) => {
-        if (res.data.error === false) {
-          dispatch({
-            type: HOTEL_PRICE_CHECK_SUCCESS,
-            payload: res?.data?.results,
-          });
-        } else dispatch({ type: HOTEL_PRICE_CHECK_ERROR });
-      })
-      .catch((err) => {
-        dispatch({ type: HOTEL_PRICE_CHECK_ERROR });
-        console.log("Error in hotel price check api ", err);
       });
+
+      if (res.data?.error === false) {
+        dispatch({
+          type: HOTEL_PRICE_CHECK_SUCCESS,
+          payload: res.data.results,
+        });
+        return { success: true };
+      }
+
+      dispatch({ type: HOTEL_PRICE_CHECK_ERROR });
+      return { success: false, expired: false };
+    } catch (err) {
+      dispatch({ type: HOTEL_PRICE_CHECK_ERROR });
+      const expired = err?.response?.data?.error?.code === 1001;
+      return {
+        success: false,
+        expired,
+        message: err?.response?.data?.error?.message || "Something went wrong",
+      };
+    }
   };
 
   const HotelRoomBooking = async (params) => {
     const token = localStorage.getItem("accessToken");
     dispatch({ type: ROOM_BOOKING_BEGIN });
-    axios
-      .post(bookRoomHotelUrl, params, {
+
+    try {
+      const res = await axios.post(dynamic_hotels_curl_url, params, {
         headers: {
-          Authorization: "Bearer " + token,
-          source: "website",
+          Accept: ACCEPT_HEADER,
         },
-      })
-      .then((res) => {
-        if (res.data.error === false) {
-          dispatch({ type: ROOM_BOOKING_SUCCESS, payload: res?.data?.results });
-          return res?.data?.results;
-        } else dispatch({ type: ROOM_BOOKING_ERROR });
-      })
-      .catch((err) => {
-        console.log("Error in Room booking Api", err);
-        dispatch({ type: ROOM_BOOKING_ERROR });
       });
+
+      if (res.data.error === false) {
+        dispatch({
+          type: ROOM_BOOKING_SUCCESS,
+          payload: res.data.results,
+        });
+
+        return res.data.results; // ✅ NOW IT RETURNS
+      } else {
+        dispatch({ type: ROOM_BOOKING_ERROR });
+        return null;
+      }
+    } catch (err) {
+      console.log("Error in Room booking Api", err);
+      dispatch({ type: ROOM_BOOKING_ERROR });
+      return null;
+    }
   };
 
   const clearHotelData = () => {

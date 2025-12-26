@@ -30,12 +30,8 @@ const HomePage = () => {
   const { getCancellationPolicyApi } = useAuthContext();
   const [modalWidth, setModalWidth] = useState("90%");
 
-    const {
-      FlightSearch,
-      FlightSearchAiriq,
-      flight_Data,
-      flightAirIq_Data,
-    } = useFlightContext();
+  const { FlightSearch, FlightSearchAiriq, flight_Data, flightAirIq_Data } =
+    useFlightContext();
 
   useLayoutEffect(() => {
     const updateWidth = () => {
@@ -84,9 +80,6 @@ const HomePage = () => {
     setCompanyId(companyid);
 
     SetLogin(islogin);
-
-    console.log("getCompanyId", companyid);
-
     var role = localStorage.getItem("is_role");
     if (islogin) {
       setUserRole(JSON.parse(role));
@@ -216,11 +209,14 @@ const HomePage = () => {
         </>
       ) : (
         <>
-        {flight_Data?.length > 0 || flightAirIq_Data?.length > 0 ? <></> : <>
-          <WhyChooseUs />
-          <PartnerAirline />
-        </>}
-          
+          {flight_Data?.length > 0 || flightAirIq_Data?.length > 0 ? (
+            <></>
+          ) : (
+            <>
+              <WhyChooseUs />
+              <PartnerAirline />
+            </>
+          )}
         </>
       )}
 
