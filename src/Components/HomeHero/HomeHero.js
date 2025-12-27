@@ -7930,10 +7930,7 @@ const HomeHero = () => {
                 {totalPages > 1 &&
                   !(filtered === true && filteredFlights?.length === 0) && (
                     <>
-                      <div
-                        className="d-flex align-items-center mb-2 mt-2"
-                        style={{ margin: "0 auto", width: "98%" }}
-                      >
+                      <div className="d-flex align-items-center mb-2 mt-2 per_page_show">
                         <label htmlFor="entries" className="me-2">
                           Show
                         </label>
