@@ -1568,22 +1568,108 @@
   .mobile_row {
     display: flex;
     /* background-color: red; */
-    align-items: center;
+    /* align-items: center; */
     gap: 15px;
     padding: 10px;
     /* flex-basis: 100%; */
     width: 100%;
-
+    flex-direction: column;
     justify-content: space-around;
+  }
+
+  .resp_price_sec {
+    background-color: #eee;
+    display: flex;
+    justify-content: space-between;
+    width: 100%;
+  }
+
+  .resp_book_inner_flex {
+    display: flex;
+    justify-content: space-between;
+    padding-left: 0.5rem;
+    padding-right: 0.5rem;
+    padding-top: 0.5rem;
+    padding-bottom: 0.2rem;
+    width: 100%;
+  }
+
+  .resp_book_inner_flex2 {
+  }
+
+  .resp_flight_logo_flex {
+    display: flex;
+    gap: 0.5rem;
+  }
+
+  .resp_book_price {
+    font-weight: 800;
+    color: var(--color-black);
+    font-size: 22px;
+  }
+
+  .resp_book_info_flex {
+    display: flex;
+    gap: 0.5rem;
+    align-items: center;
   }
   .mob_time_cont {
     display: flex;
     flex-direction: column;
+    gap: 8px;
   }
+
   .mob_time_row {
     display: flex;
     align-items: center;
-    gap: 20px;
+    justify-content: space-between;
+  }
+
+  .mob_time {
+    font-size: 18px;
+    font-weight: 700;
+    color: #1f2937;
+    line-height: 1.2;
+  }
+
+  .mob_time div {
+    font-size: 14px;
+    font-weight: 600;
+    color: #1f2937;
+    margin-top: 2px;
+  }
+
+  .mob_duration_line {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 0 15px;
+  }
+
+  .mob_duration {
+    font-size: 12px;
+    color: #6b7280;
+    margin-bottom: 4px;
+  }
+
+  .mob_line {
+    width: 100%;
+    height: 1px;
+    background-color: #d1d5db;
+    position: relative;
+  }
+
+  .mob_stops {
+    font-size: 12px;
+    color: #ea580c;
+    font-weight: 500;
+    margin-top: 4px;
+  }
+
+  .mob_city_kode {
+    font-size: 12px;
+    color: #6b7280;
   }
   .mob_time {
     font-size: 14px;
@@ -1636,16 +1722,47 @@
     color: var(--color-white);
     border-radius: 8px;
     text-decoration: none;
-    min-width: 150px;
+    /* min-width: 150px; */
   }
   .J_T2 {
     margin-top: 10px;
   }
   .flight-search-bar {
+    overflow: hidden;
     flex-direction: column;
     gap: 10px;
     height: 100%;
-    margin-top: 1.2rem;
+    opacity: 1;
+    transform: translateY(-10px);
+    transition: height 0.4s ease, opacity 0.3s ease, transform 0.3s ease;
+  }
+
+  /* OPEN STATE */
+  .flight-search-bar.open {
+    height: 100%;
+    opacity: 1;
+    transform: translateY(0);
+    margin-top: 1rem;
+  }
+
+  .J_T2-header {
+    display: none;
+  }
+
+  .J_T2-header_resss {
+    display: flex;
+    width: 100px;
+    position: relative;
+    margin-bottom: 12px;
+    cursor: pointer;
+    align-self: flex-start;
+  }
+
+  /* CLOSED STATE */
+  .flight-search-bar.closed {
+    height: 0;
+    opacity: 0;
+    transform: translateY(-10px);
   }
   .flightsavailable2 {
     width: 95%;
@@ -2100,6 +2217,98 @@
 
   .flight-card-resp {
     padding: 0px !important;
+  }
+
+  .mobile-only {
+    display: block !important;
+  }
+
+  .trip-summary-card {
+    background: white;
+    border: 1px solid #e5e7eb;
+    border-radius: 12px;
+    padding: 16px;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+  }
+
+  .summary-row {
+    display: flex;
+    align-items: flex-end;
+    gap: 16px;
+  }
+
+  .route-section {
+    flex: 2;
+  }
+
+  .route-header {
+    display: flex;
+    gap: 40px;
+    margin-bottom: 8px;
+  }
+
+  .label {
+    font-size: 10px;
+    font-weight: 600;
+    color: #9ca3af;
+    letter-spacing: 0.5px;
+    text-transform: uppercase;
+  }
+
+  .route-display {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+
+  .location {
+    font-weight: 600;
+    font-size: 16px;
+    color: #111827;
+  }
+
+  .arrow-icon {
+    color: #9ca3af;
+    flex-shrink: 0;
+  }
+
+  .date-section {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    flex: 1;
+    justify-content: center;
+    align-items: center;
+    min-width: 80px;
+  }
+
+  .date-info {
+    font-weight: 500;
+    font-size: 16px;
+    color: black;
+  }
+
+  .modify-btn {
+    background: white;
+    border: 1.5px solid #ff4500;
+    color: #ff4500;
+    padding: 8px 20px;
+    border-radius: 8px;
+    font-size: 14px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    white-space: nowrap;
+    height: fit-content;
+    flex: 1;
+  }
+
+  .modify-btn:hover {
+    background: #eff6ff;
+  }
+
+  .modify-btn:active {
+    transform: scale(0.97);
   }
 }
 
@@ -2911,5 +3120,142 @@
 
   .guests-dropdown {
     left: -60px;
+  }
+}
+
+.mobile-only {
+  display: none;
+}
+
+.eagle-deal-banner {
+  background: linear-gradient(90deg, #ff6b35 0%, #ff8c42 100%);
+  border-radius: 10px;
+  padding: 12px 20px;
+  margin: 16px 0;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  box-shadow: 0 2px 8px rgba(255, 107, 53, 0.2);
+  position: relative;
+  overflow: hidden;
+  animation: subtle-pulse 3s ease-in-out infinite;
+}
+
+@keyframes subtle-pulse {
+  0%,
+  100% {
+    box-shadow: 0 2px 8px rgba(255, 107, 53, 0.2);
+  }
+  50% {
+    box-shadow: 0 4px 16px rgba(255, 107, 53, 0.35);
+  }
+}
+
+.eagle-deal-banner::before {
+  content: "";
+  position: absolute;
+  top: -50%;
+  right: -5%;
+  width: 150px;
+  height: 150px;
+  background: rgba(255, 255, 255, 0.1);
+  border-radius: 50%;
+}
+
+.deal-left {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  position: relative;
+  z-index: 2;
+}
+
+.deal-icon {
+  width: 40px;
+  height: 40px;
+  background: rgba(255, 255, 255, 0.25);
+  backdrop-filter: blur(10px);
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.deal-icon svg {
+  width: 20px;
+  height: 20px;
+  color: white;
+}
+
+.deal-text {
+  color: white;
+}
+
+.deal-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 13px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  margin-bottom: 2px;
+  background-color: rgba(255, 255, 255, 0.4);
+  border-radius: 18px;
+  padding: 6px;
+  color: white;
+}
+
+.deal-badge::before {
+  content: "✨";
+  font-size: 12px;
+}
+
+.deal-message {
+  font-size: 15px;
+  font-weight: 600;
+  margin: 0;
+  opacity: 0.95;
+}
+
+.deal-cta {
+  background: white;
+  color: #ff6b35;
+  border: none;
+  padding: 8px 20px;
+  border-radius: 6px;
+  font-weight: 700;
+  font-size: 13px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  white-space: nowrap;
+  position: relative;
+  z-index: 2;
+}
+
+.deal-cta:hover {
+  transform: scale(1.05);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+}
+
+.deal-cta:active {
+  transform: scale(0.98);
+}
+/* Mobile responsive */
+@media (max-width: 768px) {
+  .eagle-deal-banner {
+    flex-direction: column;
+    text-align: center;
+    padding: 20px;
+  }
+
+  .deal-content h3 {
+    font-size: 18px;
+  }
+
+  .deal-cta {
+    width: 100%;
   }
 }

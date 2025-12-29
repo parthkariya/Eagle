@@ -3,6 +3,8 @@ import "./Homehero.css";
 import "bootstrap/dist/css/bootstrap.min.css";
 import images from "../../Constants/images";
 import Modal from "react-modal";
+import { IoInformationCircleOutline } from "react-icons/io5";
+
 import {
   FaPlaneDeparture,
   FaBed,
@@ -143,6 +145,11 @@ const HomeHero = () => {
     infant: 0,
   });
   const [visibleCount, setVisibleCount] = useState(10);
+  const [resmodifyToggle, setResmodifyToggle] = useState(false);
+
+  const handleResModifyToggle = () => {
+    setResmodifyToggle(!resmodifyToggle);
+  };
 
   const { cancellation_policy } = useAuthContext();
 
@@ -2980,8 +2987,56 @@ const HomeHero = () => {
                 ) : (
                   <></>
                 )}
+                <div className="mobile-only">
+                  <div className="trip-summary-card">
+                    <div className="summary-row">
+                      <div className="route-section">
+                        <div className="route-header">
+                          <span className="label">FROM</span>
+                          <span className="label">TO</span>
+                        </div>
+                        <div className="route-display">
+                          <span className="location">{from?.value}</span>
+                          <svg
+                            className="arrow-icon"
+                            width="16"
+                            height="16"
+                            viewBox="0 0 24 24"
+                            fill="none"
+                            stroke="currentColor"
+                            strokeWidth="2"
+                          >
+                            <path d="M5 12h14m-7-7l7 7-7 7" />
+                          </svg>
+                          <span className="location">{to?.value}</span>
+                        </div>
+                      </div>
 
-                <div className="flight-search-bar mb-2">
+                      <div className="date-section">
+                        <span className="label">DATE</span>
+                        <span className="date-info">
+                          {selectedDate || defaultMonth
+                            ? dayjs(selectedDate || defaultMonth).format(
+                                "ddd D/M"
+                              )
+                            : "-"}
+                        </span>
+                      </div>
+
+                      <button
+                        className="modify-btn"
+                        onClick={handleResModifyToggle}
+                      >
+                        Modify
+                      </button>
+                    </div>
+                  </div>
+                </div>
+                <div
+                  className={`flight-search-bar ${
+                    resmodifyToggle ? "open" : "closed"
+                  } mb-2`}
+                >
                   <div className="from-section">
                     {selectedtab === "buses" ? (
                       <Select
@@ -3456,6 +3511,29 @@ const HomeHero = () => {
                   >
                     Search
                   </button>
+                </div>
+                <div class="eagle-deal-banner">
+                  <div class="deal-left">
+                    <div class="deal-icon">
+                      <svg
+                        viewBox="0 0 24 24"
+                        fill="none"
+                        stroke="currentColor"
+                        stroke-width="2.5"
+                      >
+                        <path d="M12 2L2 7l10 5 10-5-10-5z" />
+                        <path d="M2 17l10 5 10-5" />
+                        <path d="M2 12l10 5 10-5" />
+                      </svg>
+                    </div>
+                    <div class="deal-text">
+                      <div class="deal-badge">Eagle Deal</div>
+                      <p class="deal-message">
+                        Get the best prices on popular destinations
+                      </p>
+                    </div>
+                  </div>
+                  <div class="deal-cta">View Deals</div>
                 </div>
                 <div className="filter_sec">
                   <button
@@ -5328,7 +5406,16 @@ const HomeHero = () => {
                                         : "N/A"}
                                       <div>{item?.sg[0]?.or?.aC || "N/A"}</div>
                                     </div>
-                                    <div style={{ width: "50px" }}>-----</div>
+
+                                    <div className="mob_duration_line">
+                                      <div className="mob_duration">
+                                        {totalMinutes >= 0
+                                          ? `${totalHours}h ${totalRemainingMin}m`
+                                          : "N/A"}
+                                      </div>
+                                      <div className="mob_line"></div>
+                                    </div>
+
                                     <div className="mob_time text-center">
                                       {arrivalMoment
                                         ? moment(
@@ -5342,14 +5429,10 @@ const HomeHero = () => {
                                       </div>
                                     </div>
                                   </div>
-                                  <div className="mob_time_row justify-content-between">
+
+                                  <div className="mob_time_row">
                                     <div className="mob_city_kode">
                                       {item?.sg[0]?.or?.cN || "N/A"}
-                                    </div>
-                                    <div className="mob_duration">
-                                      {totalMinutes >= 0
-                                        ? `${totalHours}h ${totalRemainingMin}m`
-                                        : "N/A"}
                                     </div>
                                     <div className="mob_city_kode">
                                       {item?.sg[item?.sg.length - 1]?.ds?.cN ||
@@ -5369,6 +5452,7 @@ const HomeHero = () => {
                             <div className="mob_book_btn_main">
                               <div className="d-flex align-items-center justify-content-center justify-content-lg-start w-100 flex-column">
                                 {/* <div className="flight-info-container">
+                                
                               <div className="flight-info-btn" onClick={() => openModal(item)}>
                                 <BsInfoCircle size={18} />
                                 <span className="flight-info-text">Flight Info</span>
@@ -5383,142 +5467,105 @@ const HomeHero = () => {
                               )}
                             </div> */}
                                 {login ? (
-                                  <div className="d-flex gap-2 w-100 justify-content-between">
+                                  <div className="d-flex gap-2 w-100 justify-content-between resp_price_sec">
                                     {/* TravClan Book Button */}
-                                    <Link
-                                      to={"/TicketBookingDetails"}
-                                      state={{
-                                        item: [
-                                          {
-                                            ...item,
-                                            fareIdentifier: {
-                                              ...item.fareIdentifier,
-                                              code: "flight_Data_fare",
-                                            },
-                                            selectedPrice: item.fF,
-                                            priceSource: "TravClan",
-                                          },
-                                        ],
-                                        totaltraveller: totalTravellers,
-                                        adulttraveler: travellers.adult,
-                                        childtraveler: travellers.child,
-                                        infanttraveler: travellers.infant,
-                                        ticket_id: item.rI,
-                                        selected: selected,
-                                        getCondition: getCondition,
-                                      }}
-                                      className="bookBtn2_mob"
-                                      style={{ marginTop: "0px" }}
-                                      onClick={() => {
-                                        const updatedItem = {
-                                          ...item,
-                                          fareIdentifier: {
-                                            ...item.fareIdentifier,
-                                            code: "flight_Data_fare",
-                                          },
-                                          selectedPrice: item.fF,
-                                          priceSource: "TravClan",
-                                        };
-                                        if (selectedOption.id === 1) {
-                                          console.log(
-                                            `Navigating to TicketBookingDetails for TravClan flight: ${item.rI}, fareIdentifier.code: flight_Data_fare`
-                                          );
-                                        } else {
-                                          setFlightData(updatedItem);
-                                          setIndex(index);
-                                          handleReturnFlightTabChange(1);
-                                          console.log(
-                                            `Selecting TravClan flight: ${item.rI}, fareIdentifier.code: flight_Data_fare`
-                                          );
-                                          setResultIndex([item?.rI]);
-                                        }
-                                      }}
-                                    >
-                                      {selectedOption.id === 2 ? (
-                                        resultIndex.includes(item?.rI) ? (
-                                          "Selected"
-                                        ) : (
-                                          "Select TravClan"
-                                        )
-                                      ) : (
-                                        <>
-                                          Book <FaIndianRupeeSign size={14} />{" "}
-                                          {item?.fF || "N/A"}
-                                        </>
-                                      )}
-                                    </Link>
-
-                                    {/* AirIQ Book Button */}
-                                    {item?.airIQPrice && (
-                                      <Link
-                                        to={"/TicketBookingDetails"}
-                                        state={{
-                                          item: [
-                                            {
+                                    <div className="resp_book_inner_flex">
+                                      <div className="resp_book_price">
+                                        <FaIndianRupeeSign size={18} />{" "}
+                                        {item?.fF || "N/A"}
+                                      </div>
+                                      <div className="resp_book_info_flex">
+                                        <Link
+                                          to={"/TicketBookingDetails"}
+                                          state={{
+                                            item: [
+                                              {
+                                                ...item,
+                                                fareIdentifier: {
+                                                  ...item.fareIdentifier,
+                                                  code: "flight_Data_fare",
+                                                },
+                                                selectedPrice: item.fF,
+                                                priceSource: "TravClan",
+                                              },
+                                            ],
+                                            totaltraveller: totalTravellers,
+                                            adulttraveler: travellers.adult,
+                                            childtraveler: travellers.child,
+                                            infanttraveler: travellers.infant,
+                                            ticket_id: item.rI,
+                                            selected: selected,
+                                            getCondition: getCondition,
+                                          }}
+                                          className="bookBtn2_mob"
+                                          style={{ marginTop: "0px" }}
+                                          onClick={() => {
+                                            const updatedItem = {
                                               ...item,
                                               fareIdentifier: {
                                                 ...item.fareIdentifier,
-                                                code: "airIQ_fare",
+                                                code: "flight_Data_fare",
                                               },
-                                              rI: item.airIQTicketId,
-                                              selectedPrice: item.airIQPrice,
-                                              priceSource: "AirIQ",
-                                            },
-                                          ],
-                                          totaltraveller: totalTravellers,
-                                          adulttraveler: travellers.adult,
-                                          childtraveler: travellers.child,
-                                          infanttraveler: travellers.infant,
-                                          ticket_id: item.airIQTicketId,
-                                          selected: selected,
-                                          getCondition: getCondition,
-                                        }}
-                                        className="bookBtn2_mob"
-                                        style={{ marginTop: "0px" }}
-                                        onClick={() => {
-                                          const updatedItem = {
-                                            ...item,
-                                            fareIdentifier: {
-                                              ...item.fareIdentifier,
-                                              code: "airIQ_fare",
-                                            },
-                                            rI: item.airIQTicketId,
-                                            selectedPrice: item.airIQPrice,
-                                            priceSource: "AirIQ",
-                                          };
-                                          if (selectedOption.id === 1) {
-                                            console.log(
-                                              `Navigating to TicketBookingDetails for AirIQ flight: ${item.airIQTicketId}, fareIdentifier.code: airIQ_fare`
-                                            );
-                                          } else {
-                                            setFlightData(updatedItem);
-                                            setIndex(index);
-                                            handleReturnFlightTabChange(1);
-                                            console.log(
-                                              `Selecting AirIQ flight: ${item.airIQTicketId}, fareIdentifier.code: airIQ_fare`
-                                            );
-                                            setResultIndex([
-                                              item?.airIQTicketId,
-                                            ]);
-                                          }
-                                        }}
-                                      >
-                                        {selectedOption.id === 2 ? (
-                                          resultIndex.includes(
-                                            item?.airIQTicketId
-                                          ) ? (
-                                            "Selected"
+                                              selectedPrice: item.fF,
+                                              priceSource: "TravClan",
+                                            };
+                                            if (selectedOption.id === 1) {
+                                              console.log(
+                                                `Navigating to TicketBookingDetails for TravClan flight: ${item.rI}, fareIdentifier.code: flight_Data_fare`
+                                              );
+                                            } else {
+                                              setFlightData(updatedItem);
+                                              setIndex(index);
+                                              handleReturnFlightTabChange(1);
+                                              console.log(
+                                                `Selecting TravClan flight: ${item.rI}, fareIdentifier.code: flight_Data_fare`
+                                              );
+                                              setResultIndex([item?.rI]);
+                                            }
+                                          }}
+                                        >
+                                          {selectedOption.id === 2 ? (
+                                            resultIndex.includes(item?.rI) ? (
+                                              "Selected"
+                                            ) : (
+                                              "Select TravClan"
+                                            )
                                           ) : (
-                                            "Select AirIQ"
-                                          )
-                                        ) : (
-                                          <>
-                                            Book <FaIndianRupeeSign size={16} />{" "}
-                                            {item?.airIQPrice}
-                                          </>
-                                        )}
-                                      </Link>
-                                    )}
+                                            <>
+                                              Book
+                                              {/* <FaIndianRupeeSign size={14} />{" "}
+                                          {item?.fF || "N/A"} */}
+                                            </>
+                                          )}
+                                        </Link>
+                                        {/* TravClan Book Button */}
+                                        <div
+                                          className=""
+                                          onClick={() => {
+                                            setFlightProName("travclan");
+                                            openModal(item);
+                                          }}
+                                          style={{
+                                            width: "32px",
+                                            height: "32px",
+                                            borderRadius: "50%",
+                                            backgroundColor: "#ffe8d6",
+                                            display: "flex",
+                                            alignItems: "center",
+                                            justifyContent: "center",
+                                            cursor: "pointer",
+                                            border: "1px solid #ffd4b3",
+                                          }}
+                                        >
+                                          <span>
+                                            <IoInformationCircleOutline
+                                              color="#ff690f"
+                                              size={18}
+                                            />
+                                          </span>
+                                        </div>
+                                      </div>
+                                    </div>
                                   </div>
                                 ) : (
                                   <Link
@@ -5534,27 +5581,116 @@ const HomeHero = () => {
                                   </Link>
                                 )}
                                 {/* </div> */}
-                                <div className="d-flex gap-2 w-100 justify-content-between">
-                                  {/* TravClan Book Button */}
-                                  <div
-                                    className="res_mob_view_detail_btn"
-                                    onClick={() => {
-                                      setFlightProName("travclan");
-                                      openModal(item);
-                                    }}
-                                    style={{
-                                      color: "#ff690f",
-                                      fontWeight: "600",
-                                      fontSize: "14px",
-                                      textAlign: "center",
-                                      cursor: "pointer",
-                                    }}
-                                  >
-                                    View Flight Details
-                                  </div>
+                                <div className="d-flex gap-2 w-100 justify-content-between resp_price_sec">
+                                  <div className="resp_book_inner_flex resp_book_inner_flex2">
+                                    {item?.airIQPrice && (
+                                      <div className="resp_book_price">
+                                        <FaIndianRupeeSign size={18} />{" "}
+                                        {item?.airIQPrice || "N/A"}
+                                      </div>
+                                    )}
 
+                                    <div className="resp_book_info_flex">
+                                      {/* AirIQ Book Button */}
+                                      {item?.airIQPrice && (
+                                        <Link
+                                          to={"/TicketBookingDetails"}
+                                          state={{
+                                            item: [
+                                              {
+                                                ...item,
+                                                fareIdentifier: {
+                                                  ...item.fareIdentifier,
+                                                  code: "airIQ_fare",
+                                                },
+                                                rI: item.airIQTicketId,
+                                                selectedPrice: item.airIQPrice,
+                                                priceSource: "AirIQ",
+                                              },
+                                            ],
+                                            totaltraveller: totalTravellers,
+                                            adulttraveler: travellers.adult,
+                                            childtraveler: travellers.child,
+                                            infanttraveler: travellers.infant,
+                                            ticket_id: item.airIQTicketId,
+                                            selected: selected,
+                                            getCondition: getCondition,
+                                          }}
+                                          className="bookBtn2_mob"
+                                          style={{ marginTop: "0px" }}
+                                          onClick={() => {
+                                            const updatedItem = {
+                                              ...item,
+                                              fareIdentifier: {
+                                                ...item.fareIdentifier,
+                                                code: "airIQ_fare",
+                                              },
+                                              rI: item.airIQTicketId,
+                                              selectedPrice: item.airIQPrice,
+                                              priceSource: "AirIQ",
+                                            };
+                                            if (selectedOption.id === 1) {
+                                              console.log(
+                                                `Navigating to TicketBookingDetails for AirIQ flight: ${item.airIQTicketId}, fareIdentifier.code: airIQ_fare`
+                                              );
+                                            } else {
+                                              setFlightData(updatedItem);
+                                              setIndex(index);
+                                              handleReturnFlightTabChange(1);
+                                              console.log(
+                                                `Selecting AirIQ flight: ${item.airIQTicketId}, fareIdentifier.code: airIQ_fare`
+                                              );
+                                              setResultIndex([
+                                                item?.airIQTicketId,
+                                              ]);
+                                            }
+                                          }}
+                                        >
+                                          {selectedOption.id === 2 ? (
+                                            resultIndex.includes(
+                                              item?.airIQTicketId
+                                            ) ? (
+                                              "Selected"
+                                            ) : (
+                                              "Select AirIQ"
+                                            )
+                                          ) : (
+                                            <>Book</>
+                                          )}
+                                        </Link>
+                                      )}
+
+                                      {item?.airIQPrice && (
+                                        <div
+                                          className=""
+                                          onClick={() => {
+                                            setFlightProName("airiq");
+                                            openModal(item);
+                                          }}
+                                          style={{
+                                            width: "32px",
+                                            height: "32px",
+                                            borderRadius: "50%",
+                                            backgroundColor: "#ffe8d6",
+                                            display: "flex",
+                                            alignItems: "center",
+                                            justifyContent: "center",
+                                            cursor: "pointer",
+                                            border: "1px solid #ffd4b3",
+                                          }}
+                                        >
+                                          <span>
+                                            <IoInformationCircleOutline
+                                              color="#ff690f"
+                                              size={18}
+                                            />
+                                          </span>
+                                        </div>
+                                      )}
+                                    </div>
+                                  </div>
                                   {/* AirIQ Book Button */}
-                                  {item?.airIQPrice && (
+                                  {/* {item?.airIQPrice && (
                                     <div
                                       className="res_mob_view_detail_btn"
                                       onClick={() => {
@@ -5571,7 +5707,7 @@ const HomeHero = () => {
                                     >
                                       View Flight Details
                                     </div>
-                                  )}
+                                  )} */}
                                 </div>
                                 {/* <div className="d-flex gap-2 w-100 justify-content-between"> */}
                                 {/* TravClan Book Button */}
