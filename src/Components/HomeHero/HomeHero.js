@@ -3639,7 +3639,7 @@ const HomeHero = () => {
                         totalMinutes >= 0 ? Math.floor(totalMinutes / 60) : 0;
                       const totalRemainingMin =
                         totalMinutes >= 0 ? totalMinutes % 60 : 0;
-                      const className =
+                      const ClassName =
                         classes?.find((cls) => cls.id === item.sg?.[0]?.cC)
                           ?.name || "Unknown Class";
                       const fareIdentifier =
@@ -3865,11 +3865,11 @@ const HomeHero = () => {
                                           Flight Details
                                         </div>
                                         <div className="fw-bold fs-5 mt-3">
-                                          Departure Flight
+                                          Departure
                                         </div>
                                         {flightProName === "travclan" ? (
                                           <>
-                                            <div>
+                                            <div className="d-flex justify-content-between mt-2">
                                               <Chip
                                                 label={
                                                   item?.iR === true
@@ -3892,10 +3892,23 @@ const HomeHero = () => {
                                                       : "inherit",
                                                 }}
                                               />
+                                              <Chip
+                                                label={
+                                                  ClassName || "Unknown Class"
+                                                }
+                                                variant="outlined"
+                                              />
                                             </div>
                                           </>
                                         ) : (
-                                          <></>
+                                          <div className="mt-2">
+                                            <Chip
+                                              label={
+                                                ClassName || "Unknown Class"
+                                              }
+                                              variant="outlined"
+                                            />
+                                          </div>
                                         )}
 
                                         <div className="container my-3">
@@ -4431,14 +4444,14 @@ const HomeHero = () => {
                                       </div>
                                       <div className="class-details">
                                         <h3 className="class-name">
-                                          {className}
+                                          {ClassName}
                                         </h3>
                                         <p className="fare-identifier">
                                           {fareIdentifier}
                                         </p>
                                       </div>
                                       <div className="class-badge">
-                                        {className?.split(" ")[0] || "CLASS"}
+                                        {ClassName?.split(" ")[0] || "CLASS"}
                                       </div>
                                     </div>
                                   </div>
@@ -4656,18 +4669,6 @@ const HomeHero = () => {
                                                   }}
                                                 ></div>
                                               )} */}
-
-                                              {/* Economy */}
-                                              <span
-                                                style={{
-                                                  fontSize: "14px",
-                                                  color: "#6b7280",
-                                                  marginTop: "0px",
-                                                  marginBottom: "0.5rem",
-                                                }}
-                                              >
-                                                {className}
-                                              </span>
                                             </div>
 
                                             {/* Button Section */}
@@ -4756,13 +4757,7 @@ const HomeHero = () => {
                                                             },
                                                           }
                                                         );
-                                                        console.log(
-                                                          `Navigating to TicketBookingDetails for AirIQ flight: ${item.airIQTicketId}, fareIdentifier.code: airIQ_fare`
-                                                        );
                                                       } else {
-                                                        console.log(
-                                                          `Calling ItineraryCreateNew for TravClan flight: ${item.rI}, fareIdentifier.code: ${item.fareIdentifier?.code}`
-                                                        );
                                                         setResultIndex(
                                                           (prev) => [
                                                             ...prev,
@@ -4785,13 +4780,7 @@ const HomeHero = () => {
                                                           cheapestPrice.id
                                                         )
                                                       ) {
-                                                        console.log(
-                                                          `Flight ${cheapestPrice.id} already selected, no action taken`
-                                                        );
                                                       } else {
-                                                        console.log(
-                                                          `Selecting ${cheapestPrice.source} flight: ${cheapestPrice.id}, fareIdentifier.code: ${cheapestPrice.fareCode}`
-                                                        );
                                                         setFlightData(
                                                           updatedItem
                                                         );
@@ -5002,17 +4991,6 @@ const HomeHero = () => {
                                                     // marginTop: "4px",
                                                   }}
                                                 ></div>
-
-                                                {/* Economy */}
-                                                <span
-                                                  style={{
-                                                    fontSize: "14px",
-                                                    color: "#9ca3af",
-                                                    marginTop: "0px",
-                                                  }}
-                                                >
-                                                  {className}
-                                                </span>
                                               </div>
 
                                               {/* Button Section */}
@@ -5143,13 +5121,7 @@ const HomeHero = () => {
                                                               },
                                                             }
                                                           );
-                                                          console.log(
-                                                            `Navigating to TicketBookingDetails for AirIQ flight: ${item.airIQTicketId}, fareIdentifier.code: airIQ_fare`
-                                                          );
                                                         } else {
-                                                          console.log(
-                                                            `Calling ItineraryCreateNew for TravClan flight: ${item.rI}, fareIdentifier.code: ${item.fareIdentifier?.code}`
-                                                          );
                                                           setResultIndex(
                                                             (prev) => [
                                                               ...prev,
@@ -5405,6 +5377,9 @@ const HomeHero = () => {
                                           )
                                         : "N/A"}
                                       <div>{item?.sg[0]?.or?.aC || "N/A"}</div>
+                                      <div className="mob_city_kode">
+                                        {item?.sg[0]?.or?.cN || "N/A"}
+                                      </div>
                                     </div>
 
                                     <div className="mob_duration_line">
@@ -5427,10 +5402,14 @@ const HomeHero = () => {
                                         {item?.sg[item?.sg.length - 1]?.ds
                                           ?.aC || "N/A"}
                                       </div>
+                                      <div className="mob_city_kode">
+                                        {item?.sg[item?.sg.length - 1]?.ds
+                                          ?.cN || "N/A"}
+                                      </div>
                                     </div>
                                   </div>
 
-                                  <div className="mob_time_row">
+                                  {/* <div className="mob_time_row">
                                     <div className="mob_city_kode">
                                       {item?.sg[0]?.or?.cN || "N/A"}
                                     </div>
@@ -5438,7 +5417,7 @@ const HomeHero = () => {
                                       {item?.sg[item?.sg.length - 1]?.ds?.cN ||
                                         "N/A"}
                                     </div>
-                                  </div>
+                                  </div> */}
                                 </div>
                               </div>
                             </div>
@@ -5689,158 +5668,7 @@ const HomeHero = () => {
                                       )}
                                     </div>
                                   </div>
-                                  {/* AirIQ Book Button */}
-                                  {/* {item?.airIQPrice && (
-                                    <div
-                                      className="res_mob_view_detail_btn"
-                                      onClick={() => {
-                                        setFlightProName("airiq");
-                                        openModal(item);
-                                      }}
-                                      style={{
-                                        color: "#ff690f",
-                                        fontWeight: "600",
-                                        fontSize: "14px",
-                                        textAlign: "center",
-                                        cursor: "pointer",
-                                      }}
-                                    >
-                                      View Flight Details
-                                    </div>
-                                  )} */}
                                 </div>
-                                {/* <div className="d-flex gap-2 w-100 justify-content-between"> */}
-                                {/* TravClan Book Button */}
-                                {/* <Link
-                                    to={"/TicketBookingDetails"}
-                                    state={{
-                                      item: {
-                                        ...item,
-                                        fareIdentifier: {
-                                          ...item.fareIdentifier,
-                                          code: "flight_Data_fare",
-                                        },
-                                        selectedPrice: item.fF,
-                                        priceSource: "TravClan",
-                                      },
-                                      totaltraveller: totalTravellers,
-                                      adulttraveler: travellers.adult,
-                                      childtraveler: travellers.child,
-                                      infanttraveler: travellers.infant,
-                                      ticket_id: item.rI,
-                                      selected: selected,
-                                      getCondition: getCondition,
-                                    }}
-                                    className="bookBtn2_mob"
-                                    onClick={() => {
-                                      const updatedItem = {
-                                        ...item,
-                                        fareIdentifier: {
-                                          ...item.fareIdentifier,
-                                          code: "flight_Data_fare",
-                                        },
-                                        selectedPrice: item.fF,
-                                        priceSource: "TravClan",
-                                      };
-                                      if (selectedOption.id === 1) {
-                                        console.log(`Navigating to TicketBookingDetails for TravClan flight: ${item.rI}, fareIdentifier.code: flight_Data_fare`);
-                                      } else {
-                                        setFlightData(updatedItem);
-                                        setIndex(index);
-                                        handleReturnFlightTabChange(1);
-                                        console.log(`Selecting TravClan flight: ${item.rI}, fareIdentifier.code: flight_Data_fare`);
-                                        setResultIndex([item?.rI]);
-                                      }
-                                    }}
-                                  >
-                                    {selectedOption.id === 2
-                                      ? resultIndex.includes(item?.rI)
-                                        ? "Selected"
-                                        : "Select TravClan"
-                                      : (
-                                        <>
-                                          Book <FaIndianRupeeSign size={14} /> {item?.fF || "N/A"}
-                                        </>
-                                      )}
-
-
-                                  </Link> */}
-
-                                {/* AirIQ Book Button */}
-                                {/* {item?.airIQPrice && (
-                                    <Link
-                                      to={"/TicketBookingDetails"}
-                                      state={{
-                                        item: {
-                                          ...item,
-                                          fareIdentifier: {
-                                            ...item.fareIdentifier,
-                                            code: "airIQ_fare",
-                                          },
-                                          rI: item.airIQTicketId,
-                                          selectedPrice: item.airIQPrice,
-                                          priceSource: "AirIQ",
-                                        },
-                                        totaltraveller: totalTravellers,
-                                        adulttraveler: travellers.adult,
-                                        childtraveler: travellers.child,
-                                        infanttraveler: travellers.infant,
-                                        ticket_id: item.airIQTicketId,
-                                        selected: selected,
-                                        getCondition: getCondition,
-                                      }}
-                                      className="bookBtn2_mob"
-                                      onClick={() => {
-                                        const updatedItem = {
-                                          ...item,
-                                          fareIdentifier: {
-                                            ...item.fareIdentifier,
-                                            code: "airIQ_fare",
-                                          },
-                                          rI: item.airIQTicketId,
-                                          selectedPrice: item.airIQPrice,
-                                          priceSource: "AirIQ",
-                                        };
-                                        if (selectedOption.id === 1) {
-                                          console.log(`Navigating to TicketBookingDetails for AirIQ flight: ${item.airIQTicketId}, fareIdentifier.code: airIQ_fare`);
-                                        } else {
-                                          setFlightData(updatedItem);
-                                          setIndex(index);
-                                          handleReturnFlightTabChange(1);
-                                          console.log(`Selecting AirIQ flight: ${item.airIQTicketId}, fareIdentifier.code: airIQ_fare`);
-                                          setResultIndex([item?.airIQTicketId]);
-                                        }
-                                      }}
-                                    >
-                                      {selectedOption.id === 2
-                                        ? resultIndex.includes(item?.airIQTicketId)
-                                          ? "Selected"
-                                          : "Select AirIQ"
-                                        : (
-                                          <>
-                                            Book <FaIndianRupeeSign size={16} /> {item?.airIQPrice}
-                                          </>
-                                        )}
-
-                                    </Link>
-                                  )} */}
-
-                                {/* <div className="d-flex gap-2 w-100 justify-content-between"> */}
-                                {/* TravClan Book Button */}
-                                {/* <div className="res_mob_view_detail_btn" data-bs-toggle="offcanvas"
-                                      data-bs-target={`#flightDrawer-${index}`}
-                                      aria-controls="flightDrawer" onClick={() => { FareRuleGet(item?.rI); setFlightProName('travclan') }} style={{ color: "#ff690f", fontWeight: "600", fontSize: "14px", textAlign: "center", cursor: "pointer" }}>
-                                      View Flight Details
-                                    </div> */}
-
-                                {/* AirIQ Book Button */}
-                                {/* <div className="res_mob_view_detail_btn" data-bs-toggle="offcanvas"
-                                      data-bs-target={`#flightDrawer-${index}`}
-                                      aria-controls="flightDrawer" onClick={() => { FareRuleGet(item?.rI); setFlightProName('airiq'); }} style={{ color: "#ff690f", fontWeight: "600", fontSize: "14px", textAlign: "center", cursor: "pointer" }}>
-                                      View Flight Details
-                                    </div> */}
-                                {/* </div> */}
-                                {/* </div> */}
                               </div>
                             </div>
                           </div>
@@ -7004,13 +6832,7 @@ const HomeHero = () => {
                                                             },
                                                           }
                                                         );
-                                                        console.log(
-                                                          `Navigating to TicketBookingDetails for AirIQ flight: ${item.airIQTicketId}, fareIdentifier.code: airIQ_fare`
-                                                        );
                                                       } else {
-                                                        console.log(
-                                                          `Calling ItineraryCreateNew for TravClan flight: ${item.rI}, fareIdentifier.code: ${item.fareIdentifier?.code}`
-                                                        );
                                                         setResultIndex(
                                                           (prev) => [
                                                             ...prev,
@@ -7033,13 +6855,7 @@ const HomeHero = () => {
                                                           cheapestPrice.id
                                                         )
                                                       ) {
-                                                        console.log(
-                                                          `Flight ${cheapestPrice.id} already selected, no action taken`
-                                                        );
                                                       } else {
-                                                        console.log(
-                                                          `Selecting ${cheapestPrice.source} flight: ${cheapestPrice.id}, fareIdentifier.code: ${cheapestPrice.fareCode}`
-                                                        );
                                                         setFlightData(
                                                           updatedItem
                                                         );
@@ -9479,7 +9295,7 @@ const HomeHero = () => {
                 <div className="modal-body">
                   {/* Flight Details */}
                   <div className="flight-details-title">Flight Details</div>
-                  <div className="departure-title">Departure Flight</div>
+                  <div className="departure-title">Departure Flight </div>
 
                   {flightProName === "travclan" ? (
                     <>

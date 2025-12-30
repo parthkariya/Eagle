@@ -1587,14 +1587,12 @@
   .resp_book_inner_flex {
     display: flex;
     justify-content: space-between;
-    padding-left: 0.5rem;
-    padding-right: 0.5rem;
-    padding-top: 0.5rem;
-    padding-bottom: 0.2rem;
+    padding: 10px;
     width: 100%;
   }
 
   .resp_book_inner_flex2 {
+    /* display: none; */
   }
 
   .resp_flight_logo_flex {
