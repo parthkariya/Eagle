@@ -121,8 +121,6 @@ export const FlightProvider = ({ children }) => {
 
   const FlightSearchAiriq = async (params) => {
     const token = JSON.parse(localStorage.getItem("is_token_airiq"));
-
-    // create headers using new Headers()
     const headers = new Headers(ACCEPT_HEADER1);
     headers.append("Authorization", `Bearer ${token}`);
 
@@ -143,10 +141,7 @@ export const FlightProvider = ({ children }) => {
         dispatch({ type: FLIGHT_SEARCH_AIRIQ_ERROR });
         return;
       }
-
       const flightdata = resp?.data;
-      console.log("flightdata Airiq", flightdata);
-
       dispatch({ type: FLIGHT_SEARCH_AIRIQ_SUCCESS, payload: flightdata });
     } catch (error) {
       console.log("Error in New Flight Search Api:", error);

@@ -1247,6 +1247,9 @@
 .mob-bus-card {
   display: none;
 }
+.J_T2-header_resss {
+  display: none;
+}
 
 @media (max-width: 768px) {
   .pickup-drop {
@@ -1741,6 +1744,7 @@
     opacity: 1;
     transform: translateY(0);
     margin-top: 1rem;
+    overflow: visible;
   }
 
   .J_T2-header {
@@ -1867,13 +1871,13 @@
     top: 50px;
     left: 50%;
     transform: translateX(-50%);
-    width: 400px;
+    width: 100%;
     background-color: white;
-    border: none;
+    border: 1px solid #f4511e;
     border-radius: 8px;
     padding: 10px;
     box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.1);
-    z-index: 10;
+    z-index: 5550;
   }
   .airline_logo2_mob {
     height: 50px;
@@ -2544,7 +2548,6 @@
   position: sticky;
   top: 100px;
   background-color: var(--color-white);
-  z-index: 99;
   padding-bottom: 1.2rem;
   box-shadow: rgba(0, 0, 0, 0.24) 0px 3px 8px;
   padding-left: 0.5rem;

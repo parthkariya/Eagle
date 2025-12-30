@@ -4,7 +4,6 @@ import "bootstrap/dist/css/bootstrap.min.css";
 import images from "../../Constants/images";
 import Modal from "react-modal";
 import { IoInformationCircleOutline } from "react-icons/io5";
-
 import {
   FaPlaneDeparture,
   FaBed,
@@ -71,7 +70,6 @@ import "swiper/css/navigation";
 import { useAuthContext } from "../../Context/auth_context";
 import { toast } from "react-toastify";
 import { MdFilterList } from "react-icons/md";
-
 import {
   motion,
   useScroll,
@@ -454,12 +452,10 @@ const HomeHero = () => {
 
     setTravellers((prev) => {
       const newValue = prev[type] + change;
-
       // Ensure "Adult" value does not go below 1
       if (type === "adult" && newValue < 1) {
         return prev;
       }
-
       // Prevent other categories (child, infant) from going below 0
       if (newValue < 0) {
         return prev;
@@ -1061,6 +1057,7 @@ const HomeHero = () => {
   } = useHotelContext();
 
   const tokennn = localStorage.getItem("accessToken");
+
   useEffect(() => {
     if (!hotelSearchtext.trim()) {
       clearHotelData();
@@ -2110,7 +2107,6 @@ const HomeHero = () => {
                   // className="tab-wrapper"
                   onClick={() => {
                     if (tab.key === "car") return;
-
                     TabSelection(tab.key);
                     setSelectedtab(tab.key);
                     setFrom("");
@@ -2765,7 +2761,7 @@ const HomeHero = () => {
                             className="mt-3"
                             style={{ border: "1px solid #eee" }}
                           ></div>
-                          <div className="mt-3 fw-bold text-dark">
+                          <div className="mt-lg-3 fw-bold text-dark">
                             Cabin Class
                           </div>
                           <div className="d-flex gap-3 flex-wrap mt-2">
@@ -3032,11 +3028,39 @@ const HomeHero = () => {
                     </div>
                   </div>
                 </div>
+
                 <div
                   className={`flight-search-bar ${
                     resmodifyToggle ? "open" : "closed"
                   } mb-2`}
                 >
+                  <div className="J_T2-header_resss">
+                    <div
+                      className="dropdown-wrapper"
+                      onClick={() => setIsOpen(!isOpen)}
+                    >
+                      <span>{selectedOption.name}</span>
+                      <span className="arrow">
+                        <FaChevronDown />
+                      </span>
+                    </div>
+
+                    {isOpen && (
+                      <div className="dropdown-options">
+                        {options.map((opt) => (
+                          <div
+                            key={opt.id}
+                            className={`dropdown-option ${
+                              opt.id === selectedOption.id ? "active" : ""
+                            }`}
+                            onClick={() => handleSelecttripoption(opt)}
+                          >
+                            {opt.name}
+                          </div>
+                        ))}
+                      </div>
+                    )}
+                  </div>
                   <div className="from-section">
                     {selectedtab === "buses" ? (
                       <Select
@@ -3512,7 +3536,7 @@ const HomeHero = () => {
                     Search
                   </button>
                 </div>
-                <div class="eagle-deal-banner">
+                {/* <div class="eagle-deal-banner">
                   <div class="deal-left">
                     <div class="deal-icon">
                       <svg
@@ -3534,7 +3558,7 @@ const HomeHero = () => {
                     </div>
                   </div>
                   <div class="deal-cta">View Deals</div>
-                </div>
+                </div> */}
                 <div className="filter_sec">
                   <button
                     className="filter-trigger-btn"
@@ -4467,7 +4491,6 @@ const HomeHero = () => {
                                   }}
                                 >
                                   {(() => {
-                                    // Determine cheapest price
                                     const getCheapestPrice = () => {
                                       if (item.isAirIQOnly) {
                                         return {
