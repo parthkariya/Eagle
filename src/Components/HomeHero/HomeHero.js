@@ -4611,7 +4611,11 @@ const HomeHero = () => {
                                               height: "28px",
                                             }}
                                           >
-                                            ⚡ Eagle DEAL
+                                            {savings ? (
+                                              <>⚡ EAGLE DEAL</>
+                                            ) : (
+                                              <>⚡ BEST DEAL</>
+                                            )}
                                           </div>
 
                                           {/* Card Content */}
