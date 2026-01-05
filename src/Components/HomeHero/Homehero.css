@@ -1595,7 +1595,7 @@
   }
 
   .resp_book_inner_flex2 {
-    /* display: none; */
+    display: none;
   }
 
   .resp_flight_logo_flex {
@@ -2555,6 +2555,7 @@
   border-bottom-left-radius: 12px;
   border-bottom-right-radius: 12px;
   transition: all 0.5s ease-in;
+  z-index: 99;
 }
 
 .filter_label {
