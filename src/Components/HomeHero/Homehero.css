@@ -1745,7 +1745,7 @@
     margin-top: 10px;
   }
   .flight-search-bar {
-    overflow: hidden;
+    overflow: visible;
     flex-direction: column;
     gap: 10px;
     height: 100%;
