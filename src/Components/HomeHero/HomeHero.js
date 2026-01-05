@@ -3674,6 +3674,51 @@ const HomeHero = () => {
                         "--accent-color": colorCode,
                       };
 
+                      const getCheapestPricemobilemate = () => {
+                        if (item.isAirIQOnly) {
+                          return {
+                            price: item.airIQPrice,
+                            source: "AirIQ",
+                            id: item.airIQTicketId,
+                            fareCode: "airIQ_fare",
+                            isAirIQ: true,
+                          };
+                        } else {
+                          const travclanPrice = item.fF;
+                          const airiqPrice = item.airIQPrice;
+
+                          if (airiqPrice && airiqPrice < travclanPrice) {
+                            return {
+                              price: airiqPrice,
+                              source: "AirIQ",
+                              id: item.airIQTicketId,
+                              fareCode: "airIQ_fare",
+                              isAirIQ: true,
+                            };
+                          } else {
+                            return {
+                              price: travclanPrice,
+                              source: "TravClan",
+                              id: item.rI,
+                              fareCode: item.fareIdentifier?.code,
+                              isAirIQ: false,
+                            };
+                          }
+                        }
+                      };
+
+                      const cheapestPricemobilemate =
+                        getCheapestPricemobilemate();
+                      const otherPrices = [];
+
+                      // Calculate max price to show savings
+                      const maxPriceMobile = Math.max(
+                        item.fF || 0,
+                        item.airIQPrice || 0
+                      );
+                      const savingsmobile =
+                        maxPriceMobile - cheapestPricemobilemate.price;
+
                       return (
                         <>
                           <div className="flightsavailable2" key={globalIndex}>
@@ -5476,6 +5521,15 @@ const HomeHero = () => {
                                   <div className="d-flex gap-2 w-100 justify-content-between resp_price_sec">
                                     {/* TravClan Book Button */}
                                     <div className="resp_book_inner_flex">
+                                      {!savingsmobile ? (
+                                        <div className="resp_eagle_deal_banner">
+                                          Best Deal
+                                        </div>
+                                      ) : (
+                                        <div className="resp_eagle_deal_banner">
+                                          Eagle Deal
+                                        </div>
+                                      )}
                                       <div className="resp_book_price">
                                         <FaIndianRupeeSign size={18} />{" "}
                                         {item?.fF || "N/A"}
@@ -5588,7 +5642,11 @@ const HomeHero = () => {
                                 )}
                                 {/* </div> */}
                                 <div className="d-flex gap-2 w-100 justify-content-between resp_price_sec">
-                                  <div className="resp_book_inner_flex resp_book_inner_flex2">
+                                  <div
+                                    className={`resp_book_inner_flex resp_book_inner_flex2 ${
+                                      !item?.airIQPrice ? "d-none" : ""
+                                    }`}
+                                  >
                                     {item?.airIQPrice && (
                                       <div className="resp_book_price">
                                         <FaIndianRupeeSign size={18} />{" "}
@@ -5755,6 +5813,51 @@ const HomeHero = () => {
                       const cardStyle = {
                         "--accent-color": colorCode,
                       };
+
+                      const getCheapestPricemobilemate = () => {
+                        if (item.isAirIQOnly) {
+                          return {
+                            price: item.airIQPrice,
+                            source: "AirIQ",
+                            id: item.airIQTicketId,
+                            fareCode: "airIQ_fare",
+                            isAirIQ: true,
+                          };
+                        } else {
+                          const travclanPrice = item.fF;
+                          const airiqPrice = item.airIQPrice;
+
+                          if (airiqPrice && airiqPrice < travclanPrice) {
+                            return {
+                              price: airiqPrice,
+                              source: "AirIQ",
+                              id: item.airIQTicketId,
+                              fareCode: "airIQ_fare",
+                              isAirIQ: true,
+                            };
+                          } else {
+                            return {
+                              price: travclanPrice,
+                              source: "TravClan",
+                              id: item.rI,
+                              fareCode: item.fareIdentifier?.code,
+                              isAirIQ: false,
+                            };
+                          }
+                        }
+                      };
+
+                      const cheapestPricemobilemate =
+                        getCheapestPricemobilemate();
+                      const otherPrices = [];
+
+                      // Calculate max price to show savings
+                      const maxPriceMobile = Math.max(
+                        item.fF || 0,
+                        item.airIQPrice || 0
+                      );
+                      const savingsmobile =
+                        maxPriceMobile - cheapestPricemobilemate.price;
 
                       return (
                         <>
@@ -6678,7 +6781,11 @@ const HomeHero = () => {
                                               height: "28px",
                                             }}
                                           >
-                                            ⚡ BEST DEAL
+                                            {savings ? (
+                                              <>⚡ EAGLE DEAL</>
+                                            ) : (
+                                              <>⚡ BEST DEAL</>
+                                            )}
                                           </div>
 
                                           {/* Card Content */}

@@ -1581,7 +1581,6 @@
   }
 
   .resp_price_sec {
-    background-color: #eee;
     display: flex;
     justify-content: space-between;
     width: 100%;
@@ -1592,10 +1591,27 @@
     justify-content: space-between;
     padding: 10px;
     width: 100%;
+    background-color: #eee;
+    position: relative;
+  }
+
+  .resp_eagle_deal_banner {
+    position: absolute;
+    top: -8px;
+    left: 0;
+    font-size: 10px;
+    border-radius: 5px;
+    padding: 0 10px;
+    text-transform: uppercase;
+    font-weight: 600;
+    background-color: #ff4500;
+    color: white;
   }
 
   .resp_book_inner_flex2 {
-    display: none;
+    /* display: none; */
+    background-color: #eee;
+    margin-top: 10px;
   }
 
   .resp_flight_logo_flex {
