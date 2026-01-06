@@ -5535,69 +5535,100 @@ const HomeHero = () => {
                                         {item?.fF || "N/A"}
                                       </div>
                                       <div className="resp_book_info_flex">
-                                        <Link
-                                          to={"/TicketBookingDetails"}
-                                          state={{
-                                            item: [
-                                              {
-                                                ...item,
-                                                fareIdentifier: {
-                                                  ...item.fareIdentifier,
-                                                  code: "flight_Data_fare",
-                                                },
-                                                selectedPrice: item.fF,
-                                                priceSource: "TravClan",
-                                              },
-                                            ],
-                                            totaltraveller: totalTravellers,
-                                            adulttraveler: travellers.adult,
-                                            childtraveler: travellers.child,
-                                            infanttraveler: travellers.infant,
-                                            ticket_id: item.rI,
-                                            selected: selected,
-                                            getCondition: getCondition,
-                                          }}
+                                        <div
                                           className="bookBtn2_mob"
                                           style={{ marginTop: "0px" }}
                                           onClick={() => {
-                                            const updatedItem = {
-                                              ...item,
-                                              fareIdentifier: {
-                                                ...item.fareIdentifier,
-                                                code: "flight_Data_fare",
-                                              },
-                                              selectedPrice: item.fF,
-                                              priceSource: "TravClan",
-                                            };
+                                            const updatedItem =
+                                              cheapestPricemobilemate.isAirIQ
+                                                ? [
+                                                    {
+                                                      ...item,
+                                                      fareIdentifier: {
+                                                        ...item.fareIdentifier,
+                                                        code: "airIQ_fare",
+                                                      },
+                                                      rI: item.airIQTicketId,
+                                                      selectedPrice:
+                                                        cheapestPricemobilemate.price,
+                                                      priceSource: "AirIQ",
+                                                    },
+                                                  ]
+                                                : [
+                                                    {
+                                                      ...item,
+                                                      selectedPrice:
+                                                        cheapestPricemobilemate.price,
+                                                      priceSource: "TravClan",
+                                                    },
+                                                  ];
+
                                             if (selectedOption.id === 1) {
-                                              console.log(
-                                                `Navigating to TicketBookingDetails for TravClan flight: ${item.rI}, fareIdentifier.code: flight_Data_fare`
-                                              );
-                                            } else {
-                                              setFlightData(updatedItem);
                                               setIndex(index);
-                                              handleReturnFlightTabChange(1);
-                                              console.log(
-                                                `Selecting TravClan flight: ${item.rI}, fareIdentifier.code: flight_Data_fare`
-                                              );
-                                              setResultIndex([item?.rI]);
+                                              if (
+                                                cheapestPricemobilemate.isAirIQ
+                                              ) {
+                                                localStorage.removeItem(
+                                                  "itineraryCode"
+                                                );
+                                                navigate(
+                                                  "/TicketBookingDetails",
+                                                  {
+                                                    state: {
+                                                      item: updatedItem,
+                                                      totaltraveller:
+                                                        totalTravellers,
+                                                      adulttraveler:
+                                                        travellers.adult,
+                                                      childtraveler:
+                                                        travellers.child,
+                                                      infanttraveler:
+                                                        travellers.infant,
+                                                      selected: selected,
+                                                    },
+                                                  }
+                                                );
+                                              } else {
+                                                setResultIndex((prev) => [
+                                                  ...prev,
+                                                  item?.rI,
+                                                ]);
+                                                ItineraryCreateNew(
+                                                  [...resultIndex, item?.rI],
+                                                  updatedItem
+                                                );
+                                              }
+                                            } else if (
+                                              selectedOption.id === 2
+                                            ) {
+                                              if (
+                                                resultIndex.includes(
+                                                  cheapestPricemobilemate.id
+                                                )
+                                              ) {
+                                              } else {
+                                                setFlightData(updatedItem);
+                                                setIndex(index);
+                                                setResultIndex([
+                                                  cheapestPricemobilemate.id,
+                                                ]);
+                                                handleReturnFlightTabChange(1);
+                                              }
                                             }
                                           }}
                                         >
-                                          {selectedOption.id === 2 ? (
-                                            resultIndex.includes(item?.rI) ? (
-                                              "Selected"
-                                            ) : (
-                                              "Select TravClan"
-                                            )
-                                          ) : (
-                                            <>
-                                              Book
-                                              {/* <FaIndianRupeeSign size={14} />{" "}
-                                          {item?.fF || "N/A"} */}
-                                            </>
-                                          )}
-                                        </Link>
+                                          {itinerary_loading &&
+                                          index === getindex &&
+                                          !cheapestPricemobilemate.isAirIQ
+                                            ? "Loading..."
+                                            : selectedOption.id === 2
+                                            ? resultIndex.includes(
+                                                cheapestPricemobilemate.id
+                                              )
+                                              ? "Selected"
+                                              : "Select"
+                                            : "Book"}
+                                        </div>
                                         {/* TravClan Book Button */}
                                         <div
                                           className=""

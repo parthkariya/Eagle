@@ -52,116 +52,6 @@ const titleOptions = [
   { value: "Doctor", label: "Doctor" },
 ];
 
-const savedPassengers = {
-  adult: [
-    {
-      id: 1,
-      name: "John Smith",
-      dob: "1990-05-15",
-      gender: "male",
-      email: "john.smith@email.com",
-      phone: "1234567890",
-      passportNumber: "A1234567",
-      passportExpiry: "2028-03-15",
-      title: "Mr",
-      addressLineOne: "123 Main St",
-      addressLineTwo: "Apt 4B",
-      city: "New York",
-      countryName: "USA",
-    },
-    {
-      id: 2,
-      name: "Sarah Johnson",
-      dob: "1985-08-22",
-      gender: "female",
-      email: "sarah.j@email.com",
-      phone: "1234567891",
-      passportNumber: "A1234567",
-      passportExpiry: "2028-03-15",
-      title: "Ms",
-      addressLineOne: "123 Main St",
-      addressLineTwo: "Apt 4B",
-      city: "New York",
-      countryName: "USA",
-    },
-    {
-      id: 3,
-      name: "Michael Brown",
-      dob: "1992-03-10",
-      gender: "male",
-      email: "mbrown@email.com",
-      phone: "1234567892",
-      passportNumber: "A1234567",
-      passportExpiry: "2028-03-15",
-      title: "Mr",
-      addressLineOne: "123 Main St",
-      addressLineTwo: "Apt 4B",
-      city: "New York",
-      countryName: "USA",
-    },
-  ],
-  child: [
-    {
-      id: 4,
-      name: "Emma Wilson",
-      dob: "2015-12-05",
-      gender: "female",
-      email: "parent@email.com",
-      phone: "1234567893",
-      passportNumber: "A1234567",
-      passportExpiry: "2028-03-15",
-      title: "Miss",
-      addressLineOne: "123 Main St",
-      addressLineTwo: "Apt 4B",
-      city: "New York",
-      countryName: "USA",
-    },
-    {
-      id: 5,
-      name: "Oliver Davis",
-      dob: "2016-07-18",
-      gender: "male",
-      email: "parent2@email.com",
-      phone: "1234567894",
-      passportNumber: "A1234567",
-      passportExpiry: "2028-03-15",
-      title: "Mstr",
-      addressLineOne: "123 Main St",
-      addressLineTwo: "Apt 4B",
-      city: "New York",
-      countryName: "USA",
-    },
-  ],
-  infant: [
-    {
-      id: 6,
-      name: "Lily Martinez",
-      dob: "2023-01-20",
-      gender: "female",
-      email: "parent3@email.com",
-      phone: "1234567895",
-      title: "Miss",
-      addressLineOne: "123 Main St",
-      addressLineTwo: "Apt 4B",
-      city: "New York",
-      countryName: "USA",
-    },
-    {
-      id: 7,
-      name: "Noah Anderson",
-      dob: "2024-06-12",
-      gender: "male",
-      email: "parent4@email.com",
-      phone: "1234567896",
-      title: "Mstr",
-      addressLineOne: "123 Main St",
-      addressLineTwo: "Apt 4B",
-      city: "New York",
-      countryName: "USA",
-    },
-  ],
-};
-
 const TicketBookingDetails = () => {
   const navigate = useNavigate();
 
@@ -908,8 +798,6 @@ const TicketBookingDetails = () => {
       console.error("handleSavePassengerAiriq error:", err);
     }
   };
-
-  // Airiq Part API End
 
   const SavePassengerWithSSR = async () => {
     const token = localStorage.getItem("accessToken");
