@@ -354,6 +354,7 @@ const HomeHero = () => {
   const [date1, setDate1] = useState("");
   const [date2, setDate2] = useState("");
   const [getCompanyId, setCompanyId] = useState();
+  const [flightClassmob, setFlightClassMob] = useState("");
 
   const handleSwitchChange = (event) => {
     setIsChecked(event.target.checked);
@@ -1952,8 +1953,6 @@ const HomeHero = () => {
     }
 
     setFilteredFlights(filtered);
-    console.log("filteredFlights", filteredFlights);
-
     setFiltered(true);
     setShow(false);
   };
@@ -3709,7 +3708,6 @@ const HomeHero = () => {
 
                       const cheapestPricemobilemate =
                         getCheapestPricemobilemate();
-                      const otherPrices = [];
 
                       // Calculate max price to show savings
                       const maxPriceMobile = Math.max(
@@ -4635,33 +4633,34 @@ const HomeHero = () => {
                                           }}
                                         >
                                           {/* Best Deal Badge - Fixed Height */}
-                                          <div
-                                            style={{
-                                              position: "absolute",
-                                              top: "0",
-                                              right: "0",
-                                              background:
-                                                "linear-gradient(135deg, #fbbf24 0%, #f59e0b 100%)",
-                                              color: "#000",
-                                              padding: "6px 12px",
-                                              borderBottomLeftRadius: "12px",
-                                              fontSize: "10px",
-                                              fontWeight: "bold",
-                                              display: "flex",
-                                              alignItems: "center",
-                                              gap: "4px",
-                                              boxShadow:
-                                                "0 2px 8px rgba(0,0,0,0.15)",
-                                              zIndex: 10,
-                                              height: "28px",
-                                            }}
-                                          >
-                                            {savings ? (
+
+                                          {savings ? (
+                                            <div
+                                              style={{
+                                                position: "absolute",
+                                                top: "0",
+                                                right: "0",
+                                                background:
+                                                  "linear-gradient(135deg, #fbbf24 0%, #f59e0b 100%)",
+                                                color: "#000",
+                                                padding: "6px 12px",
+                                                borderBottomLeftRadius: "12px",
+                                                fontSize: "10px",
+                                                fontWeight: "bold",
+                                                display: "flex",
+                                                alignItems: "center",
+                                                gap: "4px",
+                                                boxShadow:
+                                                  "0 2px 8px rgba(0,0,0,0.15)",
+                                                zIndex: 10,
+                                                height: "28px",
+                                              }}
+                                            >
                                               <>⚡ EAGLE DEAL</>
-                                            ) : (
-                                              <>⚡ BEST DEAL</>
-                                            )}
-                                          </div>
+                                            </div>
+                                          ) : (
+                                            <></>
+                                          )}
 
                                           {/* Card Content */}
                                           <div
@@ -5520,20 +5519,35 @@ const HomeHero = () => {
                                 {login ? (
                                   <div className="d-flex gap-2 w-100 justify-content-between resp_price_sec">
                                     {/* TravClan Book Button */}
-                                    <div className="resp_book_inner_flex">
-                                      {!savingsmobile ? (
-                                        <div className="resp_eagle_deal_banner">
-                                          Best Deal
-                                        </div>
-                                      ) : (
+                                    <div
+                                      className={`resp_book_inner_flex ${
+                                        savingsmobile
+                                          ? "eagle_deal_varo_class"
+                                          : ""
+                                      }`}
+                                    >
+                                      {savingsmobile ? (
                                         <div className="resp_eagle_deal_banner">
                                           Eagle Deal
                                         </div>
+                                      ) : (
+                                        <></>
                                       )}
+
+                                      {savingsmobile ? (
+                                        <div className="resp_eagle_deal_banner_savings">
+                                          Save <FaIndianRupeeSign size={10} />{" "}
+                                          {`${savingsmobile} `}
+                                        </div>
+                                      ) : (
+                                        <></>
+                                      )}
+
                                       <div className="resp_book_price">
                                         <FaIndianRupeeSign size={18} />{" "}
                                         {item?.fF || "N/A"}
                                       </div>
+
                                       <div className="resp_book_info_flex">
                                         <div
                                           className="bookBtn2_mob"
@@ -5634,6 +5648,7 @@ const HomeHero = () => {
                                           className=""
                                           onClick={() => {
                                             setFlightProName("travclan");
+                                            setFlightClassMob(ClassName);
                                             openModal(item);
                                           }}
                                           style={{
@@ -6815,7 +6830,7 @@ const HomeHero = () => {
                                             {savings ? (
                                               <>⚡ EAGLE DEAL</>
                                             ) : (
-                                              <>⚡ BEST DEAL</>
+                                              <></>
                                             )}
                                           </div>
 
@@ -9464,7 +9479,7 @@ const HomeHero = () => {
 
                   {flightProName === "travclan" ? (
                     <>
-                      <div>
+                      <div className="d-flex justify-content-between align-items-center">
                         <Chip
                           label={
                             selectedItem?.iR === true
@@ -9480,6 +9495,7 @@ const HomeHero = () => {
                               selectedItem?.iR === true ? "#4caf50" : "inherit",
                           }}
                         />
+                        <Chip label={flightClassmob} variant="outlined" />
                       </div>
                     </>
                   ) : (
