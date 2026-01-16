@@ -5,6 +5,7 @@ const BaseUrl2 = "https://erp.applified.co.in/eagleconnect/public/api/v1/";
 
 const BaseUrl = "https://omairiq.azurewebsites.net/";
 const AirIQLiveBaseUrl = "http://testairiq.mywebcheck.in/TravelAPI.svc/";
+const CheapFixBaseUrl = "https:///local.flightapi.co.in/v1/fbapi/";
 
 const newAirlineURL =
   "https://flight-aggregator-api-sandbox.travclan.com/api/v2/flights/";
@@ -14,6 +15,9 @@ export const verifyCall =
   "ITS_UAT_743960409278b60436124249057b187c5erBNWLQo33ec3";
 
 export const ACCEPT_HEADER = "application/x.eagleconnect.v1+json";
+export const ACCEPT_HEADER_CHEAPFIX = {
+  "Content-Type": "application/json",
+};
 
 const myHeaders = new Headers();
 myHeaders.append("Accept", "application/x.eagleconnect.v1+json");
@@ -131,3 +135,8 @@ export const bookRoomHotelUrl =
   "https://hotel-volt-api-sandbox.travclan.com/api/v1/book";
 
 export const dynamic_hotels_curl_url = BaseUrl2 + "dynamic_hotels_curl";
+
+// CheapFix API
+
+export const cheapFixSearch = CheapFixBaseUrl + "search";
+export const cheaponward_date = CheapFixBaseUrl + "onward_date";

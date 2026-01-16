@@ -5,6 +5,8 @@ import axios from "axios";
 import {
   ACCEPT_HEADER,
   ACCEPT_HEADER1,
+  ACCEPT_HEADER_CHEAPFIX,
+  cheapFixSearch,
   GetPassengerDetails,
   newFlightApi_dynamic,
   PassengerDetails_url,
@@ -50,16 +52,21 @@ import {
   WALLET_API_SUCCESS,
   FLIGHT_SET_FROM,
   FLIGHT_SET_TO,
+  FLIGHT_SEARCH_CHEAPFIX_BEGIN,
+  FLIGHT_SEARCH_CHEAPFIX_SUCCESS,
+  FLIGHT_SEARCH_CHEAPFIX_ERROR,
 } from "../Actions";
 import Notification from "../Utils/Notification";
 
 const initialState = {
   flight_Data: [],
   flightAirIq_Data: [],
+  flightCheapFix_Data: [],
   return_flight_data: [],
   flight_Loading: false,
   hasSearched: false,
   flightAiriq_Loading: false,
+  flightCheapFix_Loading: false,
   fare_rules: [],
   fare_rules_Loading: false,
   itinerary_data: {},
@@ -146,6 +153,36 @@ export const FlightProvider = ({ children }) => {
     } catch (error) {
       console.log("Error in New Flight Search Api:", error);
       dispatch({ type: FLIGHT_SEARCH_AIRIQ_ERROR });
+    }
+  };
+
+  const FlightSearchCheapFix = async (params) => {
+    const token = JSON.parse(localStorage.getItem("is_token_airiq"));
+    const headers = new Headers(ACCEPT_HEADER_CHEAPFIX);
+
+    dispatch({ type: FLIGHT_SEARCH_CHEAPFIX_BEGIN });
+
+    try {
+      const response = await fetch(cheapFixSearch, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json", // Add any other headers required
+        },
+        body: JSON.stringify(params),
+      });
+
+      const resp = await response.json();
+      // if (resp?.errorCode) {
+      //   const apiMessage = resp.error.errorMessage || "Something went wrong";
+      //   Notification("error", "Error", apiMessage);
+      //   dispatch({ type: FLIGHT_SEARCH_CHEAPFIX_ERROR });
+      //   return;
+      // }
+      const flightdata = resp?.data;
+      dispatch({ type: FLIGHT_SEARCH_CHEAPFIX_SUCCESS, payload: flightdata });
+    } catch (error) {
+      console.log("Error in New Flight Search Api:", error);
+      dispatch({ type: FLIGHT_SEARCH_CHEAPFIX_ERROR });
     }
   };
 
@@ -384,6 +421,7 @@ export const FlightProvider = ({ children }) => {
         ...state,
         FlightSearch,
         FlightSearchAiriq,
+        FlightSearchCheapFix,
         GetFareRules,
         CreateItinerary,
         GetSavedItinerary,

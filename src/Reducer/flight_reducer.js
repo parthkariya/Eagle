@@ -13,6 +13,9 @@ import {
   FLIGHT_SEARCH_AIRIQ_ERROR,
   FLIGHT_SEARCH_AIRIQ_SUCCESS,
   FLIGHT_SEARCH_BEGIN,
+  FLIGHT_SEARCH_CHEAPFIX_BEGIN,
+  FLIGHT_SEARCH_CHEAPFIX_ERROR,
+  FLIGHT_SEARCH_CHEAPFIX_SUCCESS,
   FLIGHT_SEARCH_ERROR,
   FLIGHT_SEARCH_SUCCESS,
   FLIGHT_SET_FROM,
@@ -83,6 +86,23 @@ const flight_reducer = (state, action) => {
     };
   }
 
+  if (action.type == FLIGHT_SEARCH_CHEAPFIX_BEGIN) {
+    return { ...state, flightCheapFix_Loading: true };
+  }
+  if (action.type == FLIGHT_SEARCH_CHEAPFIX_SUCCESS) {
+    return {
+      ...state,
+      flightCheapFix_Loading: false,
+      flightCheapFix_Data: action.payload,
+    };
+  }
+  if (action.type == FLIGHT_SEARCH_CHEAPFIX_ERROR) {
+    return {
+      ...state,
+      flightCheapFix_Loading: false,
+      flightAirIq_Data: [],
+    };
+  }
   if (action.type == FARE_RULES_BEGIN) {
     return { ...state, fare_rules_Loading: true };
   }

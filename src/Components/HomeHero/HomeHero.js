@@ -35,7 +35,10 @@ import makeAnimated from "react-select/animated";
 import {
   ACCEPT_HEADER,
   ACCEPT_HEADER1,
+  ACCEPT_HEADER_CHEAPFIX,
   availabilitycurl,
+  cheapFixSearch,
+  cheaponward_date,
   createItinerary,
   flightsearch,
   get_recent_search,
@@ -328,6 +331,8 @@ const HomeHero = () => {
   const [children, setChildren] = useState(0);
   const [childrenAges, setChildrenAges] = useState([]);
   const [staycondition, setStayCondition] = useState(false);
+
+  console.log("flightProName", flightProName);
 
   const handleReturnFlightTabChange = (newValue) => {
     setReturnFlightTab(newValue);
@@ -642,8 +647,8 @@ const HomeHero = () => {
     window.location.reload();
   }
 
-  const getOnwardDate = async (dep_city_code, citycode) => {
-    const token = "4-2-3721-KRAZY-389-xnewkncBUI8";
+  const getOnwardDate = async (citycode) => {
+    const token = "3-1-NEWTEST-dmjkwj78BJHk8";
     const publicIP = await getPublicIP();
 
     if (!publicIP) {
@@ -651,13 +656,13 @@ const HomeHero = () => {
       return;
     }
 
-    const url = "https://devapi.fareboutique.com/v1/fbapi/onward_date";
+    const url = cheaponward_date;
     const payload = {
       trip_type: selected,
       end_user_ip: publicIP,
       token: token,
       // dep_city_code: getDepCityCode,
-      dep_city_code: dep_city_code,
+      dep_city_code: from?.value,
       arr_city_code: citycode,
     };
 
@@ -1031,6 +1036,7 @@ const HomeHero = () => {
   const {
     FlightSearch,
     FlightSearchAiriq,
+    FlightSearchCheapFix,
     flight_Data,
     hasSearched,
     return_flight_data,
@@ -1045,6 +1051,7 @@ const HomeHero = () => {
     flightAirIq_Data,
     handleFlightTo,
     handleFlightFrom,
+    flightCheapFix_Data,
   } = useFlightContext();
 
   const {
@@ -1078,6 +1085,8 @@ const HomeHero = () => {
 
     return () => clearTimeout(delay);
   }, [hotelSearchtext]);
+
+  console.log("flightCheapFix_Data", flightCheapFix_Data);
 
   useEffect(() => {
     if (from_city) {
@@ -1138,6 +1147,8 @@ const HomeHero = () => {
 
   const transformAirIQData = (airIQData) => {
     return airIQData.map((item) => {
+      console.log("itemmm", item);
+
       const arrivalTime = item.arival_time || item.arrival_time || "00:00";
       const arrivalDate =
         item.arival_date || item.arrival_date || item.departure_date;
@@ -1258,100 +1269,168 @@ const HomeHero = () => {
     });
   };
 
-  const mergeAndDeduplicateFlights = (airIQData, flightData) => {
+  const transformCheapFixData = (flightCheapFix_Data = []) => {
+    return flightCheapFix_Data.map((item) => {
+      console.log("item", item);
+
+      const departureDateTime = moment(
+        `${item.onward_date} ${item.dep_time}`,
+        "YYYY-MM-DD HH:mm"
+      ).toISOString();
+
+      const arrivalDateTime = moment(
+        `${item.arr_date} ${item.arr_time}`,
+        "YYYY-MM-DD HH:mm"
+      ).toISOString();
+
+      const durationMinutes = moment(arrivalDateTime).diff(
+        moment(departureDateTime),
+        "minutes"
+      );
+
+      return {
+        aR: null,
+        iR: false,
+        rI: `cheapfix_${item.id}`,
+        iL: true,
+        pr: "P3",
+        pF: item.total_payable_price,
+        cr: "INR",
+        bF: item.per_adult_child_price,
+        sF: 0,
+        pFC: "Regular",
+
+        paxFareBreakUp: [
+          {
+            currency: "INR",
+            paxType: 1,
+            baseFare: item.price_breakup.base_fare,
+            tax: item.price_breakup.fee_taxes || 0,
+            yqTax: 0,
+            yrTax: 0,
+            gst: 0,
+          },
+        ],
+
+        sg: [
+          {
+            bg: `${item.check_in_baggage_adult} Kg`,
+            cBg: `${item.cabin_baggage_adult} Kg`,
+            cC: 2,
+            al: {
+              alC: item.airline_code,
+              alN: item.airline_name.toLowerCase().replace(/\s/g, ""),
+              fN: item.flight_number,
+              fC: item.ProductClass,
+            },
+            or: {
+              aC: item.dep_airport_code,
+              aN: item.dep_airport_name,
+              cC: item.dep_city_code,
+              cN: item.dep_city_name,
+              dT: departureDateTime,
+            },
+            ds: {
+              aC: item.arr_airport_code,
+              aN: item.arr_airport_name,
+              cC: item.arr_city_code,
+              cN: item.arr_city_name,
+              aT: arrivalDateTime,
+            },
+            aD: durationMinutes,
+            dr: durationMinutes,
+          },
+        ],
+
+        sC: item.no_of_stop,
+        fF: item.total_payable_price,
+
+        fareIdentifier: {
+          name: "CheapFix",
+          code: "cheapfix_fare",
+          colorCode: "#16a34a",
+        },
+
+        cheapFixPrice: item.total_payable_price,
+        source: "cheapfix",
+      };
+    });
+  };
+
+  const mergeAndDeduplicateFlights = (
+    airIQData,
+    flightCheapFix_Data,
+    flightData
+  ) => {
     const transformedAirIQ = transformAirIQData(airIQData || []);
+    const transformedCheapFix = transformCheapFixData(
+      flightCheapFix_Data || []
+    );
+
     let uniqueFlights = [...(flightData || [])];
-    // Preserve original fareIdentifier for flight_Data, with fallback
+
     uniqueFlights = uniqueFlights.map((flight) => ({
       ...flight,
-      fareIdentifier: {
-        name: flight.fareIdentifier?.name || "Published",
-        code: flight.fareIdentifier?.code || "flight_Data_fare", // Fallback if code is missing
-        colorCode: flight.fareIdentifier?.colorCode || "#3b82f6",
+      source: "travclan",
+      fareIdentifier: flight.fareIdentifier || {
+        name: "Published",
+        code: "travclan_fare",
+        colorCode: "#2563eb",
       },
-      isAirIQOnly: false, // Initialize as false for TravClan flights
     }));
 
-    transformedAirIQ.forEach((airIQFlight, index) => {
-      const airlineName = (airIQFlight.sg[0]?.al?.alN || "")
-        .toLowerCase()
-        .replace(/\s/g, "");
-      const departureTime = airIQFlight.sg[0]?.or?.dT
-        ? moment(airIQFlight.sg[0].or.dT).startOf("minute").toISOString()
-        : "";
-      const duration = Math.round((airIQFlight.dr || 0) / 5) * 5;
-      const key = `${airlineName}_${departureTime}_${duration}_${
-        airIQFlight.sC || 0
-      }`;
+    const allExternalFlights = [...transformedAirIQ, ...transformedCheapFix];
 
-      const matchingFlight = uniqueFlights.find((f) => {
-        const fAirline = (f.sg[0]?.al?.alN || "")
-          .toLowerCase()
-          .replace(/\s/g, "");
-        const fTime = f.sg[0]?.or?.dT
-          ? moment(f.sg[0].or.dT).startOf("minute").toISOString()
-          : "";
-        const fDuration = Math.round((f.dr || 0) / 5) * 5;
-        return (
-          fAirline === airlineName &&
-          fTime === departureTime &&
-          Math.abs(fDuration - duration) <= 5 &&
-          f.sC === airIQFlight.sC
-        );
+    allExternalFlights.forEach((extFlight) => {
+      const key = `${extFlight.sg[0].al.alN}_${extFlight.sg[0].or.dT}_${extFlight.dr}_${extFlight.sC}`;
+
+      const match = uniqueFlights.find((f) => {
+        const fKey = `${f.sg[0].al.alN}_${f.sg[0].or.dT}_${f.dr}_${f.sC}`;
+        return fKey === key;
       });
 
-      if (matchingFlight) {
-        matchingFlight.airIQPrice = airIQFlight.fF;
-        matchingFlight.airIQTicketId = airIQFlight.rI;
-
-        matchingFlight.baggage = {
-          travclan: {
-            cabin: matchingFlight.sg[0]?.cBg,
-            checkIn: matchingFlight.sg[0]?.bg,
-          },
-          airiq: {
-            cabin: airIQFlight.sg[0]?.cBg,
-            checkIn: airIQFlight.sg[0]?.bg,
-          },
-        };
+      if (match) {
+        if (extFlight.source === "cheapfix") {
+          match.cheapFixPrice = extFlight.fF;
+        } else {
+          match.airIQPrice = extFlight.fF;
+        }
       } else {
         uniqueFlights.push({
-          ...airIQFlight,
-          fF: null, // Set TravClan price to null to indicate no TravClan price
-          isAirIQOnly: true, // Add flag to indicate this is an AirIQ-only flight
-          baggage: {
-            travclan: { cabin: null, checkIn: null },
-            airiq: {
-              cabin: airIQFlight.sg[0]?.cBg,
-              checkIn: airIQFlight.sg[0]?.bg,
-            },
-          },
+          ...extFlight,
+          isExternalOnly: true,
         });
       }
     });
 
-    return uniqueFlights.sort((a, b) => {
-      const priceA = Math.min(
-        Number(a.fF) || 0,
-        Number(a.airIQPrice) || Infinity
-      );
-      const priceB = Math.min(
-        Number(b.fF) || 0,
-        Number(b.airIQPrice) || Infinity
-      );
-      return priceA - priceB;
-    });
+    return uniqueFlights.sort(
+      (a, b) =>
+        Math.min(
+          a.fF ?? Infinity,
+          a.airIQPrice ?? Infinity,
+          a.cheapFixPrice ?? Infinity
+        ) -
+        Math.min(
+          b.fF ?? Infinity,
+          b.airIQPrice ?? Infinity,
+          b.cheapFixPrice ?? Infinity
+        )
+    );
   };
 
   useEffect(() => {
     try {
-      const merged = mergeAndDeduplicateFlights(flightAirIq_Data, flight_Data);
+      const merged = mergeAndDeduplicateFlights(
+        flightAirIq_Data,
+        flightCheapFix_Data,
+        flight_Data
+      );
       setFlightData(merged);
     } catch (error) {
       console.error("Error in merging flights:", error);
       setFlightData([]);
     }
-  }, [flightAirIq_Data, flight_Data, setFlightData]);
+  }, [flightAirIq_Data, flightCheapFix_Data, flight_Data, setFlightData]);
 
   const scrollToTop = () => {
     listRef.current?.scrollIntoView({ behavior: "smooth", block: "start" });
@@ -1518,6 +1597,33 @@ const HomeHero = () => {
     };
 
     await FlightSearchAiriq(payload);
+  };
+
+  const CheapFixsearchFlightData = async () => {
+    const publicIP = await getPublicIP();
+    const formattedDate = moment(date1).isValid()
+      ? moment(date1).format("YYYY-MM-DD")
+      : moment(defaultMonth, "DD-MMM-YYYY").format("YYYY-MM-DD");
+
+    const departureDate =
+      selected == 0
+        ? formattedDate
+        : moment(formattedDate, "YYYY-MM-DD").format("YYYY-MM-DD");
+
+    const payload = {
+      trip_type: selected,
+      end_user_ip: "183.83.43.117",
+      token: "3-1-NEWTEST-dmjkwj78BJHk8",
+      dep_city_code: from.value,
+      arr_city_code: to.value,
+      onward_date: departureDate,
+      return_date: selected === 1 ? "" : "",
+      adult: travellers?.adult,
+      children: travellers?.child,
+      infant: travellers?.infant,
+    };
+
+    await FlightSearchCheapFix(payload);
   };
 
   // const searchFlightData = async () => {
@@ -1846,6 +1952,7 @@ const HomeHero = () => {
     localStorage.setItem("FlightselectedDes", JSON.stringify(selected));
 
     dateAvailability(selected.value);
+    getOnwardDate(selected.value);
 
     const updated = [
       selected,
@@ -2806,6 +2913,7 @@ const HomeHero = () => {
                         NewFlightget();
                         if (selectedOption?.id === 1) {
                           searchFlightData();
+                          CheapFixsearchFlightData();
                         }
                       }
                     }
@@ -2820,6 +2928,7 @@ const HomeHero = () => {
                       selectedtab === "buses" ? getRouteBus() : NewFlightget();
                       if (selectedOption?.id === 1) {
                         searchFlightData();
+                        CheapFixsearchFlightData();
                       }
                     }
                     setSelectedIndex(null);
@@ -3511,6 +3620,7 @@ const HomeHero = () => {
 
                           if (selectedOption?.id === 1) {
                             searchFlightData();
+                            CheapFixsearchFlightData();
                           }
                         }
                       }
@@ -3527,6 +3637,7 @@ const HomeHero = () => {
                           : NewFlightget();
                         if (selectedOption?.id === 1) {
                           searchFlightData();
+                          CheapFixsearchFlightData();
                         }
                       }
                       setSelectedIndex(null);
@@ -3685,6 +3796,7 @@ const HomeHero = () => {
                         } else {
                           const travclanPrice = item.fF;
                           const airiqPrice = item.airIQPrice;
+                          const cheapFixPrice = item.cheapFixPrice;
 
                           if (airiqPrice && airiqPrice < travclanPrice) {
                             return {
@@ -4535,6 +4647,7 @@ const HomeHero = () => {
                                 >
                                   {(() => {
                                     const getCheapestPrice = () => {
+                                      console.log("item1111", item);
                                       if (item.isAirIQOnly) {
                                         return {
                                           price: item.airIQPrice,
