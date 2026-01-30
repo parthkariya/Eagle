@@ -88,6 +88,7 @@ const initialState = {
   add_passenger_loading: false,
   flight_from: null,
   flight_to: null,
+  cheapfixbooking_token_ID: "",
 };
 
 const FlightContext = createContext();
@@ -178,7 +179,7 @@ export const FlightProvider = ({ children }) => {
       //   dispatch({ type: FLIGHT_SEARCH_CHEAPFIX_ERROR });
       //   return;
       // }
-      const flightdata = resp?.data;
+      const flightdata = resp;
       dispatch({ type: FLIGHT_SEARCH_CHEAPFIX_SUCCESS, payload: flightdata });
     } catch (error) {
       console.log("Error in New Flight Search Api:", error);
@@ -246,7 +247,6 @@ export const FlightProvider = ({ children }) => {
         },
       });
       const getitineraryData = resp.data.results;
-      console.log("Get Itinerary Data", getitineraryData);
       dispatch({ type: GET_ITINERARY_SUCCESS, payload: getitineraryData });
       return resp.data.results;
     } catch (error) {
@@ -392,8 +392,6 @@ export const FlightProvider = ({ children }) => {
         },
       })
       .then((res) => {
-        console.log("ADDD NO DATA ", res.data);
-
         if (res.data.success === 1) {
           dispatch({ type: PASSENGER_DETAILS_SUCCESS });
           // GetPassengersDetails();
@@ -414,6 +412,8 @@ export const FlightProvider = ({ children }) => {
   const handleFlightTo = (to) => {
     dispatch({ type: FLIGHT_SET_TO, payload: to });
   };
+
+  const CheapFixBookingApi = async (payload) => {};
 
   return (
     <FlightContext.Provider

@@ -332,7 +332,7 @@ const HomeHero = () => {
   const [childrenAges, setChildrenAges] = useState([]);
   const [staycondition, setStayCondition] = useState(false);
 
-  console.log("flightProName", flightProName);
+  const FORCE_SHOW_ALL_PROVIDERS_FOR_TESTING = true;
 
   const handleReturnFlightTabChange = (newValue) => {
     setReturnFlightTab(newValue);
@@ -407,7 +407,7 @@ const HomeHero = () => {
 
       // ✅ Unique Flight Names
       const allFlightNames = flightdata.map(
-        (item) => item.sg?.[0]?.al?.alN || "N/A"
+        (item) => item.sg?.[0]?.al?.alN || "N/A",
       );
       const uniqueNames = [...new Set(allFlightNames)];
       setUniqueFlightNames(uniqueNames);
@@ -579,10 +579,10 @@ const HomeHero = () => {
 
   useEffect(() => {
     const onwardDates = (getOnwardDateList || []).map(
-      (item) => item?.onward_date
+      (item) => item?.onward_date,
     );
     const formattedAvailableDates = (getAvailableDate || []).map(
-      (item) => item
+      (item) => item,
     );
     let allDates = [...onwardDates, ...formattedAvailableDates];
     const today = moment();
@@ -608,11 +608,11 @@ const HomeHero = () => {
   const disableAllExceptApiDates = (current) => {
     const formattedDate = current.format("YYYY-MM-DD");
     const onwardDates = (getOnwardDateList || []).map(
-      (item) => item?.onward_date
+      (item) => item?.onward_date,
     );
 
     const formattedAvailableDates = (getAvailableDate || []).map(
-      (item) => item
+      (item) => item,
     );
 
     const allDates = [...onwardDates, ...formattedAvailableDates];
@@ -622,13 +622,13 @@ const HomeHero = () => {
 
   const disableDates = (current) => {
     const returndate = getReturnDateList.map(
-      (date) => new Date(date.return_date).toISOString().split("T")[0]
+      (date) => new Date(date.return_date).toISOString().split("T")[0],
     );
     return !returndate.includes(current.format("YYYY-MM-DD"));
   };
 
   const firstEnabledDate = dayjs(
-    getReturnDateList[0]?.return_date || dayjs().format("YYYY-MM-DD")
+    getReturnDateList[0]?.return_date || dayjs().format("YYYY-MM-DD"),
   );
 
   const getPublicIP = async () => {
@@ -685,7 +685,7 @@ const HomeHero = () => {
 
         const months = [
           ...new Set(
-            data.data.map((item) => moment(item.onward_date).format("YYYY-MM"))
+            data.data.map((item) => moment(item.onward_date).format("YYYY-MM")),
           ),
         ];
         const defaultmonth = moment(data.data[0].onward_date, "YYYY-MM-DD");
@@ -763,7 +763,7 @@ const HomeHero = () => {
     condition,
     selected,
     returndate,
-    lowestPrice
+    lowestPrice,
   ) => {
     // console.log("selected", selected);
 
@@ -889,7 +889,7 @@ const HomeHero = () => {
 
         const months = [
           ...new Set(
-            formattedDates.map((item) => moment(item).format("YYYY-MM"))
+            formattedDates.map((item) => moment(item).format("YYYY-MM")),
           ),
         ];
 
@@ -941,7 +941,7 @@ const HomeHero = () => {
           Authorization: token,
           body: JSON.stringify(payload),
           redirect: "follow",
-        }
+        },
       );
 
       const data = await response.json();
@@ -1077,7 +1077,7 @@ const HomeHero = () => {
       formdata.append("type", "GET");
       formdata.append(
         "url",
-        `${locationAutosuggestApi}?searchString=${hotelSearchtext}`
+        `${locationAutosuggestApi}?searchString=${hotelSearchtext}`,
       );
       formdata.append("url_token", `Bearer ${tokennn}`);
       LocationSearchHotel(formdata);
@@ -1085,8 +1085,6 @@ const HomeHero = () => {
 
     return () => clearTimeout(delay);
   }, [hotelSearchtext]);
-
-  console.log("flightCheapFix_Data", flightCheapFix_Data);
 
   useEffect(() => {
     if (from_city) {
@@ -1147,8 +1145,6 @@ const HomeHero = () => {
 
   const transformAirIQData = (airIQData) => {
     return airIQData.map((item) => {
-      console.log("itemmm", item);
-
       const arrivalTime = item.arival_time || item.arrival_time || "00:00";
       const arrivalDate =
         item.arival_date || item.arrival_date || item.departure_date;
@@ -1156,11 +1152,11 @@ const HomeHero = () => {
       // Normalize departure and arrival times to remove seconds
       const departureDateTime = moment(
         `${item.departure_date} ${item.departure_time}`,
-        "YYYY/MM/DD HH:mm"
+        "YYYY/MM/DD HH:mm",
       ).startOf("minute");
       const arrivalDateTime = moment(
         `${arrivalDate} ${arrivalTime}`,
-        "YYYY/MM/DD HH:mm"
+        "YYYY/MM/DD HH:mm",
       ).startOf("minute");
 
       let durationMinutes = 0;
@@ -1192,6 +1188,7 @@ const HomeHero = () => {
         pF: item.price || 0,
         cr: "INR",
         bF: item.price || 0,
+        infant_price: item?.infant_price || 0,
         paxFareBreakUp: [
           {
             currency: "INR",
@@ -1271,21 +1268,19 @@ const HomeHero = () => {
 
   const transformCheapFixData = (flightCheapFix_Data = []) => {
     return flightCheapFix_Data.map((item) => {
-      console.log("item", item);
-
       const departureDateTime = moment(
         `${item.onward_date} ${item.dep_time}`,
-        "YYYY-MM-DD HH:mm"
+        "YYYY-MM-DD HH:mm",
       ).toISOString();
 
       const arrivalDateTime = moment(
         `${item.arr_date} ${item.arr_time}`,
-        "YYYY-MM-DD HH:mm"
+        "YYYY-MM-DD HH:mm",
       ).toISOString();
 
       const durationMinutes = moment(arrivalDateTime).diff(
         moment(departureDateTime),
-        "minutes"
+        "minutes",
       );
 
       return {
@@ -1357,65 +1352,122 @@ const HomeHero = () => {
     });
   };
 
-  const mergeAndDeduplicateFlights = (
-    airIQData,
-    flightCheapFix_Data,
-    flightData
-  ) => {
+  const mergeAndDeduplicateFlights = (airIQData, cheapFixData, flightData) => {
     const transformedAirIQ = transformAirIQData(airIQData || []);
-    const transformedCheapFix = transformCheapFixData(
-      flightCheapFix_Data || []
-    );
+    const transformedCheapFix = transformCheapFixData(cheapFixData || []);
 
     let uniqueFlights = [...(flightData || [])];
 
+    /* ================= NORMALIZE BASE (TRAVCLAN) ================= */
     uniqueFlights = uniqueFlights.map((flight) => ({
       ...flight,
-      source: "travclan",
-      fareIdentifier: flight.fareIdentifier || {
-        name: "Published",
-        code: "travclan_fare",
-        colorCode: "#2563eb",
+      fareIdentifier: {
+        name: flight.fareIdentifier?.name || "Published",
+        code: flight.fareIdentifier?.code || "travclan_fare",
+        colorCode: flight.fareIdentifier?.colorCode || "#2563eb",
       },
+      isAirIQOnly: false,
+      isCheapFixOnly: false,
     }));
 
-    const allExternalFlights = [...transformedAirIQ, ...transformedCheapFix];
+    /* ================= HELPERS ================= */
+    const normalizeTime = (t) =>
+      t ? moment(t).startOf("minute").toISOString() : "";
 
-    allExternalFlights.forEach((extFlight) => {
-      const key = `${extFlight.sg[0].al.alN}_${extFlight.sg[0].or.dT}_${extFlight.dr}_${extFlight.sC}`;
+    const normalizeDuration = (d) => Math.round((d || 0) / 5) * 5;
+
+    const normalizeAirline = (name = "") =>
+      name.toLowerCase().replace(/\s/g, "");
+
+    /* ================= MERGE AIRIQ ================= */
+    transformedAirIQ.forEach((airIQFlight) => {
+      const airline = normalizeAirline(airIQFlight.sg[0]?.al?.alN);
+      const depTime = normalizeTime(airIQFlight.sg[0]?.or?.dT);
+      const duration = normalizeDuration(airIQFlight.dr);
+      const stops = airIQFlight.sC;
 
       const match = uniqueFlights.find((f) => {
-        const fKey = `${f.sg[0].al.alN}_${f.sg[0].or.dT}_${f.dr}_${f.sC}`;
-        return fKey === key;
+        return (
+          normalizeAirline(f.sg[0]?.al?.alN) === airline &&
+          normalizeTime(f.sg[0]?.or?.dT) === depTime &&
+          Math.abs(normalizeDuration(f.dr) - duration) <= 5 &&
+          f.sC === stops
+        );
       });
 
       if (match) {
-        if (extFlight.source === "cheapfix") {
-          match.cheapFixPrice = extFlight.fF;
-        } else {
-          match.airIQPrice = extFlight.fF;
-        }
+        match.airIQPrice = airIQFlight.fF;
+        match.airIQTicketId = airIQFlight.rI;
+        match.airiqOrigin = airIQFlight.sg[0]?.or?.cC;
+        match.airiqDestination = airIQFlight.sg[0]?.ds?.cC;
+        match.airiqDepartureTime = airIQFlight.sg[0]?.or?.dT;
+        match.airiqArrivalTime = airIQFlight.sg[0]?.ds?.aT;
+        match.airiqFlightNumber = airIQFlight.sg[0]?.fN;
+        match.airiqAirline = airIQFlight.sg[0]?.al?.alN;
       } else {
         uniqueFlights.push({
-          ...extFlight,
-          isExternalOnly: true,
+          ...airIQFlight,
+          fF: null,
+          airIQPrice: airIQFlight.fF,
+          cheapFixPrice: null,
+          isAirIQOnly: true,
         });
       }
     });
 
-    return uniqueFlights.sort(
-      (a, b) =>
-        Math.min(
-          a.fF ?? Infinity,
-          a.airIQPrice ?? Infinity,
-          a.cheapFixPrice ?? Infinity
-        ) -
-        Math.min(
-          b.fF ?? Infinity,
-          b.airIQPrice ?? Infinity,
-          b.cheapFixPrice ?? Infinity
-        )
-    );
+    /* ================= MERGE CHEAPFIX ================= */
+    transformedCheapFix.forEach((cheapFixFlight) => {
+      const airline = normalizeAirline(cheapFixFlight.sg[0]?.al?.alN);
+      const depTime = normalizeTime(cheapFixFlight.sg[0]?.or?.dT);
+      const duration = normalizeDuration(cheapFixFlight.dr);
+      const stops = cheapFixFlight.sC;
+
+      const match = uniqueFlights.find((f) => {
+        return (
+          normalizeAirline(f.sg[0]?.al?.alN) === airline &&
+          normalizeTime(f.sg[0]?.or?.dT) === depTime &&
+          Math.abs(normalizeDuration(f.dr) - duration) <= 5 &&
+          f.sC === stops
+        );
+      });
+
+      if (match) {
+        match.cheapFixPrice = cheapFixFlight.fF;
+        match.cheapFixTicketId = cheapFixFlight.rI;
+        match.cheapFixOrigin = cheapFixFlight.sg[0]?.or?.cC;
+        match.cheapFixDestination = cheapFixFlight.sg[0]?.ds?.cC;
+        match.cheapFixDepartureTime = cheapFixFlight.sg[0]?.or?.dT;
+        match.cheapFixArrivalTime = cheapFixFlight.sg[0]?.ds?.aT;
+        match.cheapFixFlightNumber = cheapFixFlight.sg[0]?.fN;
+        match.cheapFixAirline = cheapFixFlight.sg[0]?.al?.alN;
+      } else {
+        uniqueFlights.push({
+          ...cheapFixFlight,
+          fF: null,
+          airIQPrice: null,
+          cheapFixPrice: cheapFixFlight.fF,
+          isCheapFixOnly: true,
+          cheapFixData_original: cheapFixData,
+        });
+      }
+    });
+
+    /* ================= SORT BY CHEAPEST ================= */
+    return uniqueFlights.sort((a, b) => {
+      const priceA = Math.min(
+        Number(a.fF) || Infinity,
+        Number(a.airIQPrice) || Infinity,
+        Number(a.cheapFixPrice) || Infinity,
+      );
+
+      const priceB = Math.min(
+        Number(b.fF) || Infinity,
+        Number(b.airIQPrice) || Infinity,
+        Number(b.cheapFixPrice) || Infinity,
+      );
+
+      return priceA - priceB;
+    });
   };
 
   useEffect(() => {
@@ -1423,7 +1475,7 @@ const HomeHero = () => {
       const merged = mergeAndDeduplicateFlights(
         flightAirIq_Data,
         flightCheapFix_Data,
-        flight_Data
+        flight_Data,
       );
       setFlightData(merged);
     } catch (error) {
@@ -1453,14 +1505,14 @@ const HomeHero = () => {
       case "earlyDeparture":
         sorted.sort(
           (a, b) =>
-            new Date(a.sg?.[0]?.or?.dT || 0) - new Date(b.sg?.[0]?.or?.dT || 0)
+            new Date(a.sg?.[0]?.or?.dT || 0) - new Date(b.sg?.[0]?.or?.dT || 0),
         );
         break;
 
       case "lateDeparture":
         sorted.sort(
           (a, b) =>
-            new Date(b.sg?.[0]?.or?.dT || 0) - new Date(a.sg?.[0]?.or?.dT || 0)
+            new Date(b.sg?.[0]?.or?.dT || 0) - new Date(a.sg?.[0]?.or?.dT || 0),
         );
         break;
 
@@ -1468,7 +1520,7 @@ const HomeHero = () => {
         sorted.sort(
           (a, b) =>
             new Date(a.sg?.[a.sg.length - 1]?.ds?.aT || 0) -
-            new Date(b.sg?.[b.sg.length - 1]?.ds?.aT || 0)
+            new Date(b.sg?.[b.sg.length - 1]?.ds?.aT || 0),
         );
         break;
 
@@ -1476,7 +1528,7 @@ const HomeHero = () => {
         sorted.sort(
           (a, b) =>
             new Date(b.sg?.[b.sg.length - 1]?.ds?.aT || 0) -
-            new Date(a.sg?.[a.sg.length - 1]?.ds?.aT || 0)
+            new Date(a.sg?.[a.sg.length - 1]?.ds?.aT || 0),
         );
         break;
 
@@ -1726,7 +1778,7 @@ const HomeHero = () => {
       Notification(
         "warning",
         "Warning!",
-        "Destination Airport Cannot Be Empty"
+        "Destination Airport Cannot Be Empty",
       );
     } else if (!date1 && !defaultMonth) {
       Notification("warning", "Warning!", "Journey Date Cannot Be Empty");
@@ -1750,7 +1802,7 @@ const HomeHero = () => {
         "preferredDepartureTime",
         date1
           ? moment(date1).format("YYYY-MM-DD[T]00:00:00")
-          : moment(defaultMonth, "DD-MMM-YYYY").format("YYYY-MM-DD[T]00:00:00")
+          : moment(defaultMonth, "DD-MMM-YYYY").format("YYYY-MM-DD[T]00:00:00"),
       );
 
       if (selected == 1) {
@@ -2003,7 +2055,7 @@ const HomeHero = () => {
 
       // Airlines
       const allFlightNames = flightdata.map(
-        (item) => item.sg?.[0]?.al?.alN || "N/A"
+        (item) => item.sg?.[0]?.al?.alN || "N/A",
       );
       setUniqueFlightNames([...new Set(allFlightNames)]);
 
@@ -2029,10 +2081,10 @@ const HomeHero = () => {
           stops === 0
             ? "Non Stop"
             : stops === 1
-            ? "1 Stop"
-            : stops === 2
-            ? "2 Stops"
-            : "2+ Stops";
+              ? "1 Stop"
+              : stops === 2
+                ? "2 Stops"
+                : "2+ Stops";
         return filters.stops.includes(stopLabel);
       });
     }
@@ -2112,7 +2164,7 @@ const HomeHero = () => {
       // Split children evenly across remaining rooms
       const remainingRooms = rooms - index;
       const childrenForThisRoom = Math.ceil(
-        remainingChildrenAges.length / remainingRooms
+        remainingChildrenAges.length / remainingRooms,
       );
 
       const childAges = remainingChildrenAges.splice(0, childrenForThisRoom);
@@ -2241,12 +2293,10 @@ const HomeHero = () => {
                   <div className="J_T2-header">
                     <div
                       className="dropdown-wrapper"
-                      onClick={() => setIsOpen(!isOpen)}
+                      // onClick={() => setIsOpen(!isOpen)}
                     >
                       <span>{selectedOption.name}</span>
-                      <span className="arrow">
-                        <FaChevronDown />
-                      </span>
+                      <span className="arrow">{/* <FaChevronDown /> */}</span>
                     </div>
 
                     {isOpen && (
@@ -2482,7 +2532,7 @@ const HomeHero = () => {
                                       <option value="">Age</option>
                                       {Array.from(
                                         { length: 18 },
-                                        (_, i) => i
+                                        (_, i) => i,
                                       ).map((age) => (
                                         <option key={age} value={age}>
                                           {age} {age === 1 ? "year" : "years"}
@@ -2490,7 +2540,7 @@ const HomeHero = () => {
                                       ))}
                                     </select>
                                   </div>
-                                )
+                                ),
                               )}
                             </div>
                           )}
@@ -3047,11 +3097,11 @@ const HomeHero = () => {
                       <div className="J_T2-header">
                         <div
                           className="dropdown-wrapper"
-                          onClick={() => setIsOpen(!isOpen)}
+                          // onClick={() => setIsOpen(!isOpen)}
                         >
                           <span>{selectedOption.name}</span>
                           <span className="arrow">
-                            <FaChevronDown />
+                            {/* <FaChevronDown /> */}
                           </span>
                         </div>
 
@@ -3121,7 +3171,7 @@ const HomeHero = () => {
                         <span className="date-info">
                           {selectedDate || defaultMonth
                             ? dayjs(selectedDate || defaultMonth).format(
-                                "ddd D/M"
+                                "ddd D/M",
                               )
                             : "-"}
                         </span>
@@ -3145,12 +3195,10 @@ const HomeHero = () => {
                   <div className="J_T2-header_resss">
                     <div
                       className="dropdown-wrapper"
-                      onClick={() => setIsOpen(!isOpen)}
+                      // onClick={() => setIsOpen(!isOpen)}
                     >
                       <span>{selectedOption.name}</span>
-                      <span className="arrow">
-                        <FaChevronDown />
-                      </span>
+                      <span className="arrow">{/* <FaChevronDown /> */}</span>
                     </div>
 
                     {isOpen && (
@@ -3768,7 +3816,7 @@ const HomeHero = () => {
                       const totalMinutes =
                         departureMoment && arrivalMoment
                           ? arrivalMoment.diff(departureMoment, "minutes")
-                          : firstSeg?.dr ?? 0;
+                          : (firstSeg?.dr ?? 0);
                       const totalHours =
                         totalMinutes >= 0 ? Math.floor(totalMinutes / 60) : 0;
                       const totalRemainingMin =
@@ -3824,7 +3872,7 @@ const HomeHero = () => {
                       // Calculate max price to show savings
                       const maxPriceMobile = Math.max(
                         item.fF || 0,
-                        item.airIQPrice || 0
+                        item.airIQPrice || 0,
                       );
                       const savingsmobile =
                         maxPriceMobile - cheapestPricemobilemate.price;
@@ -3832,9 +3880,9 @@ const HomeHero = () => {
                       return (
                         <>
                           <div className="flightsavailable2" key={globalIndex}>
-                            <div className="row gap-3 align-items-center">
-                              <div className="col-12 col-lg-8 justify-content-space-between">
-                                <div className="align-items-center justify-content-around d-flex flex-column gap-5 gap-lg-0 flex-lg-row p-3">
+                            <div className="row justify-content-around align-items-center">
+                              <div className="col-12 col-xl-6 justify-content-space-between">
+                                <div className="align-items-center justify-content-between justify-content-lg-center justify-content-xl-between d-flex flex-column gap-5 gap-lg-0 flex-lg-row p-3">
                                   <div className="airlinename col-12 col-lg-3">
                                     <div>
                                       {(() => {
@@ -3939,7 +3987,7 @@ const HomeHero = () => {
                                       <h5 className="flighttime2">
                                         {departureMoment
                                           ? moment(departureMoment).format(
-                                              "hh:mm A"
+                                              "hh:mm A",
                                             )
                                           : "N/A"}
                                       </h5>
@@ -3949,7 +3997,7 @@ const HomeHero = () => {
                                       <p className="alldate2">
                                         {departureMoment
                                           ? moment(departureMoment).format(
-                                              "DD-MM-YYYY"
+                                              "DD-MM-YYYY",
                                             )
                                           : "N/A"}
                                       </p>
@@ -3990,7 +4038,7 @@ const HomeHero = () => {
                                       <h5 className="flighttime2">
                                         {arrivalMoment
                                           ? moment(arrivalMoment).format(
-                                              "hh:mm A"
+                                              "hh:mm A",
                                             )
                                           : "N/A"}
                                       </h5>
@@ -4001,7 +4049,7 @@ const HomeHero = () => {
                                       <p className="alldate2">
                                         {arrivalMoment
                                           ? moment(arrivalMoment).format(
-                                              "DD-MM-YYYY"
+                                              "DD-MM-YYYY",
                                             )
                                           : "N/A"}
                                       </p>
@@ -4096,7 +4144,7 @@ const HomeHero = () => {
                                             <div className="p-2 date_divok fw-semibold border-bottom">
                                               {departureMoment
                                                 ? moment(
-                                                    firstSeg?.or?.dT
+                                                    firstSeg?.or?.dT,
                                                   ).format("ddd, DD MMM")
                                                 : "N/A"}
                                             </div>
@@ -4172,10 +4220,10 @@ const HomeHero = () => {
                                                       <div className="fw-bold">
                                                         {seg?.or?.dT &&
                                                         moment(
-                                                          seg.or.dT
+                                                          seg.or.dT,
                                                         ).isValid()
                                                           ? moment(
-                                                              seg.or.dT
+                                                              seg.or.dT,
                                                             ).format("hh:mm A")
                                                           : "N/A"}
                                                       </div>
@@ -4193,13 +4241,13 @@ const HomeHero = () => {
                                                               moment
                                                                 .duration(
                                                                   seg.dr,
-                                                                  "minutes"
+                                                                  "minutes",
                                                                 )
-                                                                .asHours()
+                                                                .asHours(),
                                                             )}h ${moment
                                                               .duration(
                                                                 seg.dr,
-                                                                "minutes"
+                                                                "minutes",
                                                               )
                                                               .minutes()}m`
                                                           : "N/A"}
@@ -4210,10 +4258,10 @@ const HomeHero = () => {
                                                       <div className="fw-bold">
                                                         {seg?.ds?.aT &&
                                                         moment(
-                                                          seg.ds.aT
+                                                          seg.ds.aT,
                                                         ).isValid()
                                                           ? moment(
-                                                              seg.ds.aT
+                                                              seg.ds.aT,
                                                             ).format("hh:mm A")
                                                           : "N/A"}
                                                       </div>
@@ -4254,12 +4302,12 @@ const HomeHero = () => {
                                                               </strong>{" "}
                                                               {seg.sPAT &&
                                                               moment(
-                                                                seg.sPAT
+                                                                seg.sPAT,
                                                               ).isValid()
                                                                 ? moment(
-                                                                    seg.sPAT
+                                                                    seg.sPAT,
                                                                   ).format(
-                                                                    "hh:mm A, DD MMM"
+                                                                    "hh:mm A, DD MMM",
                                                                   )
                                                                 : "N/A"}
                                                             </div>
@@ -4269,12 +4317,12 @@ const HomeHero = () => {
                                                               </strong>{" "}
                                                               {seg.sPDT &&
                                                               moment(
-                                                                seg.sPDT
+                                                                seg.sPDT,
                                                               ).isValid()
                                                                 ? moment(
-                                                                    seg.sPDT
+                                                                    seg.sPDT,
                                                                   ).format(
-                                                                    "hh:mm A, DD MMM"
+                                                                    "hh:mm A, DD MMM",
                                                                   )
                                                                 : "N/A"}
                                                             </div>
@@ -4284,7 +4332,7 @@ const HomeHero = () => {
                                                               </strong>{" "}
                                                               {seg.sD
                                                                 ? `${Math.floor(
-                                                                    seg.sD / 60
+                                                                    seg.sD / 60,
                                                                   )}h ${
                                                                     seg.sD % 60
                                                                   }m`
@@ -4311,12 +4359,12 @@ const HomeHero = () => {
                                                           <br />(
                                                           {seg?.ds?.aT &&
                                                           moment(
-                                                            seg.ds.aT
+                                                            seg.ds.aT,
                                                           ).isValid()
                                                             ? moment(
-                                                                seg.ds.aT
+                                                                seg.ds.aT,
                                                               ).format(
-                                                                "hh:mm A"
+                                                                "hh:mm A",
                                                               )
                                                             : "N/A"}{" "}
                                                           →
@@ -4324,13 +4372,13 @@ const HomeHero = () => {
                                                             ?.dT &&
                                                           moment(
                                                             item.sg[idx + 1].or
-                                                              .dT
+                                                              .dT,
                                                           ).isValid()
                                                             ? moment(
                                                                 item.sg[idx + 1]
-                                                                  .or.dT
+                                                                  .or.dT,
                                                               ).format(
-                                                                "hh:mm A"
+                                                                "hh:mm A",
                                                               )
                                                             : "N/A"}
                                                           )
@@ -4353,7 +4401,7 @@ const HomeHero = () => {
                                             <div className="container my-3">
                                               <div className="flight-cardok p-3 shadow-sm rounded">
                                                 {item?.sg?.some(
-                                                  (seg) => seg.sO
+                                                  (seg) => seg.sO,
                                                 ) ? (
                                                   <div>
                                                     <div
@@ -4403,7 +4451,7 @@ const HomeHero = () => {
                                                                   {seg.sD
                                                                     ? `${Math.floor(
                                                                         seg.sD /
-                                                                          60
+                                                                          60,
                                                                       )}h ${
                                                                         seg.sD %
                                                                         60
@@ -4421,12 +4469,12 @@ const HomeHero = () => {
                                                                 <div>
                                                                   {seg.sPAT &&
                                                                   moment(
-                                                                    seg.sPAT
+                                                                    seg.sPAT,
                                                                   ).isValid()
                                                                     ? moment(
-                                                                        seg.sPAT
+                                                                        seg.sPAT,
                                                                       ).format(
-                                                                        "hh:mm A, DD MMM YYYY"
+                                                                        "hh:mm A, DD MMM YYYY",
                                                                       )
                                                                     : "N/A"}
                                                                 </div>
@@ -4439,19 +4487,19 @@ const HomeHero = () => {
                                                                 <div>
                                                                   {seg.sPDT &&
                                                                   moment(
-                                                                    seg.sPDT
+                                                                    seg.sPDT,
                                                                   ).isValid()
                                                                     ? moment(
-                                                                        seg.sPDT
+                                                                        seg.sPDT,
                                                                       ).format(
-                                                                        "hh:mm A, DD MMM YYYY"
+                                                                        "hh:mm A, DD MMM YYYY",
                                                                       )
                                                                     : "N/A"}
                                                                 </div>
                                                               </div>
                                                             </div>
                                                           </div>
-                                                        )
+                                                        ),
                                                     )}
                                                   </div>
                                                 ) : (
@@ -4502,8 +4550,7 @@ const HomeHero = () => {
                                                 {flightProName ===
                                                 "travclan" ? (
                                                   <>
-                                                    {item.baggage?.travclan
-                                                      ?.cabin || "N/A"}{" "}
+                                                    {item.sg?.[0]?.cBg || "N/A"}{" "}
                                                     Cabin Baggage
                                                   </>
                                                 ) : flightProName ===
@@ -4541,8 +4588,7 @@ const HomeHero = () => {
                                                 {flightProName ===
                                                 "travclan" ? (
                                                   <>
-                                                    {item.baggage?.travclan
-                                                      ?.checkIn || "N/A"}{" "}
+                                                    {item.sg?.[0]?.bg || "N/A"}{" "}
                                                     Check-in Baggage
                                                   </>
                                                 ) : flightProName ===
@@ -4636,7 +4682,7 @@ const HomeHero = () => {
                                   </div>
                                 </div>
                               </div>
-                              <div className="col-lg-3 mb-3 mb-lg-0">
+                              <div className="col-lg-6 mb-3 mb-lg-0">
                                 <div
                                   className="d-flex gap-3"
                                   style={{
@@ -4646,78 +4692,159 @@ const HomeHero = () => {
                                   }}
                                 >
                                   {(() => {
-                                    const getCheapestPrice = () => {
-                                      console.log("item1111", item);
-                                      if (item.isAirIQOnly) {
-                                        return {
-                                          price: item.airIQPrice,
-                                          source: "AirIQ",
-                                          id: item.airIQTicketId,
-                                          fareCode: "airIQ_fare",
-                                          isAirIQ: true,
-                                        };
-                                      } else {
-                                        const travclanPrice = item.fF;
-                                        const airiqPrice = item.airIQPrice;
-
-                                        if (
-                                          airiqPrice &&
-                                          airiqPrice < travclanPrice
-                                        ) {
-                                          return {
-                                            price: airiqPrice,
-                                            source: "AirIQ",
-                                            id: item.airIQTicketId,
-                                            fareCode: "airIQ_fare",
-                                            isAirIQ: true,
-                                          };
-                                        } else {
-                                          return {
-                                            price: travclanPrice,
-                                            source: "TravClan",
-                                            id: item.rI,
-                                            fareCode: item.fareIdentifier?.code,
-                                            isAirIQ: false,
-                                          };
-                                        }
-                                      }
+                                    /* ================== HELPERS ================== */
+                                    const isSameFlight = (
+                                      providerFlight,
+                                      baseFlight,
+                                    ) => {
+                                      return (
+                                        providerFlight?.origin ===
+                                          baseFlight?.origin &&
+                                        providerFlight?.destination ===
+                                          baseFlight?.destination &&
+                                        providerFlight?.departureTime ===
+                                          baseFlight?.departureTime &&
+                                        providerFlight?.arrivalTime ===
+                                          baseFlight?.arrivalTime &&
+                                        providerFlight?.airline ===
+                                          baseFlight?.airline &&
+                                        providerFlight?.flightNumber ===
+                                          baseFlight?.flightNumber
+                                      );
                                     };
 
-                                    const cheapestPrice = getCheapestPrice();
-                                    const otherPrices = [];
+                                    const baseFlight = {
+                                      origin: item?.origin,
+                                      destination: item?.destination,
+                                      departureTime: item?.departureTime,
+                                      arrivalTime: item?.arrivalTime,
+                                      airline: item?.airline,
+                                      flightNumber: item?.flightNumber,
+                                    };
 
-                                    // Add other prices if not AirIQ only
-                                    if (!item.isAirIQOnly) {
-                                      if (cheapestPrice.source !== "TravClan") {
-                                        otherPrices.push({
-                                          price: item.fF,
-                                          source: "TravClan",
-                                          id: item.rI,
-                                          fareCode: item.fareIdentifier?.code,
-                                          isAirIQ: false,
-                                        });
-                                      }
-                                      if (
-                                        item.airIQPrice &&
-                                        cheapestPrice.source !== "AirIQ"
-                                      ) {
-                                        otherPrices.push({
-                                          price: item.airIQPrice,
-                                          source: "AirIQ",
-                                          id: item.airIQTicketId,
-                                          fareCode: "airIQ_fare",
-                                          isAirIQ: true,
-                                        });
-                                      }
+                                    const prices = [];
+
+                                    /* ================== TRAVCLAN ================== */
+                                    if (item?.fF) {
+                                      prices.push({
+                                        price: item.fF,
+                                        source: "TravClan",
+                                        id: item.rI,
+                                        fareCode: item.fareIdentifier?.code,
+                                        isAirIQ: false,
+                                        isCheapFix: false,
+                                      });
                                     }
 
-                                    // Calculate max price to show savings
-                                    const maxPrice = Math.max(
-                                      item.fF || 0,
-                                      item.airIQPrice || 0
+                                    /* ================== AIRIQ ================== */
+                                    const airiqMatched =
+                                      item?.airIQPrice &&
+                                      isSameFlight(
+                                        {
+                                          origin: item.airiqOrigin,
+                                          destination: item.airiqDestination,
+                                          departureTime:
+                                            item.airiqDepartureTime,
+                                          arrivalTime: item.airiqArrivalTime,
+                                          airline: item.airiqAirline,
+                                          flightNumber: item.airiqFlightNumber,
+                                        },
+                                        baseFlight,
+                                      );
+
+                                    if (
+                                      FORCE_SHOW_ALL_PROVIDERS_FOR_TESTING ||
+                                      (item?.airIQPrice && airiqMatched)
+                                    ) {
+                                      prices.push({
+                                        price: item.airIQPrice,
+                                        source: "AirIQ",
+                                        id:
+                                          item.airIQTicketId ||
+                                          `airiq-demo-${item.rI}`,
+                                        fareCode: "airIQ_fare",
+                                        isAirIQ: true,
+                                        isCheapFix: false,
+                                      });
+                                    }
+
+                                    /* ================== CHEAPFIX ================== */
+                                    const cheapFixPrice = item?.cheapFixPrice;
+
+                                    const cheapFixMatched =
+                                      cheapFixPrice &&
+                                      isSameFlight(
+                                        {
+                                          origin: item.cheapFixOrigin,
+                                          destination: item.cheapFixDestination,
+                                          departureTime:
+                                            item.cheapFixDepartureTime,
+                                          arrivalTime: item.cheapFixArrivalTime,
+                                          airline: item.cheapFixAirline,
+                                          flightNumber:
+                                            item.cheapFixFlightNumber,
+                                        },
+                                        baseFlight,
+                                      );
+
+                                    if (
+                                      FORCE_SHOW_ALL_PROVIDERS_FOR_TESTING ||
+                                      (cheapFixPrice && cheapFixMatched)
+                                    ) {
+                                      prices.push({
+                                        price: cheapFixPrice,
+                                        source: "CheapFix",
+                                        id:
+                                          item.cheapFixTicketId ||
+                                          `cheapfix-demo-${item.rI}`,
+                                        fareCode: "cheapfix_fare",
+                                        isAirIQ: false,
+                                        isCheapFix: true,
+                                      });
+                                    }
+
+                                    /* ================== DEBUG ================== */
+                                    {
+                                      /* console.table(
+                                      prices.map((p) => ({
+                                        Provider: p.source,
+                                        Price: p.price,
+                                        ID: p.id,
+                                      }))
+                                    ); */
+                                    }
+
+                                    if (!prices.length) return null;
+
+                                    /* ================== CHEAPEST LOGIC ================== */
+                                    const cheapestPrice = prices.reduce(
+                                      (min, curr) => {
+                                        if (!min) return curr;
+                                        if (!curr?.price) return min;
+                                        return curr.price < min.price
+                                          ? curr
+                                          : min;
+                                      },
+                                      null,
                                     );
+
+                                    const otherPrices = prices.filter(
+                                      (p) => p.id !== cheapestPrice.id,
+                                    );
+
+                                    const validPrices = prices
+                                      .map((p) => Number(p.price))
+                                      .filter((p) => !isNaN(p) && p > 0);
+
+                                    const maxPrice =
+                                      validPrices.length > 1
+                                        ? Math.max(...validPrices)
+                                        : 0;
+
                                     const savings =
-                                      maxPrice - cheapestPrice.price;
+                                      maxPrice > cheapestPrice.price
+                                        ? maxPrice - cheapestPrice.price
+                                        : 0;
 
                                     return (
                                       <>
@@ -4823,7 +4950,7 @@ const HomeHero = () => {
                                                   }}
                                                 >
                                                   {cheapestPrice.price?.toLocaleString(
-                                                    "en-IN"
+                                                    "en-IN",
                                                   ) || "N/A"}
                                                 </span>
                                               </div>
@@ -4841,30 +4968,21 @@ const HomeHero = () => {
                                                 >
                                                   Save ₹
                                                   {savings.toLocaleString(
-                                                    "en-IN"
+                                                    "en-IN",
                                                   )}
                                                 </div>
                                               )}
-                                              {/* {savings === 0 && (
-                                                <div
-                                                  style={{
-                                                    height: "18px",
-                                                    marginTop: "4px",
-                                                  }}
-                                                ></div>
-                                              )} */}
                                             </div>
 
                                             {/* Button Section */}
                                             <div>
-                                              {/* Book Button */}
                                               {login ? (
                                                 <div
                                                   style={{
                                                     cursor:
                                                       selectedOption.id === 2 &&
                                                       resultIndex.includes(
-                                                        cheapestPrice.id
+                                                        cheapestPrice.id,
                                                       )
                                                         ? "not-allowed"
                                                         : "pointer",
@@ -4878,7 +4996,7 @@ const HomeHero = () => {
                                                     background:
                                                       selectedOption.id === 2 &&
                                                       resultIndex.includes(
-                                                        cheapestPrice.id
+                                                        cheapestPrice.id,
                                                       )
                                                         ? "green"
                                                         : "linear-gradient(135deg, #ff690f 0%, #e8381b 100%)",
@@ -4887,6 +5005,7 @@ const HomeHero = () => {
                                                     marginBottom: "12px",
                                                   }}
                                                   onClick={() => {
+                                                    /* ================== UPDATED ITEM ================== */
                                                     const updatedItem =
                                                       cheapestPrice.isAirIQ
                                                         ? [
@@ -4896,33 +5015,54 @@ const HomeHero = () => {
                                                                 ...item.fareIdentifier,
                                                                 code: "airIQ_fare",
                                                               },
-                                                              rI: item.airIQTicketId,
+                                                              // rI: item.airIQTicketId,
+                                                              rI: item.rI,
                                                               selectedPrice:
                                                                 cheapestPrice.price,
                                                               priceSource:
                                                                 "AirIQ",
                                                             },
                                                           ]
-                                                        : [
-                                                            {
-                                                              ...item,
-                                                              selectedPrice:
-                                                                cheapestPrice.price,
-                                                              priceSource:
-                                                                "TravClan",
-                                                            },
-                                                          ];
+                                                        : cheapestPrice.isCheapFix
+                                                          ? [
+                                                              {
+                                                                ...item,
+                                                                fareIdentifier:
+                                                                  {
+                                                                    ...item.fareIdentifier,
+                                                                    code: "cheapfix_fare",
+                                                                  },
+                                                                rI: item.cheapFixTicketId,
+                                                                selectedPrice:
+                                                                  cheapestPrice.price,
+                                                                priceSource:
+                                                                  "CheapFix",
+                                                              },
+                                                            ]
+                                                          : [
+                                                              {
+                                                                ...item,
+                                                                selectedPrice:
+                                                                  cheapestPrice.price,
+                                                                priceSource:
+                                                                  "TravClan",
+                                                              },
+                                                            ];
 
+                                                    /* ================== ONE WAY ================== */
                                                     if (
                                                       selectedOption.id === 1
                                                     ) {
                                                       setIndex(index);
+
                                                       if (
-                                                        cheapestPrice.isAirIQ
+                                                        cheapestPrice.isAirIQ ||
+                                                        cheapestPrice.isCheapFix
                                                       ) {
                                                         localStorage.removeItem(
-                                                          "itineraryCode"
+                                                          "itineraryCode",
                                                         );
+
                                                         navigate(
                                                           "/TicketBookingDetails",
                                                           {
@@ -4939,41 +5079,41 @@ const HomeHero = () => {
                                                               selected:
                                                                 selected,
                                                             },
-                                                          }
+                                                          },
                                                         );
                                                       } else {
                                                         setResultIndex(
                                                           (prev) => [
                                                             ...prev,
                                                             item?.rI,
-                                                          ]
+                                                          ],
                                                         );
                                                         ItineraryCreateNew(
                                                           [
                                                             ...resultIndex,
                                                             item?.rI,
                                                           ],
-                                                          updatedItem
+                                                          updatedItem,
                                                         );
                                                       }
                                                     } else if (
+                                                      /* ================== RETURN ================== */
                                                       selectedOption.id === 2
                                                     ) {
                                                       if (
-                                                        resultIndex.includes(
-                                                          cheapestPrice.id
+                                                        !resultIndex.includes(
+                                                          cheapestPrice.id,
                                                         )
                                                       ) {
-                                                      } else {
                                                         setFlightData(
-                                                          updatedItem
+                                                          updatedItem,
                                                         );
                                                         setIndex(index);
                                                         setResultIndex([
                                                           cheapestPrice.id,
                                                         ]);
                                                         handleReturnFlightTabChange(
-                                                          1
+                                                          1,
                                                         );
                                                       }
                                                     }
@@ -4981,21 +5121,22 @@ const HomeHero = () => {
                                                 >
                                                   {itinerary_loading &&
                                                   index === getindex &&
-                                                  !cheapestPrice.isAirIQ
+                                                  !cheapestPrice.isAirIQ &&
+                                                  !cheapestPrice.isCheapFix
                                                     ? "Loading..."
                                                     : selectedOption.id === 2
-                                                    ? resultIndex.includes(
-                                                        cheapestPrice.id
-                                                      )
-                                                      ? "Selected"
-                                                      : "Select"
-                                                    : "Book Now"}
+                                                      ? resultIndex.includes(
+                                                          cheapestPrice.id,
+                                                        )
+                                                        ? "Selected"
+                                                        : "Select"
+                                                      : "Book Now"}
                                                 </div>
                                               ) : (
                                                 <div
                                                   onClick={() =>
                                                     alert(
-                                                      "Please log in to proceed with booking."
+                                                      "Please log in to proceed with booking.",
                                                     )
                                                   }
                                                   style={{
@@ -5010,7 +5151,6 @@ const HomeHero = () => {
                                                       "linear-gradient(135deg, #ff690f 0%, #e8381b 100%)",
                                                     color: "#fff",
                                                     border: "none",
-                                                    textDecoration: "none",
                                                     display: "block",
                                                     marginBottom: "12px",
                                                   }}
@@ -5018,6 +5158,7 @@ const HomeHero = () => {
                                                   Book Now
                                                 </div>
                                               )}
+
                                               <div
                                                 data-bs-toggle="offcanvas"
                                                 data-bs-target={`#flightDrawer-${globalIndex}`}
@@ -5037,53 +5178,15 @@ const HomeHero = () => {
                                               >
                                                 View Flight Details
                                               </div>
-                                              {/* <div className="d-flex align-items-baseline gap-1 mt-2 mb-1">
-                                                <BsFillHandbagFill
-                                                  color="orangered"
-                                                  size={14}
-                                                />
-                                                <div
-                                                  style={{
-                                                    fontSize: "0.70rem",
-                                                  }}
-                                                >
-                                                  {cheapestPrice.isAirIQ
-                                                    ? (item.baggage?.airiq
-                                                        ?.cabin || "N/A") +
-                                                      " Cabin Baggage"
-                                                    : (item.baggage?.travclan
-                                                        ?.cabin ||
-                                                        item.sg[0]?.cBg ||
-                                                        "N/A") +
-                                                      " Cabin Baggage"}
-                                                </div>
-                                              </div> */}
-                                              {/* <div className="d-flex align-items-baseline gap-1">
-                                                <BsFillLuggageFill
-                                                  color="orangered"
-                                                  size={14}
-                                                />
-                                                <div
-                                                  style={{
-                                                    fontSize: "0.70rem",
-                                                  }}
-                                                >
-                                                  {cheapestPrice.isAirIQ
-                                                    ? (item.baggage?.airiq
-                                                        ?.checkIn || "N/A") +
-                                                      " Check-in Baggage"
-                                                    : (item.baggage?.travclan
-                                                        ?.checkIn ||
-                                                        item.sg[0]?.bg ||
-                                                        "N/A") +
-                                                      " Check-in Baggage"}
-                                                </div>
-                                              </div> */}
                                             </div>
                                           </div>
                                         </div>
 
                                         {/* Other Price Cards - Professional Design */}
+                                        {/* {console.log(
+                                          "otherPrices",
+                                          otherPrices
+                                        )} */}
                                         {otherPrices.map((priceInfo, idx) => (
                                           <div
                                             key={idx}
@@ -5163,7 +5266,7 @@ const HomeHero = () => {
                                                     }}
                                                   >
                                                     {priceInfo.price?.toLocaleString(
-                                                      "en-IN"
+                                                      "en-IN",
                                                     ) || "N/A"}
                                                   </span>
                                                 </div>
@@ -5187,7 +5290,7 @@ const HomeHero = () => {
                                                         selectedOption.id ===
                                                           2 &&
                                                         resultIndex.includes(
-                                                          priceInfo.id
+                                                          priceInfo.id,
                                                         )
                                                           ? "not-allowed"
                                                           : "pointer",
@@ -5203,7 +5306,7 @@ const HomeHero = () => {
                                                         selectedOption.id ===
                                                           2 &&
                                                         resultIndex.includes(
-                                                          priceInfo.id
+                                                          priceInfo.id,
                                                         )
                                                           ? "#10b981"
                                                           : "#fff",
@@ -5211,7 +5314,7 @@ const HomeHero = () => {
                                                         selectedOption.id ===
                                                           2 &&
                                                         resultIndex.includes(
-                                                          priceInfo.id
+                                                          priceInfo.id,
                                                         )
                                                           ? "#fff"
                                                           : "#374151",
@@ -5225,7 +5328,7 @@ const HomeHero = () => {
                                                           selectedOption.id ===
                                                             2 &&
                                                           resultIndex.includes(
-                                                            priceInfo.id
+                                                            priceInfo.id,
                                                           )
                                                         )
                                                       ) {
@@ -5241,7 +5344,7 @@ const HomeHero = () => {
                                                           selectedOption.id ===
                                                             2 &&
                                                           resultIndex.includes(
-                                                            priceInfo.id
+                                                            priceInfo.id,
                                                           )
                                                         )
                                                       ) {
@@ -5252,6 +5355,7 @@ const HomeHero = () => {
                                                       }
                                                     }}
                                                     onClick={() => {
+                                                      /* ================= UPDATED ITEM ================= */
                                                       const updatedItem =
                                                         priceInfo.isAirIQ
                                                           ? [
@@ -5262,31 +5366,54 @@ const HomeHero = () => {
                                                                     ...item.fareIdentifier,
                                                                     code: "airIQ_fare",
                                                                   },
-                                                                rI: item.airIQTicketId,
+                                                                // rI: item.airIQTicketId,
+                                                                rI: item.rI,
                                                                 selectedPrice:
                                                                   priceInfo.price,
                                                                 priceSource:
                                                                   "AirIQ",
                                                               },
                                                             ]
-                                                          : [
-                                                              {
-                                                                ...item,
-                                                                selectedPrice:
-                                                                  priceInfo.price,
-                                                                priceSource:
-                                                                  "TravClan",
-                                                              },
-                                                            ];
+                                                          : priceInfo.isCheapFix
+                                                            ? [
+                                                                {
+                                                                  ...item,
+                                                                  fareIdentifier:
+                                                                    {
+                                                                      ...item.fareIdentifier,
+                                                                      code: "cheapfix_fare",
+                                                                    },
+                                                                  rI: item.cheapFixTicketId,
+                                                                  selectedPrice:
+                                                                    priceInfo.price,
+                                                                  priceSource:
+                                                                    "CheapFix",
+                                                                },
+                                                              ]
+                                                            : [
+                                                                {
+                                                                  ...item,
+                                                                  selectedPrice:
+                                                                    priceInfo.price,
+                                                                  priceSource:
+                                                                    "TravClan",
+                                                                },
+                                                              ];
 
+                                                      /* ================= ONE WAY ================= */
                                                       if (
                                                         selectedOption.id === 1
                                                       ) {
                                                         setIndex(index);
-                                                        if (priceInfo.isAirIQ) {
+
+                                                        if (
+                                                          priceInfo.isAirIQ ||
+                                                          priceInfo.isCheapFix
+                                                        ) {
                                                           localStorage.removeItem(
-                                                            "itineraryCode"
+                                                            "itineraryCode",
                                                           );
+
                                                           navigate(
                                                             "/TicketBookingDetails",
                                                             {
@@ -5303,47 +5430,41 @@ const HomeHero = () => {
                                                                 selected:
                                                                   selected,
                                                               },
-                                                            }
+                                                            },
                                                           );
                                                         } else {
                                                           setResultIndex(
                                                             (prev) => [
                                                               ...prev,
                                                               item?.rI,
-                                                            ]
+                                                            ],
                                                           );
                                                           ItineraryCreateNew(
                                                             [
                                                               ...resultIndex,
                                                               item?.rI,
                                                             ],
-                                                            updatedItem
+                                                            updatedItem,
                                                           );
                                                         }
                                                       } else if (
+                                                        /* ================= RETURN ================= */
                                                         selectedOption.id === 2
                                                       ) {
                                                         if (
-                                                          resultIndex.includes(
-                                                            priceInfo.id
+                                                          !resultIndex.includes(
+                                                            priceInfo.id,
                                                           )
                                                         ) {
-                                                          console.log(
-                                                            `${priceInfo.source} flight ${priceInfo.id} already selected, no action taken`
-                                                          );
-                                                        } else {
-                                                          console.log(
-                                                            `Selecting ${priceInfo.source} flight: ${priceInfo.id}, fareIdentifier.code: ${priceInfo.fareCode}`
-                                                          );
                                                           setFlightData(
-                                                            updatedItem
+                                                            updatedItem,
                                                           );
                                                           setIndex(index);
                                                           setResultIndex([
                                                             priceInfo.id,
                                                           ]);
                                                           handleReturnFlightTabChange(
-                                                            1
+                                                            1,
                                                           );
                                                         }
                                                       }
@@ -5351,21 +5472,22 @@ const HomeHero = () => {
                                                   >
                                                     {itinerary_loading &&
                                                     index === getindex &&
-                                                    !priceInfo.isAirIQ
+                                                    !priceInfo.isAirIQ &&
+                                                    !priceInfo.isCheapFix
                                                       ? "Loading..."
                                                       : selectedOption.id === 2
-                                                      ? resultIndex.includes(
-                                                          priceInfo.id
-                                                        )
-                                                        ? "Selected"
-                                                        : "Select"
-                                                      : "Book Now"}
+                                                        ? resultIndex.includes(
+                                                            priceInfo.id,
+                                                          )
+                                                          ? "Selected"
+                                                          : "Select"
+                                                        : "Book Now"}
                                                   </div>
                                                 ) : (
                                                   <div
                                                     onClick={() =>
                                                       alert(
-                                                        "Please log in to proceed with booking."
+                                                        "Please log in to proceed with booking.",
                                                       )
                                                     }
                                                     style={{
@@ -5380,7 +5502,6 @@ const HomeHero = () => {
                                                       color: "#374151",
                                                       border:
                                                         "2px solid #d1d5db",
-                                                      textDecoration: "none",
                                                       display: "block",
                                                       marginBottom: "12px",
                                                     }}
@@ -5388,6 +5509,7 @@ const HomeHero = () => {
                                                     Book Now
                                                   </div>
                                                 )}
+
                                                 <div
                                                   data-bs-toggle="offcanvas"
                                                   data-bs-target={`#flightDrawer-${globalIndex}`}
@@ -5406,48 +5528,6 @@ const HomeHero = () => {
                                                 >
                                                   View Flight Details
                                                 </div>
-                                                {/* <div className="d-flex align-items-baseline gap-1 mt-2 mb-1">
-                                                  <BsFillHandbagFill
-                                                    color="orangered"
-                                                    size={14}
-                                                  />
-                                                  <div
-                                                    style={{
-                                                      fontSize: "0.70rem",
-                                                    }}
-                                                  >
-                                                    {priceInfo.isAirIQ
-                                                      ? (item.baggage?.airiq
-                                                          ?.cabin || "N/A") +
-                                                        " Cabin Baggage"
-                                                      : (item.baggage?.travclan
-                                                          ?.cabin ||
-                                                          item.sg[0]?.cBg ||
-                                                          "N/A") +
-                                                        " Cabin Baggge"}
-                                                  </div>
-                                                </div> */}
-                                                {/* <div className="d-flex align-items-baseline gap-1">
-                                                  <BsFillLuggageFill
-                                                    color="orangered"
-                                                    size={14}
-                                                  />
-                                                  <div
-                                                    style={{
-                                                      fontSize: "0.70rem",
-                                                    }}
-                                                  >
-                                                    {priceInfo.isAirIQ
-                                                      ? (item.baggage?.airiq
-                                                          ?.checkIn || "N/A") +
-                                                        " Check-in Baggage"
-                                                      : (item.baggage?.travclan
-                                                          ?.checkIn ||
-                                                          item.sg[0]?.bg ||
-                                                          "N/A") +
-                                                        " Check-in Baggage"}
-                                                  </div>
-                                                </div> */}
                                               </div>
                                             </div>
                                           </div>
@@ -5557,7 +5637,7 @@ const HomeHero = () => {
                                     <div className="mob_time text-center">
                                       {departureMoment
                                         ? moment(item?.sg[0]?.or?.dT).format(
-                                            "hh:mm A"
+                                            "hh:mm A",
                                           )
                                         : "N/A"}
                                       <div>{item?.sg[0]?.or?.aC || "N/A"}</div>
@@ -5579,7 +5659,7 @@ const HomeHero = () => {
                                       {arrivalMoment
                                         ? moment(
                                             item?.sg[item?.sg.length - 1]?.ds
-                                              ?.aT
+                                              ?.aT,
                                           ).format("hh:mm A")
                                         : "N/A"}
                                       <div>
@@ -5696,7 +5776,7 @@ const HomeHero = () => {
                                                 cheapestPricemobilemate.isAirIQ
                                               ) {
                                                 localStorage.removeItem(
-                                                  "itineraryCode"
+                                                  "itineraryCode",
                                                 );
                                                 navigate(
                                                   "/TicketBookingDetails",
@@ -5713,7 +5793,7 @@ const HomeHero = () => {
                                                         travellers.infant,
                                                       selected: selected,
                                                     },
-                                                  }
+                                                  },
                                                 );
                                               } else {
                                                 setResultIndex((prev) => [
@@ -5722,7 +5802,7 @@ const HomeHero = () => {
                                                 ]);
                                                 ItineraryCreateNew(
                                                   [...resultIndex, item?.rI],
-                                                  updatedItem
+                                                  updatedItem,
                                                 );
                                               }
                                             } else if (
@@ -5730,7 +5810,7 @@ const HomeHero = () => {
                                             ) {
                                               if (
                                                 resultIndex.includes(
-                                                  cheapestPricemobilemate.id
+                                                  cheapestPricemobilemate.id,
                                                 )
                                               ) {
                                               } else {
@@ -5749,12 +5829,12 @@ const HomeHero = () => {
                                           !cheapestPricemobilemate.isAirIQ
                                             ? "Loading..."
                                             : selectedOption.id === 2
-                                            ? resultIndex.includes(
-                                                cheapestPricemobilemate.id
-                                              )
-                                              ? "Selected"
-                                              : "Select"
-                                            : "Book"}
+                                              ? resultIndex.includes(
+                                                  cheapestPricemobilemate.id,
+                                                )
+                                                ? "Selected"
+                                                : "Select"
+                                              : "Book"}
                                         </div>
                                         {/* TravClan Book Button */}
                                         <div
@@ -5790,7 +5870,7 @@ const HomeHero = () => {
                                   <Link
                                     onClick={() =>
                                       alert(
-                                        "Please log in to proceed with booking."
+                                        "Please log in to proceed with booking.",
                                       )
                                     }
                                     className="bookBtn2_mob"
@@ -5854,14 +5934,14 @@ const HomeHero = () => {
                                             };
                                             if (selectedOption.id === 1) {
                                               console.log(
-                                                `Navigating to TicketBookingDetails for AirIQ flight: ${item.airIQTicketId}, fareIdentifier.code: airIQ_fare`
+                                                `Navigating to TicketBookingDetails for AirIQ flight: ${item.airIQTicketId}, fareIdentifier.code: airIQ_fare`,
                                               );
                                             } else {
                                               setFlightData(updatedItem);
                                               setIndex(index);
                                               handleReturnFlightTabChange(1);
                                               console.log(
-                                                `Selecting AirIQ flight: ${item.airIQTicketId}, fareIdentifier.code: airIQ_fare`
+                                                `Selecting AirIQ flight: ${item.airIQTicketId}, fareIdentifier.code: airIQ_fare`,
                                               );
                                               setResultIndex([
                                                 item?.airIQTicketId,
@@ -5871,7 +5951,7 @@ const HomeHero = () => {
                                         >
                                           {selectedOption.id === 2 ? (
                                             resultIndex.includes(
-                                              item?.airIQTicketId
+                                              item?.airIQTicketId,
                                             ) ? (
                                               "Selected"
                                             ) : (
@@ -5957,7 +6037,7 @@ const HomeHero = () => {
                       const totalMinutes =
                         departureMoment && arrivalMoment
                           ? arrivalMoment.diff(departureMoment, "minutes")
-                          : firstSeg?.dr ?? 0;
+                          : (firstSeg?.dr ?? 0);
                       const totalHours =
                         totalMinutes >= 0 ? Math.floor(totalMinutes / 60) : 0;
                       const totalRemainingMin =
@@ -6013,7 +6093,7 @@ const HomeHero = () => {
                       // Calculate max price to show savings
                       const maxPriceMobile = Math.max(
                         item.fF || 0,
-                        item.airIQPrice || 0
+                        item.airIQPrice || 0,
                       );
                       const savingsmobile =
                         maxPriceMobile - cheapestPricemobilemate.price;
@@ -6125,7 +6205,7 @@ const HomeHero = () => {
                                       <h5 className="flighttime2">
                                         {departureMoment
                                           ? moment(departureMoment).format(
-                                              "hh:mm A"
+                                              "hh:mm A",
                                             )
                                           : "N/A"}
                                       </h5>
@@ -6135,7 +6215,7 @@ const HomeHero = () => {
                                       <p className="alldate2">
                                         {departureMoment
                                           ? moment(departureMoment).format(
-                                              "DD-MM-YYYY"
+                                              "DD-MM-YYYY",
                                             )
                                           : "N/A"}
                                       </p>
@@ -6176,7 +6256,7 @@ const HomeHero = () => {
                                       <h5 className="flighttime2">
                                         {arrivalMoment
                                           ? moment(arrivalMoment).format(
-                                              "hh:mm A"
+                                              "hh:mm A",
                                             )
                                           : "N/A"}
                                       </h5>
@@ -6187,7 +6267,7 @@ const HomeHero = () => {
                                       <p className="alldate2">
                                         {arrivalMoment
                                           ? moment(arrivalMoment).format(
-                                              "DD-MM-YYYY"
+                                              "DD-MM-YYYY",
                                             )
                                           : "N/A"}
                                       </p>
@@ -6269,7 +6349,7 @@ const HomeHero = () => {
                                             <div className="p-2 date_divok fw-semibold border-bottom">
                                               {departureMoment
                                                 ? moment(
-                                                    firstSeg?.or?.dT
+                                                    firstSeg?.or?.dT,
                                                   ).format("ddd, DD MMM")
                                                 : "N/A"}
                                             </div>
@@ -6345,10 +6425,10 @@ const HomeHero = () => {
                                                       <div className="fw-bold">
                                                         {seg?.or?.dT &&
                                                         moment(
-                                                          seg.or.dT
+                                                          seg.or.dT,
                                                         ).isValid()
                                                           ? moment(
-                                                              seg.or.dT
+                                                              seg.or.dT,
                                                             ).format("hh:mm A")
                                                           : "N/A"}
                                                       </div>
@@ -6366,13 +6446,13 @@ const HomeHero = () => {
                                                               moment
                                                                 .duration(
                                                                   seg.dr,
-                                                                  "minutes"
+                                                                  "minutes",
                                                                 )
-                                                                .asHours()
+                                                                .asHours(),
                                                             )}h ${moment
                                                               .duration(
                                                                 seg.dr,
-                                                                "minutes"
+                                                                "minutes",
                                                               )
                                                               .minutes()}m`
                                                           : "N/A"}
@@ -6383,10 +6463,10 @@ const HomeHero = () => {
                                                       <div className="fw-bold">
                                                         {seg?.ds?.aT &&
                                                         moment(
-                                                          seg.ds.aT
+                                                          seg.ds.aT,
                                                         ).isValid()
                                                           ? moment(
-                                                              seg.ds.aT
+                                                              seg.ds.aT,
                                                             ).format("hh:mm A")
                                                           : "N/A"}
                                                       </div>
@@ -6427,12 +6507,12 @@ const HomeHero = () => {
                                                               </strong>{" "}
                                                               {seg.sPAT &&
                                                               moment(
-                                                                seg.sPAT
+                                                                seg.sPAT,
                                                               ).isValid()
                                                                 ? moment(
-                                                                    seg.sPAT
+                                                                    seg.sPAT,
                                                                   ).format(
-                                                                    "hh:mm A, DD MMM"
+                                                                    "hh:mm A, DD MMM",
                                                                   )
                                                                 : "N/A"}
                                                             </div>
@@ -6442,12 +6522,12 @@ const HomeHero = () => {
                                                               </strong>{" "}
                                                               {seg.sPDT &&
                                                               moment(
-                                                                seg.sPDT
+                                                                seg.sPDT,
                                                               ).isValid()
                                                                 ? moment(
-                                                                    seg.sPDT
+                                                                    seg.sPDT,
                                                                   ).format(
-                                                                    "hh:mm A, DD MMM"
+                                                                    "hh:mm A, DD MMM",
                                                                   )
                                                                 : "N/A"}
                                                             </div>
@@ -6457,7 +6537,7 @@ const HomeHero = () => {
                                                               </strong>{" "}
                                                               {seg.sD
                                                                 ? `${Math.floor(
-                                                                    seg.sD / 60
+                                                                    seg.sD / 60,
                                                                   )}h ${
                                                                     seg.sD % 60
                                                                   }m`
@@ -6484,12 +6564,12 @@ const HomeHero = () => {
                                                           <br />(
                                                           {seg?.ds?.aT &&
                                                           moment(
-                                                            seg.ds.aT
+                                                            seg.ds.aT,
                                                           ).isValid()
                                                             ? moment(
-                                                                seg.ds.aT
+                                                                seg.ds.aT,
                                                               ).format(
-                                                                "hh:mm A"
+                                                                "hh:mm A",
                                                               )
                                                             : "N/A"}{" "}
                                                           →
@@ -6497,13 +6577,13 @@ const HomeHero = () => {
                                                             ?.dT &&
                                                           moment(
                                                             item.sg[idx + 1].or
-                                                              .dT
+                                                              .dT,
                                                           ).isValid()
                                                             ? moment(
                                                                 item.sg[idx + 1]
-                                                                  .or.dT
+                                                                  .or.dT,
                                                               ).format(
-                                                                "hh:mm A"
+                                                                "hh:mm A",
                                                               )
                                                             : "N/A"}
                                                           )
@@ -6526,7 +6606,7 @@ const HomeHero = () => {
                                             <div className="container my-3">
                                               <div className="flight-cardok p-3 shadow-sm rounded">
                                                 {item?.sg?.some(
-                                                  (seg) => seg.sO
+                                                  (seg) => seg.sO,
                                                 ) ? (
                                                   <div>
                                                     <div
@@ -6576,7 +6656,7 @@ const HomeHero = () => {
                                                                   {seg.sD
                                                                     ? `${Math.floor(
                                                                         seg.sD /
-                                                                          60
+                                                                          60,
                                                                       )}h ${
                                                                         seg.sD %
                                                                         60
@@ -6594,12 +6674,12 @@ const HomeHero = () => {
                                                                 <div>
                                                                   {seg.sPAT &&
                                                                   moment(
-                                                                    seg.sPAT
+                                                                    seg.sPAT,
                                                                   ).isValid()
                                                                     ? moment(
-                                                                        seg.sPAT
+                                                                        seg.sPAT,
                                                                       ).format(
-                                                                        "hh:mm A, DD MMM YYYY"
+                                                                        "hh:mm A, DD MMM YYYY",
                                                                       )
                                                                     : "N/A"}
                                                                 </div>
@@ -6612,19 +6692,19 @@ const HomeHero = () => {
                                                                 <div>
                                                                   {seg.sPDT &&
                                                                   moment(
-                                                                    seg.sPDT
+                                                                    seg.sPDT,
                                                                   ).isValid()
                                                                     ? moment(
-                                                                        seg.sPDT
+                                                                        seg.sPDT,
                                                                       ).format(
-                                                                        "hh:mm A, DD MMM YYYY"
+                                                                        "hh:mm A, DD MMM YYYY",
                                                                       )
                                                                     : "N/A"}
                                                                 </div>
                                                               </div>
                                                             </div>
                                                           </div>
-                                                        )
+                                                        ),
                                                     )}
                                                   </div>
                                                 ) : (
@@ -6809,7 +6889,7 @@ const HomeHero = () => {
                                   </div>
                                 </div>
                               </div>
-                              <div className="col-lg-3 mb-3 mb-lg-0">
+                              <div className="col-lg-6 mb-3 mb-lg-0">
                                 <div
                                   className="d-flex gap-3"
                                   style={{
@@ -6819,78 +6899,141 @@ const HomeHero = () => {
                                   }}
                                 >
                                   {(() => {
-                                    // Determine cheapest price
-                                    const getCheapestPrice = () => {
-                                      if (item.isAirIQOnly) {
-                                        return {
-                                          price: item.airIQPrice,
-                                          source: "AirIQ",
-                                          id: item.airIQTicketId,
-                                          fareCode: "airIQ_fare",
-                                          isAirIQ: true,
-                                        };
-                                      } else {
-                                        const travclanPrice = item.fF;
-                                        const airiqPrice = item.airIQPrice;
-
-                                        if (
-                                          airiqPrice &&
-                                          airiqPrice < travclanPrice
-                                        ) {
-                                          return {
-                                            price: airiqPrice,
-                                            source: "AirIQ",
-                                            id: item.airIQTicketId,
-                                            fareCode: "airIQ_fare",
-                                            isAirIQ: true,
-                                          };
-                                        } else {
-                                          return {
-                                            price: travclanPrice,
-                                            source: "TravClan",
-                                            id: item.rI,
-                                            fareCode: item.fareIdentifier?.code,
-                                            isAirIQ: false,
-                                          };
-                                        }
-                                      }
+                                    const isSameFlight = (
+                                      providerFlight,
+                                      baseFlight,
+                                    ) => {
+                                      return (
+                                        providerFlight?.origin ===
+                                          baseFlight?.origin &&
+                                        providerFlight?.destination ===
+                                          baseFlight?.destination &&
+                                        providerFlight?.departureTime ===
+                                          baseFlight?.departureTime &&
+                                        providerFlight?.arrivalTime ===
+                                          baseFlight?.arrivalTime &&
+                                        providerFlight?.airline ===
+                                          baseFlight?.airline &&
+                                        providerFlight?.flightNumber ===
+                                          baseFlight?.flightNumber
+                                      );
                                     };
 
-                                    const cheapestPrice = getCheapestPrice();
-                                    const otherPrices = [];
+                                    const baseFlight = {
+                                      origin: item?.origin,
+                                      destination: item?.destination,
+                                      departureTime: item?.departureTime,
+                                      arrivalTime: item?.arrivalTime,
+                                      airline: item?.airline,
+                                      flightNumber: item?.flightNumber,
+                                    };
 
-                                    // Add other prices if not AirIQ only
-                                    if (!item.isAirIQOnly) {
-                                      if (cheapestPrice.source !== "TravClan") {
-                                        otherPrices.push({
-                                          price: item.fF,
-                                          source: "TravClan",
-                                          id: item.rI,
-                                          fareCode: item.fareIdentifier?.code,
-                                          isAirIQ: false,
-                                        });
-                                      }
-                                      if (
-                                        item.airIQPrice &&
-                                        cheapestPrice.source !== "AirIQ"
-                                      ) {
-                                        otherPrices.push({
-                                          price: item.airIQPrice,
-                                          source: "AirIQ",
-                                          id: item.airIQTicketId,
-                                          fareCode: "airIQ_fare",
-                                          isAirIQ: true,
-                                        });
-                                      }
+                                    const prices = [];
+
+                                    /* ---------------- TravClan (BASE) ---------------- */
+                                    if (item.fF) {
+                                      prices.push({
+                                        price: item.fF,
+                                        source: "TravClan",
+                                        id: item.rI,
+                                        fareCode: item.fareIdentifier?.code,
+                                        isAirIQ: false,
+                                        isCheapFix: false,
+                                      });
                                     }
 
-                                    // Calculate max price to show savings
-                                    const maxPrice = Math.max(
-                                      item.fF || 0,
-                                      item.airIQPrice || 0
+                                    /* ---------------- AirIQ ---------------- */
+                                    const airiqMatched =
+                                      item.airIQPrice &&
+                                      isSameFlight(
+                                        {
+                                          origin: item.airiqOrigin,
+                                          destination: item.airiqDestination,
+                                          departureTime:
+                                            item.airiqDepartureTime,
+                                          arrivalTime: item.airiqArrivalTime,
+                                          airline: item.airiqAirline,
+                                          flightNumber: item.airiqFlightNumber,
+                                        },
+                                        baseFlight,
+                                      );
+
+                                    if (
+                                      item.airIQPrice &&
+                                      (airiqMatched ||
+                                        FORCE_SHOW_ALL_PROVIDERS_FOR_TESTING)
+                                    ) {
+                                      prices.push({
+                                        price: item.airIQPrice,
+                                        source: "AirIQ",
+                                        id:
+                                          item.airIQTicketId ||
+                                          `airiq-demo-${item.rI}`,
+                                        fareCode: "airIQ_fare",
+                                        isAirIQ: true,
+                                        isCheapFix: false,
+                                      });
+                                    }
+
+                                    /* ---------------- CheapFix ---------------- */
+                                    const cheapFixMatched =
+                                      item.cheapFixPrice &&
+                                      isSameFlight(
+                                        {
+                                          origin: item.cheapFixOrigin,
+                                          destination: item.cheapFixDestination,
+                                          departureTime:
+                                            item.cheapFixDepartureTime,
+                                          arrivalTime: item.cheapFixArrivalTime,
+                                          airline: item.cheapFixAirline,
+                                          flightNumber:
+                                            item.cheapFixFlightNumber,
+                                        },
+                                        baseFlight,
+                                      );
+
+                                    if (
+                                      item.cheapFixPrice &&
+                                      (cheapFixMatched ||
+                                        FORCE_SHOW_ALL_PROVIDERS_FOR_TESTING)
+                                    ) {
+                                      prices.push({
+                                        price: item.cheapFixPrice,
+                                        source: "CheapFix",
+                                        id:
+                                          item.cheapFixTicketId ||
+                                          `cheapfix-demo-${item.rI}`,
+                                        fareCode: "cheapfix_fare",
+                                        isAirIQ: false,
+                                        isCheapFix: true,
+                                      });
+                                    }
+
+                                    if (!prices.length) return null;
+
+                                    /* ---------------- Cheapest + Others ---------------- */
+                                    const cheapestPrice = prices.reduce(
+                                      (min, curr) =>
+                                        curr.price < min.price ? curr : min,
                                     );
+
+                                    const otherPrices = prices.filter(
+                                      (p) => p.id !== cheapestPrice.id,
+                                    );
+
+                                    const validPrices = prices
+                                      .map((p) => Number(p.price))
+                                      .filter((p) => !isNaN(p) && p > 0);
+
+                                    const maxPrice =
+                                      validPrices.length > 1
+                                        ? Math.max(...validPrices)
+                                        : 0;
+
                                     const savings =
-                                      maxPrice - cheapestPrice.price;
+                                      maxPrice > cheapestPrice.price
+                                        ? maxPrice - cheapestPrice.price
+                                        : 0;
 
                                     return (
                                       <>
@@ -6919,33 +7062,34 @@ const HomeHero = () => {
                                           }}
                                         >
                                           {/* Best Deal Badge - Fixed Height */}
-                                          <div
-                                            style={{
-                                              position: "absolute",
-                                              top: "0",
-                                              right: "0",
-                                              background:
-                                                "linear-gradient(135deg, #fbbf24 0%, #f59e0b 100%)",
-                                              color: "#000",
-                                              padding: "6px 12px",
-                                              borderBottomLeftRadius: "12px",
-                                              fontSize: "10px",
-                                              fontWeight: "bold",
-                                              display: "flex",
-                                              alignItems: "center",
-                                              gap: "4px",
-                                              boxShadow:
-                                                "0 2px 8px rgba(0,0,0,0.15)",
-                                              zIndex: 10,
-                                              height: "28px",
-                                            }}
-                                          >
-                                            {savings ? (
+
+                                          {savings ? (
+                                            <div
+                                              style={{
+                                                position: "absolute",
+                                                top: "0",
+                                                right: "0",
+                                                background:
+                                                  "linear-gradient(135deg, #fbbf24 0%, #f59e0b 100%)",
+                                                color: "#000",
+                                                padding: "6px 12px",
+                                                borderBottomLeftRadius: "12px",
+                                                fontSize: "10px",
+                                                fontWeight: "bold",
+                                                display: "flex",
+                                                alignItems: "center",
+                                                gap: "4px",
+                                                boxShadow:
+                                                  "0 2px 8px rgba(0,0,0,0.15)",
+                                                zIndex: 10,
+                                                height: "28px",
+                                              }}
+                                            >
                                               <>⚡ EAGLE DEAL</>
-                                            ) : (
-                                              <></>
-                                            )}
-                                          </div>
+                                            </div>
+                                          ) : (
+                                            <></>
+                                          )}
 
                                           {/* Card Content */}
                                           <div
@@ -6980,7 +7124,7 @@ const HomeHero = () => {
                                               >
                                                 <span
                                                   style={{
-                                                    color: "#6b7280",
+                                                    color: "black",
                                                     fontSize: "28px",
                                                     marginTop: "4px",
                                                   }}
@@ -6995,7 +7139,7 @@ const HomeHero = () => {
                                                   }}
                                                 >
                                                   {cheapestPrice.price?.toLocaleString(
-                                                    "en-IN"
+                                                    "en-IN",
                                                   ) || "N/A"}
                                                 </span>
                                               </div>
@@ -7013,30 +7157,10 @@ const HomeHero = () => {
                                                 >
                                                   Save ₹
                                                   {savings.toLocaleString(
-                                                    "en-IN"
+                                                    "en-IN",
                                                   )}
                                                 </div>
                                               )}
-                                              {/* {savings === 0 && (
-                                                <div
-                                                  style={{
-                                                    height: "18px",
-                                                    marginTop: "4px",
-                                                  }}
-                                                ></div>
-                                              )} */}
-
-                                              {/* Economy */}
-                                              <span
-                                                style={{
-                                                  fontSize: "14px",
-                                                  color: "#6b7280",
-                                                  marginTop: "0px",
-                                                  marginBottom: "0.5rem",
-                                                }}
-                                              >
-                                                {className}
-                                              </span>
                                             </div>
 
                                             {/* Button Section */}
@@ -7048,7 +7172,7 @@ const HomeHero = () => {
                                                     cursor:
                                                       selectedOption.id === 2 &&
                                                       resultIndex.includes(
-                                                        cheapestPrice.id
+                                                        cheapestPrice.id,
                                                       )
                                                         ? "not-allowed"
                                                         : "pointer",
@@ -7062,7 +7186,7 @@ const HomeHero = () => {
                                                     background:
                                                       selectedOption.id === 2 &&
                                                       resultIndex.includes(
-                                                        cheapestPrice.id
+                                                        cheapestPrice.id,
                                                       )
                                                         ? "green"
                                                         : "linear-gradient(135deg, #ff690f 0%, #e8381b 100%)",
@@ -7105,7 +7229,7 @@ const HomeHero = () => {
                                                         cheapestPrice.isAirIQ
                                                       ) {
                                                         localStorage.removeItem(
-                                                          "itineraryCode"
+                                                          "itineraryCode",
                                                         );
                                                         navigate(
                                                           "/TicketBookingDetails",
@@ -7123,21 +7247,21 @@ const HomeHero = () => {
                                                               selected:
                                                                 selected,
                                                             },
-                                                          }
+                                                          },
                                                         );
                                                       } else {
                                                         setResultIndex(
                                                           (prev) => [
                                                             ...prev,
                                                             item?.rI,
-                                                          ]
+                                                          ],
                                                         );
                                                         ItineraryCreateNew(
                                                           [
                                                             ...resultIndex,
                                                             item?.rI,
                                                           ],
-                                                          updatedItem
+                                                          updatedItem,
                                                         );
                                                       }
                                                     } else if (
@@ -7145,19 +7269,19 @@ const HomeHero = () => {
                                                     ) {
                                                       if (
                                                         resultIndex.includes(
-                                                          cheapestPrice.id
+                                                          cheapestPrice.id,
                                                         )
                                                       ) {
                                                       } else {
                                                         setFlightData(
-                                                          updatedItem
+                                                          updatedItem,
                                                         );
                                                         setIndex(index);
                                                         setResultIndex([
                                                           cheapestPrice.id,
                                                         ]);
                                                         handleReturnFlightTabChange(
-                                                          1
+                                                          1,
                                                         );
                                                       }
                                                     }
@@ -7168,18 +7292,18 @@ const HomeHero = () => {
                                                   !cheapestPrice.isAirIQ
                                                     ? "Loading..."
                                                     : selectedOption.id === 2
-                                                    ? resultIndex.includes(
-                                                        cheapestPrice.id
-                                                      )
-                                                      ? "Selected"
-                                                      : "Select"
-                                                    : "Book Now"}
+                                                      ? resultIndex.includes(
+                                                          cheapestPrice.id,
+                                                        )
+                                                        ? "Selected"
+                                                        : "Select"
+                                                      : "Book Now"}
                                                 </div>
                                               ) : (
                                                 <div
                                                   onClick={() =>
                                                     alert(
-                                                      "Please log in to proceed with booking."
+                                                      "Please log in to proceed with booking.",
                                                     )
                                                   }
                                                   style={{
@@ -7216,51 +7340,10 @@ const HomeHero = () => {
                                                   fontSize: "14px",
                                                   textAlign: "center",
                                                   cursor: "pointer",
+                                                  marginBottom: "0.2rem",
                                                 }}
                                               >
                                                 View Flight Details
-                                              </div>
-                                              <div className="d-flex align-items-baseline gap-1 mt-2 mb-1">
-                                                <BsFillHandbagFill
-                                                  color="orangered"
-                                                  size={14}
-                                                />
-                                                <div
-                                                  style={{
-                                                    fontSize: "0.70rem",
-                                                  }}
-                                                >
-                                                  {cheapestPrice.isAirIQ
-                                                    ? (item.baggage?.airiq
-                                                        ?.cabin || "N/A") +
-                                                      " Cabin Baggage"
-                                                    : (item.baggage?.travclan
-                                                        ?.cabin ||
-                                                        item.sg[0]?.cBg ||
-                                                        "N/A") +
-                                                      " Cabin Baggage"}
-                                                </div>
-                                              </div>
-                                              <div className="d-flex align-items-baseline gap-1">
-                                                <BsFillLuggageFill
-                                                  color="orangered"
-                                                  size={14}
-                                                />
-                                                <div
-                                                  style={{
-                                                    fontSize: "0.70rem",
-                                                  }}
-                                                >
-                                                  {cheapestPrice.isAirIQ
-                                                    ? (item.baggage?.airiq
-                                                        ?.checkIn || "N/A") +
-                                                      " Check-in Baggage"
-                                                    : (item.baggage?.travclan
-                                                        ?.checkIn ||
-                                                        item.sg[0]?.bg ||
-                                                        "N/A") +
-                                                      " Check-in Baggage"}
-                                                </div>
                                               </div>
                                             </div>
                                           </div>
@@ -7331,7 +7414,7 @@ const HomeHero = () => {
                                                 >
                                                   <span
                                                     style={{
-                                                      color: "#9ca3af",
+                                                      color: "black",
                                                       fontSize: "28px",
                                                       marginTop: "4px",
                                                     }}
@@ -7346,7 +7429,7 @@ const HomeHero = () => {
                                                     }}
                                                   >
                                                     {priceInfo.price?.toLocaleString(
-                                                      "en-IN"
+                                                      "en-IN",
                                                     ) || "N/A"}
                                                   </span>
                                                 </div>
@@ -7358,17 +7441,6 @@ const HomeHero = () => {
                                                     // marginTop: "4px",
                                                   }}
                                                 ></div>
-
-                                                {/* Economy */}
-                                                <span
-                                                  style={{
-                                                    fontSize: "14px",
-                                                    color: "#9ca3af",
-                                                    marginTop: "0px",
-                                                  }}
-                                                >
-                                                  {className}
-                                                </span>
                                               </div>
 
                                               {/* Button Section */}
@@ -7381,7 +7453,7 @@ const HomeHero = () => {
                                                         selectedOption.id ===
                                                           2 &&
                                                         resultIndex.includes(
-                                                          priceInfo.id
+                                                          priceInfo.id,
                                                         )
                                                           ? "not-allowed"
                                                           : "pointer",
@@ -7397,7 +7469,7 @@ const HomeHero = () => {
                                                         selectedOption.id ===
                                                           2 &&
                                                         resultIndex.includes(
-                                                          priceInfo.id
+                                                          priceInfo.id,
                                                         )
                                                           ? "#10b981"
                                                           : "#fff",
@@ -7405,7 +7477,7 @@ const HomeHero = () => {
                                                         selectedOption.id ===
                                                           2 &&
                                                         resultIndex.includes(
-                                                          priceInfo.id
+                                                          priceInfo.id,
                                                         )
                                                           ? "#fff"
                                                           : "#374151",
@@ -7419,7 +7491,7 @@ const HomeHero = () => {
                                                           selectedOption.id ===
                                                             2 &&
                                                           resultIndex.includes(
-                                                            priceInfo.id
+                                                            priceInfo.id,
                                                           )
                                                         )
                                                       ) {
@@ -7435,7 +7507,7 @@ const HomeHero = () => {
                                                           selectedOption.id ===
                                                             2 &&
                                                           resultIndex.includes(
-                                                            priceInfo.id
+                                                            priceInfo.id,
                                                           )
                                                         )
                                                       ) {
@@ -7479,7 +7551,7 @@ const HomeHero = () => {
                                                         setIndex(index);
                                                         if (priceInfo.isAirIQ) {
                                                           localStorage.removeItem(
-                                                            "itineraryCode"
+                                                            "itineraryCode",
                                                           );
                                                           navigate(
                                                             "/TicketBookingDetails",
@@ -7497,27 +7569,21 @@ const HomeHero = () => {
                                                                 selected:
                                                                   selected,
                                                               },
-                                                            }
-                                                          );
-                                                          console.log(
-                                                            `Navigating to TicketBookingDetails for AirIQ flight: ${item.airIQTicketId}, fareIdentifier.code: airIQ_fare`
+                                                            },
                                                           );
                                                         } else {
-                                                          console.log(
-                                                            `Calling ItineraryCreateNew for TravClan flight: ${item.rI}, fareIdentifier.code: ${item.fareIdentifier?.code}`
-                                                          );
                                                           setResultIndex(
                                                             (prev) => [
                                                               ...prev,
                                                               item?.rI,
-                                                            ]
+                                                            ],
                                                           );
                                                           ItineraryCreateNew(
                                                             [
                                                               ...resultIndex,
                                                               item?.rI,
                                                             ],
-                                                            updatedItem
+                                                            updatedItem,
                                                           );
                                                         }
                                                       } else if (
@@ -7525,25 +7591,25 @@ const HomeHero = () => {
                                                       ) {
                                                         if (
                                                           resultIndex.includes(
-                                                            priceInfo.id
+                                                            priceInfo.id,
                                                           )
                                                         ) {
                                                           console.log(
-                                                            `${priceInfo.source} flight ${priceInfo.id} already selected, no action taken`
+                                                            `${priceInfo.source} flight ${priceInfo.id} already selected, no action taken`,
                                                           );
                                                         } else {
                                                           console.log(
-                                                            `Selecting ${priceInfo.source} flight: ${priceInfo.id}, fareIdentifier.code: ${priceInfo.fareCode}`
+                                                            `Selecting ${priceInfo.source} flight: ${priceInfo.id}, fareIdentifier.code: ${priceInfo.fareCode}`,
                                                           );
                                                           setFlightData(
-                                                            updatedItem
+                                                            updatedItem,
                                                           );
                                                           setIndex(index);
                                                           setResultIndex([
                                                             priceInfo.id,
                                                           ]);
                                                           handleReturnFlightTabChange(
-                                                            1
+                                                            1,
                                                           );
                                                         }
                                                       }
@@ -7554,18 +7620,18 @@ const HomeHero = () => {
                                                     !priceInfo.isAirIQ
                                                       ? "Loading..."
                                                       : selectedOption.id === 2
-                                                      ? resultIndex.includes(
-                                                          priceInfo.id
-                                                        )
-                                                        ? "Selected"
-                                                        : "Select"
-                                                      : "Book Now"}
+                                                        ? resultIndex.includes(
+                                                            priceInfo.id,
+                                                          )
+                                                          ? "Selected"
+                                                          : "Select"
+                                                        : "Book Now"}
                                                   </div>
                                                 ) : (
                                                   <div
                                                     onClick={() =>
                                                       alert(
-                                                        "Please log in to proceed with booking."
+                                                        "Please log in to proceed with booking.",
                                                       )
                                                     }
                                                     style={{
@@ -7605,48 +7671,6 @@ const HomeHero = () => {
                                                   }}
                                                 >
                                                   View Flight Details
-                                                </div>
-                                                <div className="d-flex align-items-baseline gap-1 mt-2 mb-1">
-                                                  <BsFillHandbagFill
-                                                    color="orangered"
-                                                    size={14}
-                                                  />
-                                                  <div
-                                                    style={{
-                                                      fontSize: "0.70rem",
-                                                    }}
-                                                  >
-                                                    {priceInfo.isAirIQ
-                                                      ? (item.baggage?.airiq
-                                                          ?.cabin || "N/A") +
-                                                        " Cabin Baggage"
-                                                      : (item.baggage?.travclan
-                                                          ?.cabin ||
-                                                          item.sg[0]?.cBg ||
-                                                          "N/A") +
-                                                        " Cabin Baggge"}
-                                                  </div>
-                                                </div>
-                                                <div className="d-flex align-items-baseline gap-1">
-                                                  <BsFillLuggageFill
-                                                    color="orangered"
-                                                    size={14}
-                                                  />
-                                                  <div
-                                                    style={{
-                                                      fontSize: "0.70rem",
-                                                    }}
-                                                  >
-                                                    {priceInfo.isAirIQ
-                                                      ? (item.baggage?.airiq
-                                                          ?.checkIn || "N/A") +
-                                                        " Check-in Baggage"
-                                                      : (item.baggage?.travclan
-                                                          ?.checkIn ||
-                                                          item.sg[0]?.bg ||
-                                                          "N/A") +
-                                                        " Check-in Baggage"}
-                                                  </div>
                                                 </div>
                                               </div>
                                             </div>
@@ -7757,7 +7781,7 @@ const HomeHero = () => {
                                     <div className="mob_time text-center">
                                       {departureMoment
                                         ? moment(item?.sg[0]?.or?.dT).format(
-                                            "hh:mm A"
+                                            "hh:mm A",
                                           )
                                         : "N/A"}
                                       <div>{item?.sg[0]?.or?.aC || "N/A"}</div>
@@ -7769,7 +7793,7 @@ const HomeHero = () => {
                                       {arrivalMoment
                                         ? moment(
                                             item?.sg[item?.sg.length - 1]?.ds
-                                              ?.aT
+                                              ?.aT,
                                           ).format("hh:mm A")
                                         : "N/A"}
                                       <div>
@@ -7783,7 +7807,7 @@ const HomeHero = () => {
                                       {" "}
                                       {item?.sg?.[0]?.or?.dT
                                         ? new Date(
-                                            item.sg[0].or.dT
+                                            item.sg[0].or.dT,
                                           ).toLocaleDateString("en-GB") // shows DD/MM/YYYY
                                         : "N/A"}
                                     </div>
@@ -7796,7 +7820,7 @@ const HomeHero = () => {
                                       {" "}
                                       {item?.sg?.[item?.sg?.length - 1]?.ds?.aT
                                         ? new Date(
-                                            item.sg[item.sg.length - 1].ds.aT
+                                            item.sg[item.sg.length - 1].ds.aT,
                                           ).toLocaleDateString("en-GB")
                                         : "N/A"}
                                     </div>
@@ -7866,14 +7890,14 @@ const HomeHero = () => {
                                         };
                                         if (selectedOption.id === 1) {
                                           console.log(
-                                            `Navigating to TicketBookingDetails for TravClan flight: ${item.rI}, fareIdentifier.code: flight_Data_fare`
+                                            `Navigating to TicketBookingDetails for TravClan flight: ${item.rI}, fareIdentifier.code: flight_Data_fare`,
                                           );
                                         } else {
                                           setFlightData(updatedItem);
                                           setIndex(index);
                                           handleReturnFlightTabChange(1);
                                           console.log(
-                                            `Selecting TravClan flight: ${item.rI}, fareIdentifier.code: flight_Data_fare`
+                                            `Selecting TravClan flight: ${item.rI}, fareIdentifier.code: flight_Data_fare`,
                                           );
                                           setResultIndex([item?.rI]);
                                         }
@@ -7931,14 +7955,14 @@ const HomeHero = () => {
                                           };
                                           if (selectedOption.id === 1) {
                                             console.log(
-                                              `Navigating to TicketBookingDetails for AirIQ flight: ${item.airIQTicketId}, fareIdentifier.code: airIQ_fare`
+                                              `Navigating to TicketBookingDetails for AirIQ flight: ${item.airIQTicketId}, fareIdentifier.code: airIQ_fare`,
                                             );
                                           } else {
                                             setFlightData(updatedItem);
                                             setIndex(index);
                                             handleReturnFlightTabChange(1);
                                             console.log(
-                                              `Selecting AirIQ flight: ${item.airIQTicketId}, fareIdentifier.code: airIQ_fare`
+                                              `Selecting AirIQ flight: ${item.airIQTicketId}, fareIdentifier.code: airIQ_fare`,
                                             );
                                             setResultIndex([
                                               item?.airIQTicketId,
@@ -7948,7 +7972,7 @@ const HomeHero = () => {
                                       >
                                         {selectedOption.id === 2 ? (
                                           resultIndex.includes(
-                                            item?.airIQTicketId
+                                            item?.airIQTicketId,
                                           ) ? (
                                             "Selected"
                                           ) : (
@@ -7967,7 +7991,7 @@ const HomeHero = () => {
                                   <Link
                                     onClick={() =>
                                       alert(
-                                        "Please log in to proceed with booking."
+                                        "Please log in to proceed with booking.",
                                       )
                                     }
                                     className="bookBtn2_mob"
@@ -8239,7 +8263,7 @@ const HomeHero = () => {
                   const totalMinutes =
                     departureMoment && arrivalMoment
                       ? arrivalMoment.diff(departureMoment, "minutes")
-                      : firstSeg?.dr ?? 0;
+                      : (firstSeg?.dr ?? 0);
                   const totalHours = Math.floor(totalMinutes / 60);
                   const totalRemainingMin = totalMinutes % 60;
 
@@ -8343,7 +8367,7 @@ const HomeHero = () => {
                                 <div className="flight-departure text-center">
                                   <h5 className="flighttime2">
                                     {moment(item?.sg[0]?.or?.dT).format(
-                                      "hh:mm A"
+                                      "hh:mm A",
                                     )}
                                   </h5>
                                   <h5 className="airportname2">
@@ -8351,7 +8375,7 @@ const HomeHero = () => {
                                   </h5>
                                   <p className="alldate2">
                                     {moment(item?.sg[0]?.or?.dT).format(
-                                      "DD-MM-YYYY"
+                                      "DD-MM-YYYY",
                                     )}
                                   </p>
                                 </div>
@@ -8363,17 +8387,17 @@ const HomeHero = () => {
                                     <h6 className="text-dark">
                                       {(() => {
                                         const departure = moment(
-                                          item?.sg[0]?.or?.dT
+                                          item?.sg[0]?.or?.dT,
                                         );
                                         const arrival = moment(
-                                          item?.sg[item?.sg.length - 1]?.ds?.aT
+                                          item?.sg[item?.sg.length - 1]?.ds?.aT,
                                         );
                                         const totalMinutes = arrival.diff(
                                           departure,
-                                          "minutes"
+                                          "minutes",
                                         );
                                         return `${Math.floor(
-                                          totalMinutes / 60
+                                          totalMinutes / 60,
                                         )}h ${totalMinutes % 60}m`;
                                       })()}
                                     </h6>
@@ -8400,7 +8424,7 @@ const HomeHero = () => {
                                 <div className="flight-departure text-center">
                                   <h5 className="flighttime2">
                                     {moment(
-                                      item?.sg[item?.sg.length - 1]?.ds?.aT
+                                      item?.sg[item?.sg.length - 1]?.ds?.aT,
                                     ).format("hh:mm A")}
                                   </h5>
                                   <h5 className="airportname2">
@@ -8408,7 +8432,7 @@ const HomeHero = () => {
                                   </h5>
                                   <p className="alldate2">
                                     {moment(
-                                      item?.sg[item?.sg.length - 1]?.ds?.aT
+                                      item?.sg[item?.sg.length - 1]?.ds?.aT,
                                     ).format("DD-MM-YYYY")}
                                   </p>
                                 </div>
@@ -8456,7 +8480,7 @@ const HomeHero = () => {
                                         {/* Date Header */}
                                         <div className="p-2 date_divok fw-semibold border-bottom">
                                           {moment(firstSeg?.or?.dT).format(
-                                            "ddd, DD MMM"
+                                            "ddd, DD MMM",
                                           )}
                                         </div>
 
@@ -8480,10 +8504,10 @@ const HomeHero = () => {
                                                 arrivalMoment
                                                   ? `${totalHours}h ${totalRemainingMin}m`
                                                   : firstSeg?.dr
-                                                  ? `${Math.floor(
-                                                      firstSeg.dr / 60
-                                                    )}h ${firstSeg.dr % 60}m`
-                                                  : ""}
+                                                    ? `${Math.floor(
+                                                        firstSeg.dr / 60,
+                                                      )}h ${firstSeg.dr % 60}m`
+                                                    : ""}
                                               </div>
                                               <small className="text-muted">
                                                 {item?.sg?.length === 1
@@ -8532,7 +8556,7 @@ const HomeHero = () => {
                                                 <div className="timeline-item">
                                                   <div className="fw-bold">
                                                     {moment(seg?.or?.dT).format(
-                                                      "hh:mm A"
+                                                      "hh:mm A",
                                                     )}
                                                   </div>
                                                   <div>
@@ -8548,13 +8572,13 @@ const HomeHero = () => {
                                                       moment
                                                         .duration(
                                                           seg?.dr,
-                                                          "minutes"
+                                                          "minutes",
                                                         )
-                                                        .asHours()
+                                                        .asHours(),
                                                     )}h ${moment
                                                       .duration(
                                                         seg?.dr,
-                                                        "minutes"
+                                                        "minutes",
                                                       )
                                                       .minutes()}m`}
                                                   </div>
@@ -8563,7 +8587,7 @@ const HomeHero = () => {
                                                 <div className="timeline-item">
                                                   <div className="fw-bold">
                                                     {moment(seg?.ds?.aT).format(
-                                                      "hh:mm A"
+                                                      "hh:mm A",
                                                     )}
                                                   </div>
                                                   <div>
@@ -8581,11 +8605,12 @@ const HomeHero = () => {
                                                       Layover at {seg?.ds?.aN}{" "}
                                                       <br />(
                                                       {moment(
-                                                        seg?.ds?.aT
+                                                        seg?.ds?.aT,
                                                       ).format("hh:mm A")}{" "}
                                                       →{" "}
                                                       {moment(
-                                                        item.sg[idx + 1]?.or?.dT
+                                                        item.sg[idx + 1]?.or
+                                                          ?.dT,
                                                       ).format("hh:mm A")}
                                                       )
                                                     </span>
@@ -8729,7 +8754,7 @@ const HomeHero = () => {
 
                                     ItineraryCreateNew(
                                       [...resultIndex, item?.rI],
-                                      item
+                                      item,
                                     );
                                   }}
                                   className="bookBtn2"
@@ -8737,15 +8762,15 @@ const HomeHero = () => {
                                   {itinerary_loading && index === getindex
                                     ? "Loading..."
                                     : selectedOption.id == 2 &&
-                                      return_flight_data.length !== 0
-                                    ? "Select"
-                                    : "Book"}
+                                        return_flight_data.length !== 0
+                                      ? "Select"
+                                      : "Book"}
                                 </div>
                               ) : (
                                 <Link
                                   onClick={() =>
                                     alert(
-                                      "Please log in to proceed with booking."
+                                      "Please log in to proceed with booking.",
                                     )
                                   }
                                   className="bookBtn2"
@@ -8835,7 +8860,7 @@ const HomeHero = () => {
                               <div className="mob_time_row">
                                 <div className="mob_time text-center">
                                   {moment(item?.sg[0]?.or?.dT).format(
-                                    "hh:mm A"
+                                    "hh:mm A",
                                   )}
                                   <div> {item?.sg[0]?.or?.aC}</div>
                                 </div>
@@ -8848,7 +8873,7 @@ const HomeHero = () => {
                                 </div>
                                 <div className="mob_time text-center">
                                   {moment(
-                                    item?.sg[item?.sg.length - 1]?.ds?.aT
+                                    item?.sg[item?.sg.length - 1]?.ds?.aT,
                                   ).format("hh:mm A")}
                                   <div>
                                     {item?.sg[item?.sg.length - 1]?.ds?.aC}
@@ -8862,14 +8887,14 @@ const HomeHero = () => {
                                 <div className="mob_duration">
                                   {(() => {
                                     const departure = moment(
-                                      item?.sg[0]?.or?.dT
+                                      item?.sg[0]?.or?.dT,
                                     );
                                     const arrival = moment(
-                                      item?.sg[item?.sg.length - 1]?.ds?.aT
+                                      item?.sg[item?.sg.length - 1]?.ds?.aT,
                                     );
                                     const totalMinutes = arrival.diff(
                                       departure,
-                                      "minutes"
+                                      "minutes",
                                     );
                                     return `${Math.floor(totalMinutes / 60)}h ${
                                       totalMinutes % 60
@@ -8924,7 +8949,7 @@ const HomeHero = () => {
                               <Link
                                 onClick={() =>
                                   alert(
-                                    "Please log in to proceed with booking."
+                                    "Please log in to proceed with booking.",
                                   )
                                 }
                                 className="bookBtn2_mob"
@@ -9015,7 +9040,7 @@ const HomeHero = () => {
                                   <div className="bus-duration">
                                     {calculateDuration(
                                       bus.CityTime,
-                                      bus.ArrivalTime
+                                      bus.ArrivalTime,
                                     )}{" "}
                                     • {bus.EmptySeats} Seats
                                   </div>
@@ -9086,11 +9111,11 @@ const HomeHero = () => {
                                           (item, index) => {
                                             const from = parseInt(
                                               item.FromMinutes,
-                                              10
+                                              10,
                                             );
                                             const to = parseInt(
                                               item.ToMinutes,
-                                              10
+                                              10,
                                             );
                                             const refund = item.RefundPercent;
 
@@ -9107,7 +9132,7 @@ const HomeHero = () => {
                                               } hours before the journey will be eligible for a ${refund}% refund.`;
                                             }
                                             return <li key={index}>{text}</li>;
-                                          }
+                                          },
                                         )}
                                         <li>
                                           Partial refunds depend on the
@@ -9169,7 +9194,7 @@ const HomeHero = () => {
                                         </h5>
                                         <ul>
                                           {parseBoardingPoints(
-                                            bus.BoardingPoints
+                                            bus.BoardingPoints,
                                           ).map((point, idx) => (
                                             <li key={idx}>
                                               {point.time} - {point.name}
@@ -9183,7 +9208,7 @@ const HomeHero = () => {
                                         </h5>
                                         <ul>
                                           {parseDroppingPoints(
-                                            bus.DroppingPoints
+                                            bus.DroppingPoints,
                                           ).map((point, idx) => (
                                             <li key={idx}>
                                               {point.time} - {point.name}
@@ -9236,7 +9261,7 @@ const HomeHero = () => {
                                   <div className="bus-duration">
                                     {calculateDuration(
                                       bus.CityTime,
-                                      bus.ArrivalTime
+                                      bus.ArrivalTime,
                                     )}{" "}
                                     • {bus.EmptySeats} Seats
                                   </div>
@@ -9325,11 +9350,11 @@ const HomeHero = () => {
                                           (item, index) => {
                                             const from = parseInt(
                                               item.FromMinutes,
-                                              10
+                                              10,
                                             );
                                             const to = parseInt(
                                               item.ToMinutes,
-                                              10
+                                              10,
                                             );
                                             const refund = item.RefundPercent;
 
@@ -9346,7 +9371,7 @@ const HomeHero = () => {
                                               } hours before the journey will be eligible for a ${refund}% refund.`;
                                             }
                                             return <li key={index}>{text}</li>;
-                                          }
+                                          },
                                         )}
                                       </ul>
                                     </div>
@@ -9368,7 +9393,7 @@ const HomeHero = () => {
                                         </h5>
                                         <ul style={{ paddingLeft: "0px" }}>
                                           {parseBoardingPoints(
-                                            bus.BoardingPoints
+                                            bus.BoardingPoints,
                                           ).map((point, idx) => (
                                             <li key={idx}>
                                               {point.time} - {point.name}
@@ -9389,7 +9414,7 @@ const HomeHero = () => {
                                         </h5>
                                         <ul style={{ paddingLeft: "0px" }}>
                                           {parseDroppingPoints(
-                                            bus.DroppingPoints
+                                            bus.DroppingPoints,
                                           ).map((point, idx) => (
                                             <li key={idx}>
                                               {point.time} - {point.name}
@@ -9568,7 +9593,7 @@ const HomeHero = () => {
             const totalMinutes =
               departureMoment && arrivalMoment
                 ? arrivalMoment.diff(departureMoment, "minutes")
-                : firstSeg?.dr ?? 0;
+                : (firstSeg?.dr ?? 0);
             const totalHours = Math.floor(totalMinutes / 60);
             const totalRemainingMin = totalMinutes % 60;
 
@@ -9638,10 +9663,10 @@ const HomeHero = () => {
                               {departureMoment && arrivalMoment
                                 ? `${totalHours}h ${totalRemainingMin}m`
                                 : firstSeg?.dr
-                                ? `${Math.floor(firstSeg.dr / 60)}h ${
-                                    firstSeg.dr % 60
-                                  }m`
-                                : ""}
+                                  ? `${Math.floor(firstSeg.dr / 60)}h ${
+                                      firstSeg.dr % 60
+                                    }m`
+                                  : ""}
                             </div>
                             <small className="stops-info">
                               {selectedItem?.sg?.length === 1
@@ -9693,7 +9718,7 @@ const HomeHero = () => {
                                   {`${Math.floor(
                                     moment
                                       .duration(seg?.dr, "minutes")
-                                      .asHours()
+                                      .asHours(),
                                   )}h ${moment
                                     .duration(seg?.dr, "minutes")
                                     .minutes()}m`}
@@ -9716,7 +9741,7 @@ const HomeHero = () => {
                                     Layover at {seg?.ds?.aN} <br />(
                                     {moment(seg?.ds?.aT).format("hh:mm A")} →{" "}
                                     {moment(
-                                      selectedItem.sg[idx + 1]?.or?.dT
+                                      selectedItem.sg[idx + 1]?.or?.dT,
                                     ).format("hh:mm A")}
                                     )
                                   </span>
@@ -9791,7 +9816,7 @@ const HomeHero = () => {
                                             {seg.sPAT &&
                                             moment(seg.sPAT).isValid()
                                               ? moment(seg.sPAT).format(
-                                                  "hh:mm A, DD MMM YYYY"
+                                                  "hh:mm A, DD MMM YYYY",
                                                 )
                                               : "N/A"}
                                           </div>
@@ -9804,14 +9829,14 @@ const HomeHero = () => {
                                             {seg.sPDT &&
                                             moment(seg.sPDT).isValid()
                                               ? moment(seg.sPDT).format(
-                                                  "hh:mm A, DD MMM YYYY"
+                                                  "hh:mm A, DD MMM YYYY",
                                                 )
                                               : "N/A"}
                                           </div>
                                         </div>
                                       </div>
                                     </div>
-                                  )
+                                  ),
                               )}
                             </div>
                           ) : (

@@ -18,6 +18,7 @@ import {
   savePassenger,
   bookcurl,
   ticketcurl,
+  Bookingaapniapi,
 } from "../../Utils/Constant";
 import { useFlightContext } from "../../Context/flight_context";
 import Modal from "react-modal";
@@ -54,6 +55,8 @@ const titleOptions = [
 
 const TicketBookingDetails = () => {
   const navigate = useNavigate();
+  const [cheapfixbookloading, setCheapfixBookLoading] = useState(false);
+  const [ourapiload, setOurApiLoad] = useState(false);
 
   const formatDate = (dateString) =>
     new Date(dateString).toLocaleDateString("en-IN", {
@@ -82,7 +85,7 @@ const TicketBookingDetails = () => {
     const minutes = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
     return `${hours}h ${minutes}m`;
   };
-  // Custom styles for the modal
+
   const customStyles = {
     overlay: {
       backgroundColor: "rgba(0, 0, 0, 0.6)",
@@ -250,6 +253,7 @@ const TicketBookingDetails = () => {
   const [bookingModal, setBookingModal] = useState(false);
   const [isModalOpensession, setIsModalOpensession] = useState(false);
   const [activeTab, setActiveTab] = useState("passengers");
+  const [getCondition, setCondition] = useState(location.state?.getCondition);
   const [askingmodalIsOpen, setAskingModalIsOpen] = useState(false);
   const [addonCondition, setAddonCondition] = useState(false);
   const [ssrobject, setSsrObject] = useState({
@@ -267,29 +271,34 @@ const TicketBookingDetails = () => {
   const [selectedCategory, setSelectedCategory] = useState("adult");
 
   const [item, setItem] = useState(location.state?.item[0] || null);
+
+  console.log("baap jevdi item ", JSON.stringify(item, null, 2));
+
   const [flightdata, setFlightData] = useState(
-    location.state?.returnitem || null
+    location.state?.returnitem || null,
   );
 
   const [ttltraveller, setttltraveller] = useState(
-    location.state?.totaltraveller || 1
+    location.state?.totaltraveller || 1,
   );
 
   const [adulttraveler, setadulttraveler] = useState(
-    location.state?.adulttraveler
+    location.state?.adulttraveler,
   );
   const [childtraveler, setchildtraveler] = useState(
-    location.state?.childtraveler
+    location.state?.childtraveler,
   );
   const [infanttraveler, setinfanttraveler] = useState(
-    location.state?.infanttraveler
+    location.state?.infanttraveler,
   );
 
   const [okres, setOKRes] = useState();
   const [ticketId, setTicketId] = useState(item?.rI);
   const [okres2, setOKRes2] = useState();
   const [bookingID, setBookingID] = useState("");
+  const [bookingIDCheapFix, setBookingIDCheapFix] = useState("");
   const [getBookingData, setBookingData] = useState();
+  const [getBookingDataCheapFix, setBookingDataCheapFix] = useState();
 
   const [userRole, setUserRole] = useState("");
   const { selectedTab } = useBusContext();
@@ -305,7 +314,7 @@ const TicketBookingDetails = () => {
   }, []);
 
   const [timeing, setTimeing] = useState(
-    location.state?.timeing?.remainingTime || null
+    location.state?.timeing?.remainingTime || null,
   );
 
   const [timebaki, setTimeBaki] = useState(null);
@@ -313,7 +322,11 @@ const TicketBookingDetails = () => {
   useEffect(() => {
     if (timebaki === null) return;
 
-    if (timebaki <= 0 && item?.fareIdentifier?.code !== "airIQ_fare") {
+    if (
+      timebaki <= 0 &&
+      item?.fareIdentifier?.code !== "airIQ_fare" &&
+      item?.fareIdentifier?.code !== "cheapfix_fare"
+    ) {
       setIsModalOpensession(true);
       return;
     }
@@ -425,13 +438,13 @@ const TicketBookingDetails = () => {
   });
 
   const [travelers, setTravelers] = useState(
-    Array.from({ length: adulttraveler }, () => getTravelerFields())
+    Array.from({ length: adulttraveler }, () => getTravelerFields()),
   );
   const [childtravelers, setChildTravelers] = useState(
-    Array.from({ length: childtraveler }, () => getChildFields())
+    Array.from({ length: childtraveler }, () => getChildFields()),
   );
   const [infanttravelers, setInfantTravelers] = useState(
-    Array.from({ length: infanttraveler }, () => getInfantFields())
+    Array.from({ length: infanttraveler }, () => getInfantFields()),
   );
 
   const [itinerarydatastate, setuseitinerarydatastate] = useState({});
@@ -493,6 +506,7 @@ const TicketBookingDetails = () => {
     passenger_loading_details,
     add_passenger_loading,
     PassengerDetails,
+    cheapfixbooking_token_ID,
   } = useFlightContext();
 
   const GetItinerary = async () => {
@@ -504,7 +518,7 @@ const TicketBookingDetails = () => {
     formdata.append("type", "GET");
     formdata.append(
       "url",
-      `${getItinerary}/${itineraryCode}?traceId=${traceid}`
+      `${getItinerary}/${itineraryCode}?traceId=${traceid}`,
     );
     formdata.append("url_token", `Bearer ${token}`);
 
@@ -673,9 +687,445 @@ const TicketBookingDetails = () => {
       Notification(
         "error",
         "Error",
-        "Something went wrong while saving passengers"
+        "Something went wrong while saving passengers",
       );
       console.error("handleSavePassenger error:", err);
+    }
+  };
+
+  const calculateAge = (dob) => {
+    if (!dob) return "";
+    return dayjs().diff(dayjs(dob), "years");
+  };
+
+  const HandleSubmitOurAPi = async (refId) => {
+    const token = JSON.parse(localStorage.getItem("is_token"));
+
+    /* ---------------- VALIDATION ---------------- */
+    if (!Array.isArray(travelers) || travelers.length === 0) {
+      alert("Please add at least one traveler.");
+      return;
+    }
+
+    if (!check) {
+      alert("Please accept Terms & Conditions");
+      return;
+    }
+
+    /* ---------------- HELPERS ---------------- */
+    const pick = (...values) =>
+      values.find((v) => v !== undefined && v !== null && v !== "") ?? "";
+
+    const formatDate = (v) => (v ? moment(v).format("YYYY-MM-DD") : "");
+
+    const formatTime = (v, fareCode) => {
+      if (!v) return "";
+      if (fareCode === "cheapfix_fare") {
+        return v;
+      }
+      return moment(v).format("HH:mm");
+    };
+
+    /* ---------------- SOURCES ---------------- */
+    const cf = item?.cheapFixData_original?.[0]; // CheapFix source
+    const seg = item?.sg?.[0]; // AirIQ source
+
+    /* ---------------- DYNAMIC FIELD RESOLUTION ---------------- */
+
+    const airline_name = pick(
+      item?.airline_name,
+      cf?.airline_name,
+      seg?.al?.alN,
+    );
+
+    const airline_code = pick(
+      item?.airline_code,
+      cf?.airline_code,
+      seg?.al?.alC,
+    );
+
+    const departure_date = pick(
+      item?.departure_date,
+      cf?.onward_date,
+      seg?.or?.dT,
+    );
+
+    const arrival_date = pick(cf?.arr_date, seg?.ds?.aT);
+    const departure_time = formatTime(
+      pick(cf?.dep_time, seg?.or?.dT),
+      item?.fareIdentifier?.code,
+    );
+    const arrival_time = formatTime(
+      pick(cf?.arr_time, seg?.ds?.aT),
+      item?.fareIdentifier?.code,
+    );
+
+    const departure_city = pick(
+      item?.departure_city,
+      cf?.dep_city_name,
+      seg?.or?.cN,
+    );
+
+    const arrival_city = pick(
+      item?.arrival_city,
+      cf?.arr_city_name,
+      seg?.ds?.cN,
+    );
+
+    const departure_airport_name = pick(
+      item?.departure_airport_name,
+      cf?.dep_airport_name,
+      seg?.or?.aN,
+    );
+
+    const arrival_airport_name = pick(
+      item?.arrival_airport_name,
+      cf?.arr_airport_name,
+      seg?.ds?.aN,
+    );
+
+    const stopCount = Number(pick(item?.stop, cf?.no_of_stop, seg?.sD, 0));
+
+    const check_in_adult = pick(
+      item?.check_in_adult,
+      cf?.check_in_baggage_adult,
+      seg?.bg?.replace("KG", "").trim(),
+    );
+
+    const check_in_children = pick(
+      item?.check_in_children,
+      cf?.check_in_baggage_children,
+      seg?.bg?.replace("KG", "").trim(),
+    );
+
+    const check_in_infant = pick(
+      item?.check_in_infant,
+      cf?.check_in_baggage_infant,
+      "0",
+    );
+
+    const cabin_adult = pick(
+      item?.cabin_adult,
+      cf?.cabin_baggage_adult,
+      seg?.cBg?.replace("KG", "").trim(),
+    );
+
+    const cabin_children = pick(
+      item?.cabin_children,
+      cf?.cabin_baggage_children,
+      seg?.cBg?.replace("KG", "").trim(),
+    );
+
+    const cabin_infant = pick(
+      item?.cabin_infant,
+      cf?.cabin_baggage_infant,
+      "0",
+    );
+
+    const total_amount = pick(
+      item?.total_amount,
+      cf?.total_payable_price,
+      item?.selectedPrice,
+    );
+
+    const base_fare = pick(item?.base_fare, cf?.price_breakup?.base_fare, 0);
+
+    const discount = pick(item?.discount, cf?.price_breakup?.discount, 0);
+
+    const taxes_and_others = pick(
+      item?.taxes_and_others,
+      cf?.price_breakup?.fee_taxes,
+      item?.airIQPrice,
+      0,
+    );
+
+    const service_fees = pick(
+      item?.service_fees,
+      cf?.price_breakup?.service_charge,
+      0,
+    );
+
+    const available_seats = pick(
+      item?.available_seats,
+      cf?.available_seats,
+      seg?.nOSA,
+      0,
+    );
+
+    const is_international = pick(
+      item?.is_international,
+      cf?.international_flight_staus,
+      seg?.or?.cnN !== seg?.ds?.cnN ? 1 : 0,
+      0,
+    );
+
+    const is_refundable = pick(
+      item?.is_refundable,
+      cf?.FareClasses?.[0]?.Class_Desc,
+    )?.includes("Non Refundable")
+      ? 0
+      : 1;
+
+    const formdata = new FormData();
+
+    formdata.append("booking_id", refId);
+    formdata.append("airline_name", airline_name);
+    formdata.append("airline_code", airline_code);
+    formdata.append("is_return", 0);
+
+    formdata.append("departure_date", formatDate(departure_date));
+    formdata.append("arrival_date", formatDate(arrival_date));
+
+    formdata.append("departure_time", departure_time);
+    formdata.append("arrival_time", arrival_time);
+
+    formdata.append("departure_city", departure_city);
+    formdata.append("arrival_city", arrival_city);
+
+    formdata.append("departure_airport_name", departure_airport_name);
+    formdata.append("arrival_airport_name", arrival_airport_name);
+
+    formdata.append("departure_terminal_no", "");
+    formdata.append("arrival_terminal_no", "");
+
+    formdata.append("stop", stopCount);
+
+    const stops = cf?.stop_data || item?.stop_data || [];
+
+    if (stopCount > 0 && Array.isArray(stops)) {
+      stops.forEach((s, i) => {
+        formdata.append(`stop_city[${i}]`, s.city || "");
+        formdata.append(`stop_arrival[${i}]`, s.arr_time || "");
+        formdata.append(`stop_departure[${i}]`, s.dep_time || "");
+        formdata.append(`stop_layover_duration[${i}]`, s.layover || "");
+      });
+    }
+
+    formdata.append("check_in_adult", check_in_adult);
+    formdata.append("check_in_children", check_in_children);
+    formdata.append("check_in_infant", check_in_infant);
+
+    formdata.append("cabin_adult", cabin_adult);
+    formdata.append("cabin_children", cabin_children);
+    formdata.append("cabin_infant", cabin_infant);
+
+    formdata.append("total_amount", total_amount);
+    formdata.append("base_fare", base_fare);
+    formdata.append("discount", discount);
+    formdata.append("taxes_and_others", taxes_and_others);
+    formdata.append("service_fees", service_fees);
+
+    formdata.append("available_seats", available_seats);
+    formdata.append("is_refundable", is_refundable);
+    formdata.append("is_international", is_international ? "1" : "0");
+
+    let index = 0;
+    const appendTraveler = (t, type) => {
+      formdata.append(`travelers_id[${index}]`, type);
+      formdata.append(`first_name[${index}]`, t.firstName || "");
+      formdata.append(`last_name[${index}]`, t.lastName || "");
+      formdata.append(
+        `gender[${index}]`,
+        t.gender?.value === "male" ? 1 : t.gender?.value === "female" ? 2 : 3,
+      );
+      formdata.append(
+        `dob[${index}]`,
+        t.dateOfBirth ? moment(t.dateOfBirth).format("YYYY-MM-DD") : "",
+      );
+      formdata.append(
+        `age[${index}]`,
+        t.dateOfBirth ? calculateAge(t.dateOfBirth) : "",
+      );
+      formdata.append(`email[${index}]`, t.email || "");
+      formdata.append(`phone_no[${index}]`, t.contactNumber || "");
+      formdata.append(`passport_no[${index}]`, t.passportNumber || "");
+      formdata.append(`passport_expiry_date[${index}]`, t.passportExpiry || "");
+      index++;
+    };
+
+    travelers.forEach((t) => appendTraveler(t, 0));
+    childtravelers.forEach((t) => appendTraveler(t, 1));
+    infanttravelers.forEach((t) => appendTraveler(t, 2));
+
+    const formObject = Object.fromEntries(formdata.entries());
+
+    console.log("ZEEL KANERIA NO LOG", formObject);
+
+    setOurApiLoad(true);
+
+    try {
+      const res = await axios.post(Bookingaapniapi, formdata, {
+        headers: {
+          Accept: ACCEPT_HEADER,
+          Authorization: "Bearer " + token,
+        },
+      });
+
+      if (res?.data?.success === 1) {
+        Notification("success", "Success", res.data.message);
+        // closeModal();
+        setOurApiLoad(false);
+        navigate("/");
+      } else {
+        alert(res?.data?.message || "Booking failed");
+        setOurApiLoad(false);
+      }
+    } catch (err) {
+      console.error("Booking Error:", err);
+      alert(err?.response?.data?.message || "Something went wrong");
+      setOurApiLoad(false);
+    }
+  };
+
+  const handleSubmitCheapFix = async () => {
+    const token = "3-1-NEWTEST-dmjkwj78BJHk8";
+    const publicIP = "183.83.43.117";
+
+    for (let i = 0; i < travelers.length; i++) {
+      const traveler = travelers[i];
+
+      if (!traveler.firstName?.trim()) {
+        alert(`Please enter the First Name for Traveler ${i + 1}.`);
+        return;
+      }
+      if (!traveler.lastName?.trim()) {
+        alert(`Please enter the Last Name for Traveler ${i + 1}.`);
+        return;
+      }
+      if (!traveler.passportExpiry) {
+        alert(`Please select passport expiry for Traveler ${i + 1}.`);
+        return;
+      }
+      if (!traveler.passportNumber) {
+        alert(`Please enter passport number for Traveler ${i + 1}.`);
+        return;
+      }
+      if (!traveler.email?.trim()) {
+        alert(`Please enter Email for Traveler ${i + 1}.`);
+        return;
+      }
+      if (!traveler.contactNumber?.trim()) {
+        alert(`Please enter Phone Number for Traveler ${i + 1}.`);
+        return;
+      }
+      if (!traveler.gender) {
+        alert(`Please select Gender for Traveler ${i + 1}.`);
+        return;
+      }
+      if (!traveler.dateOfBirth) {
+        alert(`Please enter DOB for Traveler ${i + 1}.`);
+        return;
+      }
+    }
+
+    if (!check) {
+      alert("You must agree to the Terms & Conditions.");
+      return;
+    }
+
+    const safeCalculateAge = (dob) => {
+      if (!dob) return 0;
+
+      const birthDate = new Date(dob);
+      if (isNaN(birthDate.getTime())) return 0;
+
+      const today = new Date();
+      let age = today.getFullYear() - birthDate.getFullYear();
+      const m = today.getMonth() - birthDate.getMonth();
+
+      if (m < 0 || (m === 0 && today.getDate() < birthDate.getDate())) {
+        age--;
+      }
+
+      return age < 0 ? 0 : age;
+    };
+    const flight_traveller_details = [
+      ...(travelers || []),
+      ...(childtravelers || []),
+      ...(infanttravelers || []),
+    ].map((traveler) => {
+      const age = safeCalculateAge(traveler.dateOfBirth);
+
+      return {
+        gender:
+          traveler.gender === "male"
+            ? "Mr"
+            : traveler.gender === "female"
+              ? "Miss"
+              : "",
+        first_name: String(traveler.firstName || ""),
+        middle_name: "",
+        last_name: String(traveler.lastName || ""),
+        age: Number(age), // 🔥 NEVER NaN
+        dob: String(traveler.dateOfBirth),
+        passport_no: String(traveler.passportNumber || ""),
+        passport_expire_date: String(traveler.passportExpiry || ""),
+      };
+    });
+    const payload = {
+      id: Number(item?.cheapFixData_original?.[0]?.id) || 0,
+      onward_date: String(item?.cheapFixData_original?.[0]?.onward_date || ""),
+      return_date:
+        item?.cheapFixData_original?.[0]?.trip_type == 0
+          ? ""
+          : String(
+              item?.cheapFixData_original?.[0]?.return_flight_data
+                ?.return_dep_date || "",
+            ),
+      adult: Number(adulttraveler) || 0,
+      children: Number(childtraveler) || 0,
+      infant: Number(infanttraveler) || 0,
+      dep_city_code: String(
+        item?.cheapFixData_original?.[0]?.dep_city_code || "",
+      ),
+      arr_city_code: String(
+        item?.cheapFixData_original?.[0]?.arr_city_code || "",
+      ),
+      total_book_seats: Number(ttltraveller) || 0,
+      contact_name: String(travelers[0]?.firstName || ""),
+      contact_email: String(travelers[0]?.email || ""),
+      contact_number: String(travelers[0]?.contactNumber || ""),
+      flight_traveller_details,
+      booking_token_id: String(cheapfixbooking_token_ID || ""),
+      total_amount:
+        Number(item?.cheapFixData_original?.[0]?.total_payable_price) || 0,
+      partner_user_id: "0",
+      static: String(item?.cheapFixData_original?.[0]?.static),
+      end_user_ip: publicIP,
+      token,
+    };
+    setCheapfixBookLoading(true);
+    try {
+      const response = await axios.post(
+        "https://local.flightapi.co.in/v1/fbapi/book",
+        payload,
+        {
+          headers: {
+            "Content-Type": "application/json",
+          },
+        },
+      );
+      setBookingDataCheapFix(response.data);
+      const referenceId = response.data?.data?.reference_id;
+      if (referenceId) {
+        setBookingIDCheapFix(referenceId);
+        HandleSubmitOurAPi(referenceId);
+        navigate("/", {
+          state: { reference_id: referenceId },
+        });
+      } else {
+        console.warn("No reference_id found. Not redirecting.");
+      }
+    } catch (error) {
+      if (error.response) {
+        console.error("API Error:", error.response.data);
+        Notification("error", "Error!", error.response.data?.errorMessage);
+      } else {
+        console.error("Network Error:", error);
+        alert("Network error. Please try again.");
+      }
+    } finally {
+      setCheapfixBookLoading(false);
     }
   };
 
@@ -690,7 +1140,6 @@ const TicketBookingDetails = () => {
       return;
     }
 
-    // Ensure only first passenger is Lead Pax
     const passengersWithLeadFlag = allPassengers.map((pax, index) => ({
       ...pax,
       isLeadPax: index === 0,
@@ -698,7 +1147,6 @@ const TicketBookingDetails = () => {
 
     // Map passengers to the required API payload structure
     const adult_info = passengersWithLeadFlag
-
       .filter((pax) => pax.paxType == 1)
       .map((pax) => ({
         title: pax.title
@@ -708,26 +1156,42 @@ const TicketBookingDetails = () => {
           : "Mr.",
         first_name: pax.firstName,
         last_name: pax.lastName,
+        passport_number: pax.passportNumber,
       }));
-    console.log("adult_info", adult_info);
 
     const child_info = passengersWithLeadFlag
-      .filter((pax) => pax.type == 2)
-      .map((pax) => ({
-        title: pax.title || "Mstr.",
-        first_name: pax.firstName,
-        last_name: pax.lastName,
-      }));
+      .filter((pax) => {
+        console.log("Pax type:", pax.paxType, pax);
+        return pax.paxType == 2;
+      })
+      .map((pax) => {
+        const title = ["mstr", "miss"].includes(pax.title?.toLowerCase())
+          ? pax.title
+          : "Mstr.";
+
+        return {
+          title,
+          first_name: pax.firstName,
+          last_name: pax.lastName,
+          passport_number: pax.passportNumber,
+        };
+      });
 
     const infant_info = passengersWithLeadFlag
-      .filter((pax) => pax.type == 3)
-      .map((pax) => ({
-        title: pax.title || "Mstr.",
-        first_name: pax.firstName,
-        last_name: pax.lastName,
-        dob: pax.dob,
-        travel_with: pax.travelWith || 1,
-      }));
+      .filter((pax) => pax.paxType == 3)
+      .map((pax) => {
+        const title = ["mstr", "miss"].includes(pax.title?.toLowerCase())
+          ? pax.title
+          : "Mstr.";
+
+        return {
+          title,
+          first_name: pax.firstName,
+          last_name: pax.lastName,
+          dob: pax.dob,
+          travel_with: pax.travelWith || 1,
+        };
+      });
 
     const payload = {
       ticket_id: ticketId,
@@ -751,6 +1215,7 @@ const TicketBookingDetails = () => {
         localStorage.setItem("booking_id", res.data.booking_id);
         setBookingID(res.data.booking_id);
         setBookingData(res.data);
+        await HandleSubmitOurAPi(res.data.booking_id);
         Notification("success", "Success", res.data.message);
 
         // Call the GET API with the booking_id
@@ -763,21 +1228,18 @@ const TicketBookingDetails = () => {
             },
           });
           console.log("getRes", getRes);
-
           if (getRes.data.status === "success") {
             setBookingData(getRes?.data);
+            HandleSubmitOurAPi(booking_id);
             navigate("/");
             // setBookingModal(true);
           }
-
-          // Handle the GET response here if needed (e.g., set state or notify)
-          // For example: setTicketData(getRes.data);
         } catch (getErr) {
           Notification(
             "error",
             "Error",
             getErr.response?.data?.error?.errorMessage ||
-              "Something went wrong while fetching ticket data"
+              "Something went wrong while fetching ticket data",
           );
           console.error("GET API error:", getErr);
         }
@@ -785,7 +1247,7 @@ const TicketBookingDetails = () => {
         Notification(
           "error",
           "Error",
-          res.data?.error?.errorMessage || "Failed to save passenger details"
+          res.data?.error?.errorMessage || "Failed to save passenger details",
         );
       }
     } catch (err) {
@@ -793,7 +1255,7 @@ const TicketBookingDetails = () => {
         "error",
         "Error",
         err.response?.data?.error?.errorMessage ||
-          "Something went wrong while saving passengers"
+          "Something went wrong while saving passengers",
       );
       console.error("handleSavePassengerAiriq error:", err);
     }
@@ -852,7 +1314,7 @@ const TicketBookingDetails = () => {
       Notification(
         "error",
         "Error",
-        "Something went wrong while saving passengers"
+        "Something went wrong while saving passengers",
       );
       console.error("SavePassengerWithSSR error:", err);
     }
@@ -1360,8 +1822,6 @@ const TicketBookingDetails = () => {
   };
 
   const handleSelectPassenger = (passenger, category) => {
-    console.log("Selected Passenger:", passenger);
-
     const formattedDOB = formatDOB(passenger.date_of_birth);
     const formattedPassportExpiry = formatDOB(passenger.passport_expiry);
 
@@ -1385,7 +1845,7 @@ const TicketBookingDetails = () => {
       (t) =>
         t.firstName === passengerFirstName &&
         t.lastName === passengerLastName &&
-        t.firstName // not empty
+        t.firstName, // not empty
     );
 
     // CASE 1: Single slot category
@@ -1475,7 +1935,7 @@ const TicketBookingDetails = () => {
       (t) =>
         t.firstName === passenger.first_name &&
         t.lastName === passenger.last_name &&
-        t.firstName
+        t.firstName,
     );
   };
 
@@ -1524,9 +1984,17 @@ const TicketBookingDetails = () => {
                 </span>
               </div>
               <h1>Customize Your Flight Experience</h1>
-              <p>Select your seat, meal, and baggage options</p>
+              {item?.fareIdentifier?.code !== "airIQ_fare" &&
+              item?.fareIdentifier?.code !== "cheapfix_fare" ? (
+                <>
+                  <p>Select your seat, meal, and baggage options</p>
+                </>
+              ) : (
+                <></>
+              )}
             </div>
-            {item?.fareIdentifier?.code !== "airIQ_fare" ? (
+            {item?.fareIdentifier?.code !== "airIQ_fare" &&
+            item?.fareIdentifier?.code !== "cheapfix_fare" ? (
               <>
                 <div className="navv-tabss">
                   {/* Passenger tab - always enabled */}
@@ -1661,7 +2129,7 @@ const TicketBookingDetails = () => {
                                 className={`passenger-carddd ${
                                   isPassengerSelected(
                                     passenger,
-                                    selectedCategory
+                                    selectedCategory,
                                   )
                                     ? "selected"
                                     : ""
@@ -1669,13 +2137,13 @@ const TicketBookingDetails = () => {
                                 onClick={() =>
                                   handleSelectPassenger(
                                     passenger,
-                                    selectedCategory
+                                    selectedCategory,
                                   )
                                 }
                               >
                                 {isPassengerSelected(
                                   passenger,
-                                  selectedCategory
+                                  selectedCategory,
                                 ) && (
                                   <span className="selected-badge">
                                     Selected
@@ -1744,14 +2212,14 @@ const TicketBookingDetails = () => {
                                   <Select
                                     options={titleOptions}
                                     value={titleOptions.find(
-                                      (o) => o.value === traveler.title
+                                      (o) => o.value === traveler.title,
                                     )}
                                     onChange={(selected) =>
                                       handleTravelerChange(
                                         "adult",
                                         index,
                                         "title",
-                                        selected.value
+                                        selected.value,
                                       )
                                     }
                                   />
@@ -1775,14 +2243,14 @@ const TicketBookingDetails = () => {
                                     <Select
                                       options={genderOptions}
                                       value={genderOptions.find(
-                                        (o) => o.value === traveler.gender
+                                        (o) => o.value === traveler.gender,
                                       )}
                                       onChange={(selected) =>
                                         handleTravelerChange(
                                           "adult",
                                           index,
                                           "gender",
-                                          selected.value
+                                          selected.value,
                                         )
                                       }
                                     />
@@ -1808,7 +2276,7 @@ const TicketBookingDetails = () => {
                                         "adult",
                                         index,
                                         "firstName",
-                                        e.target.value
+                                        e.target.value,
                                       )
                                     }
                                     className="form-control"
@@ -1827,7 +2295,7 @@ const TicketBookingDetails = () => {
                                         "adult",
                                         index,
                                         "lastName",
-                                        e.target.value
+                                        e.target.value,
                                       )
                                     }
                                     className="form-control"
@@ -1862,7 +2330,7 @@ const TicketBookingDetails = () => {
                                         "adult",
                                         index,
                                         "dateOfBirth",
-                                        dateString
+                                        dateString,
                                       );
                                     }}
                                     className="form-control w-100"
@@ -1900,7 +2368,7 @@ const TicketBookingDetails = () => {
                                           "adult",
                                           index,
                                           "email",
-                                          e.target.value
+                                          e.target.value,
                                         )
                                       }
                                       className="form-control"
@@ -1928,7 +2396,7 @@ const TicketBookingDetails = () => {
                                           "adult",
                                           index,
                                           "contactNumber",
-                                          e.target.value
+                                          e.target.value,
                                         )
                                       }
                                       className="form-control"
@@ -1947,7 +2415,9 @@ const TicketBookingDetails = () => {
                                   <label className="form-label small">
                                     Address Line 1{" "}
                                     {item?.fareIdentifier?.code !==
-                                    "airIQ_fare" ? (
+                                      "airIQ_fare" &&
+                                    item?.fareIdentifier?.code !==
+                                      "cheapfix_fare" ? (
                                       <>
                                         <span style={{ color: "red" }}>*</span>
                                       </>
@@ -1963,7 +2433,7 @@ const TicketBookingDetails = () => {
                                         "adult",
                                         index,
                                         "addressLineOne",
-                                        e.target.value
+                                        e.target.value,
                                       )
                                     }
                                     className="form-control mb-2"
@@ -1972,7 +2442,9 @@ const TicketBookingDetails = () => {
                                   <label className="form-label small">
                                     Address Line 2{" "}
                                     {item?.fareIdentifier?.code !==
-                                    "airIQ_fare" ? (
+                                      "airIQ_fare" &&
+                                    item?.fareIdentifier?.code !==
+                                      "cheapfix_fare" ? (
                                       <>
                                         <span style={{ color: "red" }}>*</span>
                                       </>
@@ -1988,7 +2460,7 @@ const TicketBookingDetails = () => {
                                         "adult",
                                         index,
                                         "addressLineTwo",
-                                        e.target.value
+                                        e.target.value,
                                       )
                                     }
                                     className="form-control mb-2"
@@ -2005,7 +2477,7 @@ const TicketBookingDetails = () => {
                                             "adult",
                                             index,
                                             "city",
-                                            e.target.value
+                                            e.target.value,
                                           )
                                         }
                                         className="form-control"
@@ -2021,7 +2493,7 @@ const TicketBookingDetails = () => {
                                             "adult",
                                             index,
                                             "countryName",
-                                            e.target.value
+                                            e.target.value,
                                           )
                                         }
                                         className="form-control"
@@ -2060,7 +2532,7 @@ const TicketBookingDetails = () => {
                                           "adult",
                                           index,
                                           "passportNumber",
-                                          e.target.value
+                                          e.target.value,
                                         )
                                       }
                                       className="form-control"
@@ -2092,7 +2564,7 @@ const TicketBookingDetails = () => {
                                           "adult",
                                           index,
                                           "passportExpiry",
-                                          dateString
+                                          dateString,
                                         );
                                       }}
                                       className="form-control w-100"
@@ -2120,7 +2592,7 @@ const TicketBookingDetails = () => {
                                           "adult",
                                           index,
                                           "frequentFlyerNumber",
-                                          e.target.value
+                                          e.target.value,
                                         )
                                       }
                                       className="form-control"
@@ -2138,7 +2610,7 @@ const TicketBookingDetails = () => {
                                           "adult",
                                           index,
                                           "frequentFlyerAirlineCode",
-                                          e.target.value
+                                          e.target.value,
                                         )
                                       }
                                       className="form-control"
@@ -2169,7 +2641,7 @@ const TicketBookingDetails = () => {
                                           "adult",
                                           index,
                                           "gstNumber",
-                                          e.target.value
+                                          e.target.value,
                                         )
                                       }
                                       className="form-control"
@@ -2187,7 +2659,7 @@ const TicketBookingDetails = () => {
                                           "adult",
                                           index,
                                           "gstCompanyName",
-                                          e.target.value
+                                          e.target.value,
                                         )
                                       }
                                       className="form-control"
@@ -2205,7 +2677,7 @@ const TicketBookingDetails = () => {
                                           "adult",
                                           index,
                                           "gstCompanyAddress",
-                                          e.target.value
+                                          e.target.value,
                                         )
                                       }
                                       className="form-control"
@@ -2224,7 +2696,7 @@ const TicketBookingDetails = () => {
                                             "adult",
                                             index,
                                             "gstCompanyEmail",
-                                            e.target.value
+                                            e.target.value,
                                           )
                                         }
                                         className="form-control"
@@ -2240,7 +2712,7 @@ const TicketBookingDetails = () => {
                                             "adult",
                                             index,
                                             "gstCompanyContactNumber",
-                                            e.target.value
+                                            e.target.value,
                                           )
                                         }
                                         className="form-control"
@@ -2272,53 +2744,65 @@ const TicketBookingDetails = () => {
                               <div className="col-6">
                                 <label className="form-label small">
                                   Title
+                                  <span style={{ color: "red" }}>*</span>
                                 </label>
                                 <Select
                                   options={titleOptions}
                                   value={titleOptions.find(
-                                    (o) => o.value === child.title
+                                    (o) => o.value === child.title,
                                   )}
                                   onChange={(selected) =>
                                     handleTravelerChange(
                                       "child",
                                       index,
                                       "title",
-                                      selected.value
+                                      selected.value,
                                     )
                                   }
                                 />
                               </div>
-                              {item?.fareIdentifier?.code !== "airIQ_fare" ? (
-                                <>
-                                  <div className="col-6">
-                                    <label className="form-label small">
-                                      Gender
-                                    </label>
-                                    <Select
-                                      options={genderOptions}
-                                      value={genderOptions.find(
-                                        (o) => o.value === child.gender
-                                      )}
-                                      onChange={(selected) =>
-                                        handleTravelerChange(
-                                          "child",
-                                          index,
-                                          "gender",
-                                          selected.value
-                                        )
-                                      }
-                                    />
-                                  </div>
-                                </>
-                              ) : (
+                              {/* {item?.fareIdentifier?.code !== "airIQ_fare" ? ( */}
+                              <>
+                                <div className="col-6">
+                                  <label className="form-label small">
+                                    Gender
+                                    {item?.fareIdentifier?.code !==
+                                    "airIQ_fare" ? (
+                                      <>
+                                        <span style={{ color: "red" }}>*</span>
+                                      </>
+                                    ) : (
+                                      <></>
+                                    )}
+                                  </label>
+                                  <Select
+                                    options={genderOptions}
+                                    value={genderOptions.find(
+                                      (o) => o.value === child.gender,
+                                    )}
+                                    onChange={(selected) =>
+                                      handleTravelerChange(
+                                        "child",
+                                        index,
+                                        "gender",
+                                        selected.value,
+                                      )
+                                    }
+                                  />
+                                </div>
+                              </>
+                              {/* ) : (
                                 <></>
-                              )}
+                              )} */}
                             </div>
 
                             {/* Names */}
                             <div className="row g-2 mb-3">
                               <div className="col-6">
-                                <label>First Name</label>
+                                <label>
+                                  First Name{" "}
+                                  <span style={{ color: "red" }}>*</span>
+                                </label>
                                 <input
                                   type="text"
                                   value={child.firstName}
@@ -2327,14 +2811,17 @@ const TicketBookingDetails = () => {
                                       "child",
                                       index,
                                       "firstName",
-                                      e.target.value
+                                      e.target.value,
                                     )
                                   }
                                   className="form-control"
                                 />
                               </div>
                               <div className="col-6">
-                                <label>Last Name</label>
+                                <label>
+                                  Last Name{" "}
+                                  <span style={{ color: "red" }}>*</span>
+                                </label>
                                 <input
                                   type="text"
                                   value={child.lastName}
@@ -2343,7 +2830,7 @@ const TicketBookingDetails = () => {
                                       "child",
                                       index,
                                       "lastName",
-                                      e.target.value
+                                      e.target.value,
                                     )
                                   }
                                   className="form-control"
@@ -2355,6 +2842,13 @@ const TicketBookingDetails = () => {
                             <div className="mb-3">
                               <label className="form-label small">
                                 Date of Birth
+                                {item?.fareIdentifier?.code !== "airIQ_fare" ? (
+                                  <>
+                                    <span style={{ color: "red" }}>*</span>
+                                  </>
+                                ) : (
+                                  <></>
+                                )}
                               </label>
                               <DatePicker
                                 selected={child.dateOfBirth}
@@ -2363,7 +2857,7 @@ const TicketBookingDetails = () => {
                                     "child",
                                     index,
                                     "dateOfBirth",
-                                    dateString
+                                    dateString,
                                   );
                                 }}
                                 className="form-control"
@@ -2371,175 +2865,239 @@ const TicketBookingDetails = () => {
                               />
                             </div>
                             {/* Contact */}
-                            {item?.fareIdentifier?.code !== "airIQ_fare" ? (
-                              <>
-                                <div className="row g-2 mb-3">
-                                  <div className="col-6">
-                                    <label>Email</label>
-                                    <input
-                                      type="email"
-                                      value={child.email}
-                                      onChange={(e) =>
-                                        handleTravelerChange(
-                                          "child",
-                                          index,
-                                          "email",
-                                          e.target.value
-                                        )
-                                      }
-                                      className="form-control"
-                                    />
-                                  </div>
-                                  <div className="col-6">
-                                    <label>Phone</label>
-                                    <input
-                                      type="text"
-                                      value={child.contactNumber}
-                                      onChange={(e) =>
-                                        handleTravelerChange(
-                                          "child",
-                                          index,
-                                          "contactNumber",
-                                          e.target.value
-                                        )
-                                      }
-                                      className="form-control"
-                                    />
-                                  </div>
+                            {/* {item?.fareIdentifier?.code !== "airIQ_fare" ? ( */}
+                            <>
+                              <div className="row g-2 mb-3">
+                                <div className="col-6">
+                                  <label>
+                                    Email{" "}
+                                    {item?.fareIdentifier?.code !==
+                                    "airIQ_fare" ? (
+                                      <>
+                                        <span style={{ color: "red" }}>*</span>
+                                      </>
+                                    ) : (
+                                      <></>
+                                    )}
+                                  </label>
+                                  <input
+                                    type="email"
+                                    value={child.email}
+                                    onChange={(e) =>
+                                      handleTravelerChange(
+                                        "child",
+                                        index,
+                                        "email",
+                                        e.target.value,
+                                      )
+                                    }
+                                    className="form-control"
+                                  />
                                 </div>
-                              </>
-                            ) : (
+                                <div className="col-6">
+                                  <label>
+                                    Phone{" "}
+                                    {item?.fareIdentifier?.code !==
+                                    "airIQ_fare" ? (
+                                      <>
+                                        <span style={{ color: "red" }}>*</span>
+                                      </>
+                                    ) : (
+                                      <></>
+                                    )}
+                                  </label>
+                                  <input
+                                    type="text"
+                                    value={child.contactNumber}
+                                    onChange={(e) =>
+                                      handleTravelerChange(
+                                        "child",
+                                        index,
+                                        "contactNumber",
+                                        e.target.value,
+                                      )
+                                    }
+                                    className="form-control"
+                                  />
+                                </div>
+                              </div>
+                            </>
+                            {/* ) : (
                               <></>
-                            )}
+                            )} */}
 
                             {/* Address */}
-                            {item?.fareIdentifier?.code !== "airIQ_fare" ? (
-                              <>
-                                <div className="mb-3">
-                                  <label>Address Line 1</label>
-                                  <input
-                                    type="text"
-                                    value={child.addressLineOne}
-                                    onChange={(e) =>
-                                      handleTravelerChange(
-                                        "child",
-                                        index,
-                                        "addressLineOne",
-                                        e.target.value
-                                      )
-                                    }
-                                    className="form-control"
-                                  />
-                                </div>
-                              </>
-                            ) : (
+                            {/* {item?.fareIdentifier?.code !== "airIQ_fare" ? ( */}
+                            <>
+                              <div className="mb-3">
+                                <label>
+                                  Address Line 1{" "}
+                                  {item?.fareIdentifier?.code !==
+                                    "airIQ_fare" &&
+                                  item?.fareIdentifier?.code !==
+                                    "cheapfix_fare" ? (
+                                    <>
+                                      <span style={{ color: "red" }}>*</span>
+                                    </>
+                                  ) : (
+                                    <></>
+                                  )}
+                                </label>
+                                <input
+                                  type="text"
+                                  value={child.addressLineOne}
+                                  onChange={(e) =>
+                                    handleTravelerChange(
+                                      "child",
+                                      index,
+                                      "addressLineOne",
+                                      e.target.value,
+                                    )
+                                  }
+                                  className="form-control"
+                                />
+                              </div>
+                            </>
+                            {/* ) : (
                               <></>
-                            )}
-                            {item?.fareIdentifier?.code !== "airIQ_fare" ? (
-                              <>
-                                <div className="mb-3">
-                                  <label>Address Line 2</label>
-                                  <input
-                                    type="text"
-                                    value={child.addressLineTwo}
-                                    onChange={(e) =>
-                                      handleTravelerChange(
-                                        "child",
-                                        index,
-                                        "addressLineTwo",
-                                        e.target.value
-                                      )
-                                    }
-                                    className="form-control"
-                                  />
-                                </div>
-                              </>
-                            ) : (
+                            )} */}
+                            {/* {item?.fareIdentifier?.code !== "airIQ_fare" ? ( */}
+                            <>
+                              <div className="mb-3">
+                                <label>
+                                  Address Line 2{" "}
+                                  {item?.fareIdentifier?.code !==
+                                    "airIQ_fare" &&
+                                  item?.fareIdentifier?.code !==
+                                    "cheapfix_fare" ? (
+                                    <>
+                                      <span style={{ color: "red" }}>*</span>
+                                    </>
+                                  ) : (
+                                    <></>
+                                  )}
+                                </label>
+                                <input
+                                  type="text"
+                                  value={child.addressLineTwo}
+                                  onChange={(e) =>
+                                    handleTravelerChange(
+                                      "child",
+                                      index,
+                                      "addressLineTwo",
+                                      e.target.value,
+                                    )
+                                  }
+                                  className="form-control"
+                                />
+                              </div>
+                            </>
+                            {/* ) : (
                               <></>
-                            )}
+                            )} */}
 
-                            {item?.fareIdentifier?.code !== "airIQ_fare" ? (
-                              <>
-                                <div className="row g-2 mb-3">
-                                  <div className="col-6">
-                                    <label>City</label>
-                                    <input
-                                      type="text"
-                                      value={child.city}
-                                      onChange={(e) =>
-                                        handleTravelerChange(
-                                          "child",
-                                          index,
-                                          "city",
-                                          e.target.value
-                                        )
-                                      }
-                                      className="form-control"
-                                    />
-                                  </div>
-                                  <div className="col-6">
-                                    <label>Country</label>
-                                    <input
-                                      type="text"
-                                      value={child.countryName}
-                                      onChange={(e) =>
-                                        handleTravelerChange(
-                                          "child",
-                                          index,
-                                          "countryName",
-                                          e.target.value
-                                        )
-                                      }
-                                      className="form-control"
-                                    />
-                                  </div>
+                            {/* {item?.fareIdentifier?.code !== "airIQ_fare" ? ( */}
+                            <>
+                              <div className="row g-2 mb-3">
+                                <div className="col-6">
+                                  <label>City</label>
+                                  <input
+                                    type="text"
+                                    value={child.city}
+                                    onChange={(e) =>
+                                      handleTravelerChange(
+                                        "child",
+                                        index,
+                                        "city",
+                                        e.target.value,
+                                      )
+                                    }
+                                    className="form-control"
+                                  />
                                 </div>
-                              </>
-                            ) : (
+                                <div className="col-6">
+                                  <label>Country</label>
+                                  <input
+                                    type="text"
+                                    value={child.countryName}
+                                    onChange={(e) =>
+                                      handleTravelerChange(
+                                        "child",
+                                        index,
+                                        "countryName",
+                                        e.target.value,
+                                      )
+                                    }
+                                    className="form-control"
+                                  />
+                                </div>
+                              </div>
+                            </>
+                            {/* ) : (
                               <></>
-                            )}
+                            )} */}
                             {}
                             {/* Passport */}
-                            {item?.fareIdentifier?.code !== "airIQ_fare" ? (
-                              <>
-                                <div className="row g-2 mb-3">
-                                  <div className="col-6">
-                                    <label>Passport Number</label>
-                                    <input
-                                      type="text"
-                                      value={child.passportNumber}
-                                      onChange={(e) =>
-                                        handleTravelerChange(
-                                          "child",
-                                          index,
-                                          "passportNumber",
-                                          e.target.value
-                                        )
-                                      }
-                                      className="form-control"
-                                    />
-                                  </div>
-                                  <div className="col-6">
-                                    <label>Passport Expiry</label>
-                                    <DatePicker
-                                      selected={child.passportExpiry}
-                                      onChange={(date, dateString) => {
-                                        handleTravelerChange(
-                                          "child",
-                                          index,
-                                          "passportExpiry",
-                                          dateString
-                                        );
-                                      }}
-                                      className="form-control"
-                                      dateFormat="yyyy-MM-dd"
-                                    />
-                                  </div>
+                            {/* {item?.fareIdentifier?.code !== "airIQ_fare" ? ( */}
+                            <>
+                              <div className="row g-2 mb-3">
+                                <div className="col-6">
+                                  <label>
+                                    Passport Number
+                                    {item?.fareIdentifier?.code !==
+                                    "airIQ_fare" ? (
+                                      <>
+                                        <span style={{ color: "red" }}>*</span>
+                                      </>
+                                    ) : (
+                                      <></>
+                                    )}
+                                  </label>
+                                  <input
+                                    type="text"
+                                    value={child.passportNumber}
+                                    onChange={(e) =>
+                                      handleTravelerChange(
+                                        "child",
+                                        index,
+                                        "passportNumber",
+                                        e.target.value,
+                                      )
+                                    }
+                                    className="form-control"
+                                  />
                                 </div>
-                              </>
-                            ) : (
+                                <div className="col-6">
+                                  <label>
+                                    Passport Expiry{" "}
+                                    {item?.fareIdentifier?.code !==
+                                    "airIQ_fare" ? (
+                                      <>
+                                        <span style={{ color: "red" }}>*</span>
+                                      </>
+                                    ) : (
+                                      <></>
+                                    )}
+                                  </label>
+                                  <DatePicker
+                                    selected={child.passportExpiry}
+                                    onChange={(date, dateString) => {
+                                      handleTravelerChange(
+                                        "child",
+                                        index,
+                                        "passportExpiry",
+                                        dateString,
+                                      );
+                                    }}
+                                    className="form-control"
+                                    dateFormat="yyyy-MM-dd"
+                                  />
+                                </div>
+                              </div>
+                            </>
+                            {/* ) : (
                               <></>
-                            )}
+                            )} */}
                           </div>
                         ))}
 
@@ -2560,53 +3118,65 @@ const TicketBookingDetails = () => {
                               <div className="col-6">
                                 <label className="form-label small">
                                   Title
+                                  <span style={{ color: "red" }}>*</span>
                                 </label>
                                 <Select
                                   options={titleOptions}
                                   value={titleOptions.find(
-                                    (o) => o.value === infant.title
+                                    (o) => o.value === infant.title,
                                   )}
                                   onChange={(selected) =>
                                     handleTravelerChange(
                                       "infant",
                                       index,
                                       "title",
-                                      selected.value
+                                      selected.value,
                                     )
                                   }
                                 />
                               </div>
-                              {item?.fareIdentifier?.code !== "airIQ_fare" ? (
-                                <>
-                                  <div className="col-6">
-                                    <label className="form-label small">
-                                      Gender
-                                    </label>
-                                    <Select
-                                      options={genderOptions}
-                                      value={genderOptions.find(
-                                        (o) => o.value === infant.gender
-                                      )}
-                                      onChange={(selected) =>
-                                        handleTravelerChange(
-                                          "infant",
-                                          index,
-                                          "gender",
-                                          selected.value
-                                        )
-                                      }
-                                    />
-                                  </div>
-                                </>
-                              ) : (
+                              {/* {item?.fareIdentifier?.code !== "airIQ_fare" ? ( */}
+                              <>
+                                <div className="col-6">
+                                  <label className="form-label small">
+                                    Gender{" "}
+                                    {item?.fareIdentifier?.code !==
+                                    "airIQ_fare" ? (
+                                      <>
+                                        <span style={{ color: "red" }}>*</span>
+                                      </>
+                                    ) : (
+                                      <></>
+                                    )}
+                                  </label>
+                                  <Select
+                                    options={genderOptions}
+                                    value={genderOptions.find(
+                                      (o) => o.value === infant.gender,
+                                    )}
+                                    onChange={(selected) =>
+                                      handleTravelerChange(
+                                        "infant",
+                                        index,
+                                        "gender",
+                                        selected.value,
+                                      )
+                                    }
+                                  />
+                                </div>
+                              </>
+                              {/* ) : (
                                 <></>
-                              )}
+                              )} */}
                             </div>
 
                             {/* Names */}
                             <div className="row g-2 mb-3">
                               <div className="col-6">
-                                <label>First Name</label>
+                                <label>
+                                  First Name
+                                  <span style={{ color: "red" }}>*</span>
+                                </label>
                                 <input
                                   type="text"
                                   value={infant.firstName}
@@ -2615,14 +3185,17 @@ const TicketBookingDetails = () => {
                                       "infant",
                                       index,
                                       "firstName",
-                                      e.target.value
+                                      e.target.value,
                                     )
                                   }
                                   className="form-control"
                                 />
                               </div>
                               <div className="col-6">
-                                <label>Last Name</label>
+                                <label>
+                                  Last Name{" "}
+                                  <span style={{ color: "red" }}>*</span>
+                                </label>
                                 <input
                                   type="text"
                                   value={infant.lastName}
@@ -2631,7 +3204,7 @@ const TicketBookingDetails = () => {
                                       "infant",
                                       index,
                                       "lastName",
-                                      e.target.value
+                                      e.target.value,
                                     )
                                   }
                                   className="form-control"
@@ -2640,199 +3213,273 @@ const TicketBookingDetails = () => {
                             </div>
 
                             {/* DOB */}
-                            {item?.fareIdentifier?.code !== "airIQ_fare" ? (
-                              <>
-                                <div className="mb-3">
-                                  <label>Date of Birth</label>
+                            {/* {item?.fareIdentifier?.code !== "airIQ_fare" ? ( */}
+                            <>
+                              <div className="mb-3">
+                                <label>
+                                  Date of Birth{" "}
+                                  {item?.fareIdentifier?.code !==
+                                  "airIQ_fare" ? (
+                                    <>
+                                      <span style={{ color: "red" }}>*</span>
+                                    </>
+                                  ) : (
+                                    <></>
+                                  )}
+                                </label>
+                                <DatePicker
+                                  selected={infant.dateOfBirth}
+                                  onChange={(date, dateString) => {
+                                    handleTravelerChange(
+                                      "infant",
+                                      index,
+                                      "dateOfBirth",
+                                      dateString,
+                                    );
+                                  }}
+                                  className="form-control"
+                                  dateFormat="yyyy-MM-dd"
+                                />
+                              </div>
+                            </>
+                            {/* ) : (
+                              <></>
+                            )} */}
+
+                            {/* Contact */}
+                            {/* {item?.fareIdentifier?.code !== "airIQ_fare" ? ( */}
+                            <>
+                              <div className="row g-2 mb-3">
+                                <div className="col-6">
+                                  <label>
+                                    Email{" "}
+                                    {item?.fareIdentifier?.code !==
+                                    "airIQ_fare" ? (
+                                      <>
+                                        <span style={{ color: "red" }}>*</span>
+                                      </>
+                                    ) : (
+                                      <></>
+                                    )}
+                                  </label>
+                                  <input
+                                    type="email"
+                                    value={infant.email}
+                                    onChange={(e) =>
+                                      handleTravelerChange(
+                                        "infant",
+                                        index,
+                                        "email",
+                                        e.target.value,
+                                      )
+                                    }
+                                    className="form-control"
+                                  />
+                                </div>
+                                <div className="col-6">
+                                  <label>
+                                    Phone
+                                    {item?.fareIdentifier?.code !==
+                                    "airIQ_fare" ? (
+                                      <>
+                                        <span style={{ color: "red" }}>*</span>
+                                      </>
+                                    ) : (
+                                      <></>
+                                    )}
+                                  </label>
+                                  <input
+                                    type="text"
+                                    value={infant.contactNumber}
+                                    onChange={(e) =>
+                                      handleTravelerChange(
+                                        "infant",
+                                        index,
+                                        "contactNumber",
+                                        e.target.value,
+                                      )
+                                    }
+                                    className="form-control"
+                                  />
+                                </div>
+                              </div>
+                            </>
+                            {/* ) : (
+                              <></>
+                            )} */}
+
+                            {/* Address */}
+                            {/* {item?.fareIdentifier?.code !== "airIQ_fare" ? ( */}
+                            <>
+                              <div className="mb-3">
+                                <label>
+                                  Address Line 1
+                                  {item?.fareIdentifier?.code !==
+                                    "airIQ_fare" &&
+                                  item?.fareIdentifier?.code !==
+                                    "cheapfix_fare" ? (
+                                    <>
+                                      <span style={{ color: "red" }}>*</span>
+                                    </>
+                                  ) : (
+                                    <></>
+                                  )}
+                                </label>
+                                <input
+                                  type="text"
+                                  value={infant.addressLineOne}
+                                  onChange={(e) =>
+                                    handleTravelerChange(
+                                      "infant",
+                                      index,
+                                      "addressLineOne",
+                                      e.target.value,
+                                    )
+                                  }
+                                  className="form-control"
+                                />
+                              </div>
+                            </>
+                            {/* ) : (
+                              <></>
+                            )} */}
+                            {/* {item?.fareIdentifier?.code !== "airIQ_fare" ? ( */}
+                            <>
+                              <div className="mb-3">
+                                <label>
+                                  Address Line 2{" "}
+                                  {item?.fareIdentifier?.code !==
+                                    "airIQ_fare" &&
+                                  item?.fareIdentifier?.code !==
+                                    "cheapfix_fare" ? (
+                                    <>
+                                      <span style={{ color: "red" }}>*</span>
+                                    </>
+                                  ) : (
+                                    <></>
+                                  )}
+                                </label>
+                                <input
+                                  type="text"
+                                  value={infant.addressLineTwo}
+                                  onChange={(e) =>
+                                    handleTravelerChange(
+                                      "infant",
+                                      index,
+                                      "addressLineTwo",
+                                      e.target.value,
+                                    )
+                                  }
+                                  className="form-control"
+                                />
+                              </div>
+                            </>
+                            {/* ) : (
+                              <></>
+                            )} */}
+
+                            {/* {item?.fareIdentifier?.code !== "airIQ_fare" ? ( */}
+                            <>
+                              <div className="row g-2 mb-3">
+                                <div className="col-6">
+                                  <label>City</label>
+                                  <input
+                                    type="text"
+                                    value={infant.city}
+                                    onChange={(e) =>
+                                      handleTravelerChange(
+                                        "infant",
+                                        index,
+                                        "city",
+                                        e.target.value,
+                                      )
+                                    }
+                                    className="form-control"
+                                  />
+                                </div>
+                                <div className="col-6">
+                                  <label>Country</label>
+                                  <input
+                                    type="text"
+                                    value={infant.countryName}
+                                    onChange={(e) =>
+                                      handleTravelerChange(
+                                        "infant",
+                                        index,
+                                        "countryName",
+                                        e.target.value,
+                                      )
+                                    }
+                                    className="form-control"
+                                  />
+                                </div>
+                              </div>
+                            </>
+                            {/* ) : (
+                              <></>
+                            )} */}
+
+                            {/* Passport */}
+                            {/* {item?.fareIdentifier?.code !== "airIQ_fare" ? ( */}
+                            <>
+                              <div className="row g-2 mb-3">
+                                <div className="col-6">
+                                  <label>
+                                    Passport Number{" "}
+                                    {item?.fareIdentifier?.code !==
+                                    "airIQ_fare" ? (
+                                      <>
+                                        <span style={{ color: "red" }}>*</span>
+                                      </>
+                                    ) : (
+                                      <></>
+                                    )}
+                                  </label>
+                                  <input
+                                    type="text"
+                                    value={infant.passportNumber}
+                                    onChange={(e) =>
+                                      handleTravelerChange(
+                                        "infant",
+                                        index,
+                                        "passportNumber",
+                                        e.target.value,
+                                      )
+                                    }
+                                    className="form-control"
+                                  />
+                                </div>
+                                <div className="col-6">
+                                  <label>
+                                    Passport Expiry{" "}
+                                    {item?.fareIdentifier?.code !==
+                                    "airIQ_fare" ? (
+                                      <>
+                                        <span style={{ color: "red" }}>*</span>
+                                      </>
+                                    ) : (
+                                      <></>
+                                    )}
+                                  </label>
                                   <DatePicker
-                                    selected={infant.dateOfBirth}
+                                    selected={infant.passportExpiry}
                                     onChange={(date, dateString) => {
                                       handleTravelerChange(
                                         "infant",
                                         index,
-                                        "dateOfBirth",
-                                        dateString
+                                        "passportExpiry",
+                                        dateString,
                                       );
                                     }}
                                     className="form-control"
                                     dateFormat="yyyy-MM-dd"
                                   />
                                 </div>
-                              </>
-                            ) : (
+                              </div>
+                            </>
+                            {/* ) : (
                               <></>
-                            )}
-
-                            {/* Contact */}
-                            {item?.fareIdentifier?.code !== "airIQ_fare" ? (
-                              <>
-                                <div className="row g-2 mb-3">
-                                  <div className="col-6">
-                                    <label>Email</label>
-                                    <input
-                                      type="email"
-                                      value={infant.email}
-                                      onChange={(e) =>
-                                        handleTravelerChange(
-                                          "infant",
-                                          index,
-                                          "email",
-                                          e.target.value
-                                        )
-                                      }
-                                      className="form-control"
-                                    />
-                                  </div>
-                                  <div className="col-6">
-                                    <label>Phone</label>
-                                    <input
-                                      type="text"
-                                      value={infant.contactNumber}
-                                      onChange={(e) =>
-                                        handleTravelerChange(
-                                          "infant",
-                                          index,
-                                          "contactNumber",
-                                          e.target.value
-                                        )
-                                      }
-                                      className="form-control"
-                                    />
-                                  </div>
-                                </div>
-                              </>
-                            ) : (
-                              <></>
-                            )}
-
-                            {/* Address */}
-                            {item?.fareIdentifier?.code !== "airIQ_fare" ? (
-                              <>
-                                <div className="mb-3">
-                                  <label>Address Line 1</label>
-                                  <input
-                                    type="text"
-                                    value={infant.addressLineOne}
-                                    onChange={(e) =>
-                                      handleTravelerChange(
-                                        "infant",
-                                        index,
-                                        "addressLineOne",
-                                        e.target.value
-                                      )
-                                    }
-                                    className="form-control"
-                                  />
-                                </div>
-                              </>
-                            ) : (
-                              <></>
-                            )}
-                            {item?.fareIdentifier?.code !== "airIQ_fare" ? (
-                              <>
-                                <div className="mb-3">
-                                  <label>Address Line 2</label>
-                                  <input
-                                    type="text"
-                                    value={infant.addressLineTwo}
-                                    onChange={(e) =>
-                                      handleTravelerChange(
-                                        "infant",
-                                        index,
-                                        "addressLineTwo",
-                                        e.target.value
-                                      )
-                                    }
-                                    className="form-control"
-                                  />
-                                </div>
-                              </>
-                            ) : (
-                              <></>
-                            )}
-
-                            {item?.fareIdentifier?.code !== "airIQ_fare" ? (
-                              <>
-                                <div className="row g-2 mb-3">
-                                  <div className="col-6">
-                                    <label>City</label>
-                                    <input
-                                      type="text"
-                                      value={infant.city}
-                                      onChange={(e) =>
-                                        handleTravelerChange(
-                                          "infant",
-                                          index,
-                                          "city",
-                                          e.target.value
-                                        )
-                                      }
-                                      className="form-control"
-                                    />
-                                  </div>
-                                  <div className="col-6">
-                                    <label>Country</label>
-                                    <input
-                                      type="text"
-                                      value={infant.countryName}
-                                      onChange={(e) =>
-                                        handleTravelerChange(
-                                          "infant",
-                                          index,
-                                          "countryName",
-                                          e.target.value
-                                        )
-                                      }
-                                      className="form-control"
-                                    />
-                                  </div>
-                                </div>
-                              </>
-                            ) : (
-                              <></>
-                            )}
-
-                            {/* Passport */}
-                            {item?.fareIdentifier?.code !== "airIQ_fare" ? (
-                              <>
-                                <div className="row g-2 mb-3">
-                                  <div className="col-6">
-                                    <label>Passport Number</label>
-                                    <input
-                                      type="text"
-                                      value={infant.passportNumber}
-                                      onChange={(e) =>
-                                        handleTravelerChange(
-                                          "infant",
-                                          index,
-                                          "passportNumber",
-                                          e.target.value
-                                        )
-                                      }
-                                      className="form-control"
-                                    />
-                                  </div>
-                                  <div className="col-6">
-                                    <label>Passport Expiry</label>
-                                    <DatePicker
-                                      selected={infant.passportExpiry}
-                                      onChange={(date, dateString) => {
-                                        handleTravelerChange(
-                                          "infant",
-                                          index,
-                                          "passportExpiry",
-                                          dateString
-                                        );
-                                      }}
-                                      className="form-control"
-                                      dateFormat="yyyy-MM-dd"
-                                    />
-                                  </div>
-                                </div>
-                              </>
-                            ) : (
-                              <></>
-                            )}
+                            )} */}
                           </div>
                         ))}
                       </div>
@@ -2960,11 +3607,11 @@ const TicketBookingDetails = () => {
                           {(() => {
                             const departure = moment(item?.sg[0]?.or?.dT);
                             const arrival = moment(
-                              item?.sg[item?.sg.length - 1]?.ds?.aT
+                              item?.sg[item?.sg.length - 1]?.ds?.aT,
                             );
                             const totalMinutes = arrival.diff(
                               departure,
-                              "minutes"
+                              "minutes",
                             );
                             return `${Math.floor(totalMinutes / 60)}h ${
                               totalMinutes % 60
@@ -2989,7 +3636,7 @@ const TicketBookingDetails = () => {
                     <div className="flight-departure text-center">
                       <h5 className="text-dark fs-6 fs-lg-5 fw-bold">
                         {moment(item?.sg[item?.sg.length - 1]?.ds?.aT).format(
-                          "hh:mm A"
+                          "hh:mm A",
                         )}
                       </h5>
                       <h5 className="text-dark fs-6 fs-lg-5">
@@ -2997,7 +3644,7 @@ const TicketBookingDetails = () => {
                       </h5>
                       <div className="fw-bold fs-lg-5 text-dark align-self-center">
                         {moment(item?.sg[item?.sg.length - 1]?.ds?.aT).format(
-                          "DD-MM-YYYY"
+                          "DD-MM-YYYY",
                         )}
                       </div>
                     </div>
@@ -3090,7 +3737,7 @@ const TicketBookingDetails = () => {
                         <div className="flight-departure text-center">
                           <h5 className="text-dark fs-6 fs-lg-5 fw-bold">
                             {moment(flightdata?.sg[0]?.or?.dT).format(
-                              "hh:mm A"
+                              "hh:mm A",
                             )}
                           </h5>
                           <h5 className="text-dark fs-6 fs-lg-5">
@@ -3098,7 +3745,7 @@ const TicketBookingDetails = () => {
                           </h5>
                           <div className="fw-bold fs-lg-5 text-dark align-self-center">
                             {moment(flightdata?.sg[0]?.or?.dT).format(
-                              "DD-MM-YYYY"
+                              "DD-MM-YYYY",
                             )}
                           </div>
                         </div>
@@ -3108,15 +3755,15 @@ const TicketBookingDetails = () => {
                             <p className="text-dark durationtxt">
                               {(() => {
                                 const departure = moment(
-                                  flightdata?.sg[0]?.or?.dT
+                                  flightdata?.sg[0]?.or?.dT,
                                 );
                                 const arrival = moment(
                                   flightdata?.sg[flightdata?.sg.length - 1]?.ds
-                                    ?.aT
+                                    ?.aT,
                                 );
                                 const totalMinutes = arrival.diff(
                                   departure,
-                                  "minutes"
+                                  "minutes",
                                 );
                                 return `${Math.floor(totalMinutes / 60)}h ${
                                   totalMinutes % 60
@@ -3141,7 +3788,7 @@ const TicketBookingDetails = () => {
                         <div className="flight-departure text-center">
                           <h5 className="text-dark fs-6 fs-lg-5 fw-bold">
                             {moment(
-                              flightdata?.sg[flightdata?.sg.length - 1]?.ds?.aT
+                              flightdata?.sg[flightdata?.sg.length - 1]?.ds?.aT,
                             ).format("hh:mm A")}
                           </h5>
                           <h5 className="text-dark fs-6 fs-lg-5">
@@ -3149,7 +3796,7 @@ const TicketBookingDetails = () => {
                           </h5>
                           <div className="fw-bold fs-lg-5 text-dark align-self-center">
                             {moment(
-                              flightdata?.sg[flightdata?.sg.length - 1]?.ds?.aT
+                              flightdata?.sg[flightdata?.sg.length - 1]?.ds?.aT,
                             ).format("DD-MM-YYYY")}
                           </div>
                         </div>
@@ -3163,10 +3810,18 @@ const TicketBookingDetails = () => {
                   </div>
                   <div className="border p-3 rounded shadow-sm">
                     {(() => {
-                      let totalFare =
-                        item?.fareIdentifier?.code !== "airIQ_fare"
-                          ? item?.fF || 0
-                          : item?.airIQPrice || 0;
+                      let totalFare = 0;
+
+                      if (item?.fareIdentifier?.code === "airIQ_fare") {
+                        totalFare = item?.airIQPrice || 0;
+                      } else if (
+                        item?.fareIdentifier?.code === "cheapfix_fare"
+                      ) {
+                        totalFare =
+                          item?.cheapfixPrice || item?.selectedPrice || 0;
+                      } else {
+                        totalFare = item?.fF || 0;
+                      }
 
                       let totalService =
                         item?.fareIdentifier?.code !== "airIQ_fare"
@@ -3187,20 +3842,32 @@ const TicketBookingDetails = () => {
                               <div className="col-6 text-start text-dark">
                                 Base + Taxes
                               </div>
-                              {item?.fareIdentifier?.code !== "airIQ_fare" ? (
-                                <>
-                                  <div className="col-6 text-end text-dark">
-                                    ₹ {item?.fF?.toFixed(2) || "0.00"}
-                                  </div>
-                                </>
-                              ) : (
-                                <>
-                                  <div className="col-6 text-end text-dark">
-                                    ₹ {item?.airIQPrice?.toFixed(2) || "0.00"}
-                                  </div>
-                                </>
-                              )}
+                              <div className="col-6 text-end text-dark">
+                                ₹{" "}
+                                {item?.fareIdentifier?.code === "airIQ_fare"
+                                  ? (item?.airIQPrice || 0).toFixed(2)
+                                  : item?.fareIdentifier?.code ===
+                                      "cheapfix_fare"
+                                    ? (
+                                        item?.cheapfixPrice ||
+                                        item?.selectedPrice ||
+                                        0
+                                      ).toFixed(2)
+                                    : (item?.fF || 0).toFixed(2)}
+                              </div>
                             </div>
+                            {item?.fareIdentifier?.code === "airIQ_fare" && (
+                              <div className="row w-100">
+                                <div className="col-6 text-start text-dark">
+                                  Infant Price
+                                </div>
+                                <>
+                                  <div className="col-6 text-end text-dark">
+                                    ₹ {item?.infant_price}
+                                  </div>
+                                </>
+                              </div>
+                            )}
                             <div className="row w-100">
                               <div className="col-6 text-start text-dark">
                                 Service Fees
@@ -3242,7 +3909,8 @@ const TicketBookingDetails = () => {
                               </div>
                             </div>
                           )}
-                          {item?.fareIdentifier?.code !== "airIQ_fare" ? (
+                          {item?.fareIdentifier?.code !== "airIQ_fare" &&
+                          item?.fareIdentifier?.code !== "cheapfix_fare" ? (
                             <>
                               <div className="text-center fw-bold fs-4 text-danger">
                                 {" "}
@@ -3338,6 +4006,9 @@ const TicketBookingDetails = () => {
                               {(
                                 totalFare +
                                 totalService +
+                                (item?.fareIdentifier?.code === "airIQ_fare"
+                                  ? item?.infant_price || 0
+                                  : 0) +
                                 getTotalAmount()
                               ).toFixed(2)}
                             </div>
@@ -3370,6 +4041,13 @@ const TicketBookingDetails = () => {
                               }}
                               className="col-2 mx-auto btnn text-center sbmitbtn"
                               onClick={() => {
+                                if (
+                                  item?.fareIdentifier?.code === "cheapfix_fare"
+                                ) {
+                                  handleSubmitCheapFix();
+                                  return;
+                                }
+
                                 AddPassengerDetailsToApi();
 
                                 const allPassengers = [
@@ -3385,7 +4063,7 @@ const TicketBookingDetails = () => {
                                   Notification(
                                     "warning",
                                     "Field Required",
-                                    validation.message
+                                    validation.message,
                                   );
                                   return;
                                 }
@@ -3395,15 +4073,17 @@ const TicketBookingDetails = () => {
                                   item?.fareIdentifier?.code !== "airIQ_fare"
                                 ) {
                                   openModalasking();
-                                  console.log("true airiq");
                                   // handleSavePassenger();
                                 } else {
-                                  console.log("false airiq");
                                   handleSavePassengerAiriq();
                                 }
                               }}
                             >
-                              {passenger_loading ? "Loading..." : "SUBMIT"}
+                              {passenger_loading ||
+                              cheapfixbookloading ||
+                              ourapiload
+                                ? "Loading..."
+                                : "SUBMIT"}
                             </div>
                           </div>
 
@@ -3461,8 +4141,8 @@ const TicketBookingDetails = () => {
                   {seat.isAisle
                     ? "Aisle Seat"
                     : seat.seatNo.endsWith("A") || seat.seatNo.endsWith("F")
-                    ? "Window Seat"
-                    : "Middle Seat"}
+                      ? "Window Seat"
+                      : "Middle Seat"}
                 </Typography>
                 <Typography>
                   <strong>Price:</strong> ₹{seat.amt}
@@ -3516,7 +4196,6 @@ const TicketBookingDetails = () => {
       >
         <div style={{ height: "100%" }}>
           {/* Header */}
-
           <div
             style={{
               background: "linear-gradient(135deg, #f25e0e 0%, #f91d1d 100%)",
@@ -3666,7 +4345,7 @@ const TicketBookingDetails = () => {
                           }}
                         >
                           {formatCurrency(
-                            reprice_data.results.previousTotalAmount
+                            reprice_data.results.previousTotalAmount,
                           )}
                         </p>
                       </div>
@@ -3858,7 +4537,7 @@ const TicketBookingDetails = () => {
                             >
                               Add Ons Baggage
                             </div>
-                            {/* <div
+                            <div
                               style={{
                                 fontSize: "14px",
                                 fontWeight: "600",
@@ -3867,11 +4546,10 @@ const TicketBookingDetails = () => {
                             >
                               {formatCurrency(
                                 reprice_data?.results?.addONs?.baggage
-                                  ?.totalAmt || 0
+                                  ?.totalAmt || 0,
                               )}
-                              
-                            </div> */}
-                            <div
+                            </div>
+                            {/* <div
                               style={{
                                 fontSize: "14px",
                                 fontWeight: "600",
@@ -3884,7 +4562,7 @@ const TicketBookingDetails = () => {
                               }}
                             >
                               11560
-                            </div>
+                            </div> */}
                           </div>
                         </div>
 
@@ -3912,30 +4590,30 @@ const TicketBookingDetails = () => {
                   })}
 
                   {/* Baggage Change Notice */}
-                  {/* {reprice_data.results.isBaggageChanged && ( */}
-                  <div
-                    style={{
-                      background: "#fff3cd",
-                      border: "1px solid #ffeaa7",
-                      borderRadius: "6px",
-                      padding: "12px",
-                      marginTop: "12px",
-                    }}
-                  >
+                  {reprice_data.results.isBaggageChanged && (
                     <div
                       style={{
-                        color: "#856404",
-                        fontSize: "13px",
-                        fontWeight: "500",
+                        background: "#fff3cd",
+                        border: "1px solid #ffeaa7",
+                        borderRadius: "6px",
+                        padding: "12px",
+                        marginTop: "12px",
                       }}
                     >
-                      ⚠️ Baggage allowance has been updated from the original
-                      search
+                      <div
+                        style={{
+                          color: "#856404",
+                          fontSize: "13px",
+                          fontWeight: "500",
+                        }}
+                      >
+                        ⚠️ Baggage allowance has been updated from the original
+                        search
+                      </div>
                     </div>
-                  </div>
-                  {/* )} */}
+                  )}
 
-                  {/* {!reprice_data.results.isBaggageChanged && (
+                  {!reprice_data.results.isBaggageChanged && (
                     <div
                       style={{
                         background: "#d1edff",
@@ -3956,7 +4634,7 @@ const TicketBookingDetails = () => {
                         original search
                       </div>
                     </div>
-                  )} */}
+                  )}
                 </div>
 
                 {/* Fare Breakdown */}
@@ -4009,7 +4687,7 @@ const TicketBookingDetails = () => {
                         <span style={{ color: "#636e72" }}>Seat Selection</span>
                         <span style={{ fontWeight: "500" }}>
                           {formatCurrency(
-                            reprice_data.results.addONs.seat.totalAmt
+                            reprice_data.results.addONs.seat.totalAmt,
                           )}
                         </span>
                       </div>
@@ -4026,7 +4704,7 @@ const TicketBookingDetails = () => {
                         </span>
                         <span style={{ fontWeight: "500" }}>
                           {formatCurrency(
-                            reprice_data.results.addONs.baggage.totalAmt
+                            reprice_data.results.addONs.baggage.totalAmt,
                           )}
                         </span>
                       </div>
@@ -4161,7 +4839,7 @@ const TicketBookingDetails = () => {
                               }}
                             >
                               {formatTimeok(
-                                segment?.or?.dT || flight.departureAt
+                                segment?.or?.dT || flight.departureAt,
                               )}
                             </div>
                             <div
@@ -4172,7 +4850,7 @@ const TicketBookingDetails = () => {
                               }}
                             >
                               {formatDateok(
-                                segment?.or?.dT || flight.departureAt
+                                segment?.or?.dT || flight.departureAt,
                               )}
                             </div>
                             <div
@@ -4229,9 +4907,9 @@ const TicketBookingDetails = () => {
                               {Math.floor(
                                 (new Date(segment?.ds?.aT || flight.arrivalAt) -
                                   new Date(
-                                    segment?.or?.dT || flight.departureAt
+                                    segment?.or?.dT || flight.departureAt,
                                   )) /
-                                  (1000 * 60)
+                                  (1000 * 60),
                               )}{" "}
                               min
                             </div>
@@ -4247,7 +4925,7 @@ const TicketBookingDetails = () => {
                               }}
                             >
                               {formatTimeok(
-                                segment?.ds?.aT || flight.arrivalAt
+                                segment?.ds?.aT || flight.arrivalAt,
                               )}
                             </div>
                             <div
@@ -4258,7 +4936,7 @@ const TicketBookingDetails = () => {
                               }}
                             >
                               {formatDateok(
-                                segment?.ds?.aT || flight.arrivalAt
+                                segment?.ds?.aT || flight.arrivalAt,
                               )}
                             </div>
                             <div
@@ -4406,8 +5084,8 @@ const TicketBookingDetails = () => {
                                   passenger.paxType === 1
                                     ? "#28a745"
                                     : passenger.paxType === 2
-                                    ? "#ffc107"
-                                    : "#17a2b8",
+                                      ? "#ffc107"
+                                      : "#17a2b8",
                                 color: "white",
                                 fontSize: "10px",
                                 padding: "2px 6px",
@@ -4417,8 +5095,8 @@ const TicketBookingDetails = () => {
                               {passenger.paxType === 1
                                 ? "Adult"
                                 : passenger.paxType === 2
-                                ? "Child"
-                                : "Infant"}
+                                  ? "Child"
+                                  : "Infant"}
                             </span>
                           </div>
                           <div style={{ color: "#636e72", fontSize: "13px" }}>
@@ -4433,13 +5111,13 @@ const TicketBookingDetails = () => {
                               <p style={{ margin: "2px 0" }}>
                                 🎂{" "}
                                 {new Date(
-                                  passenger.dateOfBirth
+                                  passenger.dateOfBirth,
                                 ).toLocaleDateString("en-IN")}
                               </p>
                             )}
                           </div>
                         </div>
-                      )
+                      ),
                     )}
                   </div>
                 </div>
@@ -4523,7 +5201,6 @@ const TicketBookingDetails = () => {
           </div>
         </div>
       </Modal>
-
       {/* Time Up modal */}
       <Modal
         isOpen={isModalOpensession}
@@ -4651,8 +5328,8 @@ const TicketBookingDetails = () => {
                         currentBookingStatus === "FAILED"
                           ? "modal-header-failed"
                           : currentBookingStatus === "PENDING"
-                          ? "modal-header-pending"
-                          : "modal-header-gradient"
+                            ? "modal-header-pending"
+                            : "modal-header-gradient"
                       }`}
                     >
                       <button
@@ -4902,8 +5579,8 @@ const TicketBookingDetails = () => {
                                         ? "Non-stop"
                                         : `${flight?.stopCount?.stops} stop(s)`
                                       : Returnflight?.stopCount?.stops === 0
-                                      ? "Non-stop"
-                                      : `${Returnflight?.stopCount?.stops} stop(s)`}
+                                        ? "Non-stop"
+                                        : `${Returnflight?.stopCount?.stops} stop(s)`}
                                   </>
                                 ) : (
                                   <>{getBookingData?.flight_no}</>
@@ -4918,14 +5595,14 @@ const TicketBookingDetails = () => {
                                 <>
                                   {calculateDuration(
                                     segment?.or?.dT,
-                                    segment?.ds?.aT
+                                    segment?.ds?.aT,
                                   )}
                                 </>
                               ) : (
                                 <>
                                   {calculateDuration(
                                     retunsegment?.or?.dT,
-                                    retunsegment?.ds?.aT
+                                    retunsegment?.ds?.aT,
                                   )}
                                 </>
                               )}
@@ -5226,10 +5903,10 @@ const TicketBookingDetails = () => {
                                     passenger.passengerType === "ADULT"
                                       ? "bg-primary"
                                       : passenger.passengerType === "CHILD"
-                                      ? "bg-warning"
-                                      : passenger.passengerType === "INFANT"
-                                      ? "bg-info"
-                                      : "bg-secondary"
+                                        ? "bg-warning"
+                                        : passenger.passengerType === "INFANT"
+                                          ? "bg-info"
+                                          : "bg-secondary"
                                   }`}
                                 >
                                   {passenger.passengerType}
@@ -5332,7 +6009,7 @@ const TicketBookingDetails = () => {
                                           ₹{value.totalAmt?.toLocaleString()}
                                         </span>
                                       </div>
-                                    )
+                                    ),
                                   )}
                                 </div>
                               )}

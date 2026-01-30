@@ -7,6 +7,7 @@ import WhyChooseUs from "../../Components/WhyChooseUs/WhyChooseUs";
 import PartnerAirline from "../../Components/PartnerAirlines/PartnerAirline";
 import { Helmet } from "react-helmet";
 import ReactModal from "react-modal";
+import Modal from "react-modal";
 import { IoCloseCircle } from "react-icons/io5";
 import { FaInfoCircle } from "react-icons/fa";
 import axios from "axios";
@@ -25,10 +26,24 @@ import WhyChooseUsBus from "../../Components/WhyChooseUsBus/WhyChooseUsBus";
 import CountSection from "../../Components/CountSection/CountSection";
 import { useBusContext } from "../../Context/bus_context";
 import { useFlightContext } from "../../Context/flight_context";
+import { useLocation, useNavigate } from "react-router-dom";
+import {
+  X,
+  Plane,
+  Calendar,
+  Users,
+  CreditCard,
+  Luggage,
+  Clock,
+  MapPin,
+} from "lucide-react";
 
 const HomePage = () => {
   const { getCancellationPolicyApi } = useAuthContext();
   const [modalWidth, setModalWidth] = useState("90%");
+  const location = useLocation();
+
+  const [refid, setRefID] = useState(location.state?.reference_id || "");
 
   const { FlightSearch, FlightSearchAiriq, flight_Data, flightAirIq_Data } =
     useFlightContext();
@@ -38,7 +53,7 @@ const HomePage = () => {
       setModalWidth(window.innerWidth <= 1180 ? "90%" : "1140px");
     };
 
-    updateWidth(); // Set width immediately on page load
+    updateWidth();
     window.addEventListener("resize", updateWidth);
 
     return () => window.removeEventListener("resize", updateWidth);
@@ -59,10 +74,11 @@ const HomePage = () => {
       position: "relative",
       overflowY: "auto",
       height: "auto",
+      maxHeight: "90vh",
     },
     overlay: {
       zIndex: 10000,
-      backgroundColor: "rgba(0, 0, 0, 0.3)",
+      backgroundColor: "rgba(0, 0, 0, 0.5)",
     },
   };
 
@@ -71,8 +87,12 @@ const HomePage = () => {
   const [login, SetLogin] = useState("");
   const [getCompanyId, setCompanyId] = useState();
   const [loading, setLoading] = useState(false);
+  const [cheapfixloading, setCheapFixLoading] = useState(false);
   const [data, setData] = useState(null);
+  const [dataCheapfix, setDataCheapFix] = useState(null);
   const [userRole, setUserRole] = useState("");
+  const [modelOpenCheapFix, setModalOpenCheapFix] = useState(false);
+  const navigate = useNavigate();
 
   useEffect(() => {
     var islogin = localStorage.getItem("is_login");
@@ -84,40 +104,36 @@ const HomePage = () => {
     if (islogin) {
       setUserRole(JSON.parse(role));
     }
-
-    // if (getCompanyId){
-    //   console.log("truueeeee");
-
-    // }
   }, []);
 
   useEffect(() => {
     getCancellationPolicy();
   }, []);
 
+  useEffect(() => {
+    if (refid) {
+      fetchBookingDetailsByReference();
+    }
+  }, [refid]);
+
   const API_KEY =
     "NTMzNDUwMDpBSVJJUSBURVNUIEFQSToxODkxOTMwMDM1OTk2OmpTMm0vUU1HVmQvelovZi81dFdwTEE9PQ==";
   const isLocalhost = window.location.hostname === "localhost";
 
   const proxy = isLocalhost ? "https://cors-anywhere.herokuapp.com/" : "";
-  // const proxy = "https://proxy.cors.sh/";
 
   useEffect(() => {
     window.scroll(0, 0);
     var bookingid = localStorage.getItem("booking_id");
-    // console.log("Booking Id in Homepage", bookingid);
     setBookingId(bookingid);
     if (bookingid !== null) {
       setModalOpen(true);
-      // BookingDetails(bookingid);
       setTimeout(() => {
         BookingDetails(bookingid);
       }, 1000);
     }
 
     const token = JSON.parse(localStorage.getItem("is_token"));
-
-    // console.log("HomePage Ma Token No Log aapni api no", token);
   }, [userRole]);
 
   const BookingDetails = async (bookingid) => {
@@ -126,36 +142,21 @@ const HomePage = () => {
     let apiUrl = "";
 
     if (userRole === "2") {
-      // apiUrl = proxy + "https://omairiq.azurewebsites.net/search";
       apiUrl = `${ticketcurl}/${bookingid}`;
     } else if (userRole === "3") {
-      // apiUrl = proxy + "https://omairiq.azurewebsites.net/suppliersearch";
       apiUrl = `${supplierticketcurl}/${bookingid}`;
     } else {
       console.error("Invalid selection value");
       return;
     }
     try {
-      console.log("2222222222222222222");
-
-      // const res = await axios.get(`${ticketcurl}/${bookingid}`,
-      const res = await axios.get(
-        apiUrl,
-        // proxy +
-        //   `https://omairiq.azurewebsites.net/ticket?booking_id=${bookingid}`,
-
-        {
-          headers: {
-            // "api-key": API_KEY,
-            // "x-cors-api-key": "temp_e35dd3b63f82139abededcd2891cb340",
-            // Authorization: token,
-            // "Content-Type": "application/json",
-            "api-key": API_KEY,
-            Authorization: token,
-            Accept: ACCEPT_HEADER,
-          },
-        }
-      );
+      const res = await axios.get(apiUrl, {
+        headers: {
+          "api-key": API_KEY,
+          Authorization: token,
+          Accept: ACCEPT_HEADER,
+        },
+      });
       if (res.data.status === "success") {
         const data = res.data.data;
         console.log("Ticket no data", res.data.data);
@@ -176,9 +177,14 @@ const HomePage = () => {
     console.log("Booking ID cleared!");
   };
 
-  const { selectedTabMainHome, selectedTab, ClearRouteData } = useBusContext();
+  const handleCloseCheapFix = () => {
+    setModalOpenCheapFix(false);
+    setDataCheapFix(null);
+    setRefID("");
+    navigate("/", { replace: true });
+  };
 
-  // Company List API
+  const { selectedTabMainHome, selectedTab, ClearRouteData } = useBusContext();
 
   const getCancellationPolicy = async () => {
     const formdata = new FormData();
@@ -193,13 +199,51 @@ const HomePage = () => {
     }
   };
 
+  const fetchBookingDetailsByReference = async () => {
+    const token = "3-1-NEWTEST-dmjkwj78BJHk8";
+
+    const payload = {
+      reference_id: refid,
+      transaction_id: "ok bhai",
+      end_user_ip: "183.83.43.117",
+      token: token,
+    };
+
+    try {
+      setCheapFixLoading(true);
+      const res = await axios.post(
+        "https://local.flightapi.co.in/v1/fbapi/booking_details",
+        payload,
+        {
+          headers: {
+            "Content-Type": "application/json",
+          },
+        },
+      );
+
+      console.log("Booking Details Response:", res.data);
+
+      if (res.data?.replyCode === 0 && res.data?.data) {
+        setDataCheapFix(res.data.data);
+        setModalOpenCheapFix(true);
+      } else {
+        console.error("API failed:", res.data);
+        alert("Failed to fetch booking details. Please try again.");
+      }
+    } catch (error) {
+      console.error("Error fetching booking details:", error);
+      alert("Error fetching booking details. Please check your connection.");
+    } finally {
+      setCheapFixLoading(false);
+    }
+  };
+
   return (
     <div className="">
       <Helmet>
         <title>Home | Airline Booking</title>
       </Helmet>
       <HomeHero />
-      {/* <HeroTicketBooking /> */}
 
       {selectedTab === "buses" ? (
         <>
@@ -220,6 +264,7 @@ const HomePage = () => {
         </>
       )}
 
+      {/* Original Booking Modal */}
       <ReactModal
         isOpen={modalOpen}
         style={customStyles}
@@ -260,14 +305,12 @@ const HomePage = () => {
               <table className="table table-bordered">
                 <thead>
                   <tr>
-                    {/* <th className="text-white">S.No</th> */}
                     <th className="text-black">Airline</th>
                     <th className="text-black">Booking Date</th>
                   </tr>
                 </thead>
                 <tbody>
                   <tr>
-                    {/* <td>1</td> */}
                     <td>{data?.airline}</td>
                     <td>{moment(data?.booking_date).format("DD-MM-YYYY")} </td>
                   </tr>
@@ -343,7 +386,7 @@ const HomePage = () => {
 
                         {data?.passenger_details?.Adult.map((itm, index) => {
                           return (
-                            <tr>
+                            <tr key={index}>
                               <td>{index + 1}</td>
                               <td colSpan={3}>{itm?.Name}</td>
                             </tr>
@@ -371,7 +414,7 @@ const HomePage = () => {
                         </tr>
                         {data?.passenger_details?.Child.map((itm, index) => {
                           return (
-                            <tr>
+                            <tr key={index}>
                               <td>{index + 1}</td>
                               <td colSpan={3}>{itm?.Name}</td>
                             </tr>
@@ -401,7 +444,7 @@ const HomePage = () => {
 
                         {data?.passenger_details?.Infant.map((itm, index) => {
                           return (
-                            <tr>
+                            <tr key={index}>
                               <td>{index + 1}</td>
                               <td colSpan={2}>{itm?.Name}</td>
                               <td>{itm?.Dob}</td>
@@ -435,6 +478,361 @@ const HomePage = () => {
           )}
         </div>
       </ReactModal>
+
+      {modelOpenCheapFix && dataCheapfix && (
+        <div className="cheapfix-modal-overlay">
+          <div className="cheapfix-modal-container">
+            <div className="cheapfix-modal-header">
+              <h2 className="cheapfix-modal-title">Booking Details</h2>
+              <button
+                className="cheapfix-modal-close-btn"
+                onClick={handleCloseCheapFix}
+                aria-label="Close modal"
+              >
+                <X size={24} />
+              </button>
+            </div>
+
+            <div className="cheapfix-modal-content">
+              {/* Booking Summary */}
+              <div className="cheapfix-section">
+                <h3 className="cheapfix-section-title">Booking Summary</h3>
+                <div className="cheapfix-info-grid">
+                  <div className="cheapfix-info-item">
+                    <span className="cheapfix-label">Reference ID:</span>
+                    <span className="cheapfix-value">
+                      {dataCheapfix.reference_id}
+                    </span>
+                  </div>
+                  <div className="cheapfix-info-item">
+                    <span className="cheapfix-label">Booking Date:</span>
+                    <span className="cheapfix-value">
+                      {dataCheapfix.booking_date}
+                    </span>
+                  </div>
+                  <div className="cheapfix-info-item">
+                    <span className="cheapfix-label">PNR:</span>
+                    <span className="cheapfix-value">
+                      {dataCheapfix.flight_pnrs}
+                    </span>
+                  </div>
+                  <div className="cheapfix-info-item">
+                    <span className="cheapfix-label">Total Amount:</span>
+                    <span className="cheapfix-value cheapfix-amount">
+                      ₹{dataCheapfix.total_amount}
+                    </span>
+                  </div>
+                  <div className="cheapfix-info-item">
+                    <span className="cheapfix-label">Payment Status:</span>
+                    <span
+                      className={`cheapfix-status ${dataCheapfix.payment_status ? "cheapfix-status-success" : "cheapfix-status-pending"}`}
+                    >
+                      {dataCheapfix.payment_status ? "Paid" : "Pending"}
+                    </span>
+                  </div>
+                  <div className="cheapfix-info-item">
+                    <span className="cheapfix-label">Seat Booking Status:</span>
+                    <span
+                      className={`cheapfix-status ${dataCheapfix.seat_book_status ? "cheapfix-status-success" : "cheapfix-status-pending"}`}
+                    >
+                      {dataCheapfix.seat_book_status ? "Confirmed" : "Pending"}
+                    </span>
+                  </div>
+                </div>
+              </div>
+
+              {/* Contact Information */}
+              <div className="cheapfix-section">
+                <h3 className="cheapfix-section-title">Contact Information</h3>
+                <div className="cheapfix-info-grid">
+                  <div className="cheapfix-info-item">
+                    <span className="cheapfix-label">Name:</span>
+                    <span className="cheapfix-value">
+                      {dataCheapfix.contact_name}
+                    </span>
+                  </div>
+                  <div className="cheapfix-info-item">
+                    <span className="cheapfix-label">Email:</span>
+                    <span className="cheapfix-value">
+                      {dataCheapfix.contact_email}
+                    </span>
+                  </div>
+                  <div className="cheapfix-info-item">
+                    <span className="cheapfix-label">Phone:</span>
+                    <span className="cheapfix-value">
+                      {dataCheapfix.contact_number}
+                    </span>
+                  </div>
+                </div>
+              </div>
+
+              {/* Passenger Count */}
+              <div className="cheapfix-section">
+                <h3 className="cheapfix-section-title">Passenger Details</h3>
+                <div className="cheapfix-passenger-count">
+                  <div className="cheapfix-count-item">
+                    <Users size={20} />
+                    <span>Adult: {dataCheapfix.adult}</span>
+                  </div>
+                  <div className="cheapfix-count-item">
+                    <Users size={20} />
+                    <span>Children: {dataCheapfix.children}</span>
+                  </div>
+                  <div className="cheapfix-count-item">
+                    <Users size={20} />
+                    <span>Infant: {dataCheapfix.infant}</span>
+                  </div>
+                  <div className="cheapfix-count-item">
+                    <span className="cheapfix-total-seats">
+                      Total Seats: {dataCheapfix.total_book_seats}
+                    </span>
+                  </div>
+                </div>
+              </div>
+
+              {/* Onward Flight Details */}
+              {dataCheapfix.onward && (
+                <div className="cheapfix-section">
+                  <h3 className="cheapfix-section-title">
+                    <Plane size={20} />
+                    Onward Flight Details
+                  </h3>
+                  <div className="cheapfix-flight-card">
+                    <div className="cheapfix-airline-info">
+                      <div className="cheapfix-airline-details">
+                        <span className="cheapfix-airline-name">
+                          {dataCheapfix.onward.airline_name}
+                        </span>
+                        <span className="cheapfix-flight-number">
+                          {dataCheapfix.onward.airline_code}{" "}
+                          {dataCheapfix.onward.flight_number}
+                        </span>
+                      </div>
+                    </div>
+
+                    <div className="cheapfix-route-info">
+                      <div className="cheapfix-route-point">
+                        <div className="cheapfix-city-code">
+                          {dataCheapfix.onward.depeparture_city_code}
+                        </div>
+                        <div className="cheapfix-city-name">
+                          {dataCheapfix.onward.depeparture_city_name}
+                        </div>
+                        <div className="cheapfix-datetime">
+                          <Calendar size={14} />
+                          <span>{dataCheapfix.onward.departure_date}</span>
+                        </div>
+                        <div className="cheapfix-datetime">
+                          <Clock size={14} />
+                          <span>{dataCheapfix.onward.departure_time}</span>
+                        </div>
+                        <div className="cheapfix-terminal">
+                          Terminal{" "}
+                          {dataCheapfix.onward.departure_terminal_no_id}
+                        </div>
+                      </div>
+
+                      {/* <div className="cheapfix-route-arrow">
+                        <div className="cheapfix-stops">
+                          {dataCheapfix.onward.stop_count === 0
+                            ? "Non-Stop"
+                            : `${dataCheapfix.onward.stop_count} Stop(s)`}
+                        </div>
+                        <div className="cheapfix-arrow-line"></div>
+                      </div> */}
+
+                      <div className="cheapfix-route-point">
+                        <div className="cheapfix-city-code">
+                          {dataCheapfix.onward.arrival_city_code}
+                        </div>
+                        <div className="cheapfix-city-name">
+                          {dataCheapfix.onward.arrival_city_name}
+                        </div>
+                        <div className="cheapfix-datetime">
+                          <Calendar size={14} />
+                          <span>{dataCheapfix.onward.arrival_date}</span>
+                        </div>
+                        <div className="cheapfix-datetime">
+                          <Clock size={14} />
+                          <span>{dataCheapfix.onward.arrival_time}</span>
+                        </div>
+                        <div className="cheapfix-terminal">
+                          Terminal {dataCheapfix.onward.arrival_terminal_no_id}
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              )}
+
+              {/* Baggage Information */}
+              {dataCheapfix.baggage && (
+                <div className="cheapfix-section">
+                  <h3 className="cheapfix-section-title">
+                    <Luggage size={20} />
+                    Baggage Allowance
+                  </h3>
+                  <div className="cheapfix-baggage-grid">
+                    <div className="cheapfix-baggage-card">
+                      <h4 className="cheapfix-baggage-title">
+                        Check-in Baggage
+                      </h4>
+                      <div className="cheapfix-baggage-item">
+                        <span>Adult:</span>
+                        <span>
+                          {dataCheapfix.baggage.checkin_baggages_adult} kg
+                        </span>
+                      </div>
+                      <div className="cheapfix-baggage-item">
+                        <span>Children:</span>
+                        <span>
+                          {dataCheapfix.baggage.checkin_baggages_children} kg
+                        </span>
+                      </div>
+                      <div className="cheapfix-baggage-item">
+                        <span>Infant:</span>
+                        <span>
+                          {dataCheapfix.baggage.checkin_baggages_infant} kg
+                        </span>
+                      </div>
+                    </div>
+
+                    <div className="cheapfix-baggage-card">
+                      <h4 className="cheapfix-baggage-title">Cabin Baggage</h4>
+                      <div className="cheapfix-baggage-item">
+                        <span>Adult:</span>
+                        <span>
+                          {dataCheapfix.baggage.cabin_baggages_adult} kg
+                        </span>
+                      </div>
+                      <div className="cheapfix-baggage-item">
+                        <span>Children:</span>
+                        <span>
+                          {dataCheapfix.baggage.cabin_baggages_children} kg
+                        </span>
+                      </div>
+                      <div className="cheapfix-baggage-item">
+                        <span>Infant:</span>
+                        <span>
+                          {dataCheapfix.baggage.cabin_baggages_infant} kg
+                        </span>
+                      </div>
+                    </div>
+                  </div>
+                  <p className="cheapfix-baggage-disclaimer">
+                    {dataCheapfix.baggage.disclaimer}
+                  </p>
+                </div>
+              )}
+
+              {/* Price Breakup */}
+              {dataCheapfix.price_breakup && (
+                <div className="cheapfix-section">
+                  <h3 className="cheapfix-section-title">
+                    <CreditCard size={20} />
+                    Price Breakup
+                  </h3>
+                  <div className="cheapfix-price-list">
+                    <div className="cheapfix-price-row">
+                      <span>Base Price:</span>
+                      <span>₹{dataCheapfix.price_breakup.base_price}</span>
+                    </div>
+                    <div className="cheapfix-price-row">
+                      <span>Fees & Taxes:</span>
+                      <span>₹{dataCheapfix.price_breakup.fees_taxes}</span>
+                    </div>
+                    <div className="cheapfix-price-row">
+                      <span>Service Charge:</span>
+                      <span>₹{dataCheapfix.price_breakup.service_charge}</span>
+                    </div>
+                    <div className="cheapfix-price-row">
+                      <span>Discount:</span>
+                      <span className="cheapfix-discount">
+                        -₹{dataCheapfix.price_breakup.discount}
+                      </span>
+                    </div>
+                    <div className="cheapfix-price-row cheapfix-price-total">
+                      <span>Total Amount:</span>
+                      <span>₹{dataCheapfix.total_amount}</span>
+                    </div>
+                  </div>
+                </div>
+              )}
+
+              {/* Travellers */}
+              {dataCheapfix.travellers &&
+                dataCheapfix.travellers.length > 0 && (
+                  <div className="cheapfix-section">
+                    <h3 className="cheapfix-section-title">
+                      Travellers Information
+                    </h3>
+                    {dataCheapfix.travellers.map((traveller, index) => (
+                      <div key={index} className="cheapfix-traveller-card">
+                        <h4 className="cheapfix-traveller-name">
+                          Passenger {index + 1}: {traveller.gender}{" "}
+                          {traveller.first_name} {traveller.middle_name}{" "}
+                          {traveller.last_name}
+                        </h4>
+                        <div className="cheapfix-traveller-grid">
+                          <div className="cheapfix-info-item">
+                            <span className="cheapfix-label">
+                              Date of Birth:
+                            </span>
+                            <span className="cheapfix-value">
+                              {traveller.dob}
+                            </span>
+                          </div>
+                          <div className="cheapfix-info-item">
+                            <span className="cheapfix-label">Age:</span>
+                            <span className="cheapfix-value">
+                              {traveller.age} years
+                            </span>
+                          </div>
+                          {traveller.passport_no && (
+                            <>
+                              <div className="cheapfix-info-item">
+                                <span className="cheapfix-label">
+                                  Passport No:
+                                </span>
+                                <span className="cheapfix-value">
+                                  {traveller.passport_no}
+                                </span>
+                              </div>
+                              <div className="cheapfix-info-item">
+                                <span className="cheapfix-label">
+                                  Passport Expiry:
+                                </span>
+                                <span className="cheapfix-value">
+                                  {traveller.passport_expire_date}
+                                </span>
+                              </div>
+                            </>
+                          )}
+                          <div className="cheapfix-info-item">
+                            <span className="cheapfix-label">
+                              Ticket Price:
+                            </span>
+                            <span className="cheapfix-value">
+                              ₹{traveller.ticket_price}
+                            </span>
+                          </div>
+                          <div className="cheapfix-info-item">
+                            <span className="cheapfix-label">Status:</span>
+                            <span
+                              className={`cheapfix-status ${traveller.status === 1 ? "cheapfix-status-success" : "cheapfix-status-pending"}`}
+                            >
+                              {traveller.status === 1 ? "Confirmed" : "Pending"}
+                            </span>
+                          </div>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                )}
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 };

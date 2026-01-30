@@ -49,20 +49,20 @@ const TicketBookingDetails = () => {
   console.log("Itemmm", item);
 
   const [ttltraveller, setttltraveller] = useState(
-    location.state?.totaltraveller || 1
+    location.state?.totaltraveller || 1,
   );
 
   const [adulttraveler, setadulttraveler] = useState(
-    location.state?.adulttraveler
+    location.state?.adulttraveler,
   );
   const [childtraveler, setchildtraveler] = useState(
-    location.state?.childtraveler
+    location.state?.childtraveler,
   );
   const [infanttraveler, setinfanttraveler] = useState(
-    location.state?.infanttraveler
+    location.state?.infanttraveler,
   );
   const [bookingtokenid, setbookingtokenid] = useState(
-    location.state?.bookingtokenid
+    location.state?.bookingtokenid,
   );
   const [ticketid, setticketid] = useState(location.state?.ticket_id);
   const [selected, setselected] = useState(location.state?.selected);
@@ -221,13 +221,15 @@ const TicketBookingDetails = () => {
   };
 
   const [travelers, setTravelers] = useState(
-    Array.from({ length: adulttraveler }, () => getTravelerFields(getCondition))
+    Array.from({ length: adulttraveler }, () =>
+      getTravelerFields(getCondition),
+    ),
   );
   const [childtravelers, setChildTravelers] = useState(
-    Array.from({ length: childtraveler }, () => getChildFields(getCondition))
+    Array.from({ length: childtraveler }, () => getChildFields(getCondition)),
   );
   const [infanttravelers, setInfantTravelers] = useState(
-    Array.from({ length: infanttraveler }, () => getInfantFields(getCondition))
+    Array.from({ length: infanttraveler }, () => getInfantFields(getCondition)),
   );
 
   const [selectedMembers, setSelectedMembers] = useState([]);
@@ -237,8 +239,8 @@ const TicketBookingDetails = () => {
       member.gender === 1
         ? genderOptions.find((option) => option.value === "male")
         : member.gender === 2
-        ? genderOptions.find((option) => option.value === "female")
-        : genderOptions.find((option) => option.value === "other");
+          ? genderOptions.find((option) => option.value === "female")
+          : genderOptions.find((option) => option.value === "other");
 
     const calculateAge = (dob) => {
       if (!dob) return "";
@@ -292,7 +294,7 @@ const TicketBookingDetails = () => {
     const updateTravelers = (prevTravelers, extraData = {}) => {
       const updatedTravelers = [...prevTravelers];
       const existingIndex = updatedTravelers.findIndex(
-        (t) => t.fname === member.first_name && t.lname === member.last_name
+        (t) => t.fname === member.first_name && t.lname === member.last_name,
       );
 
       if (existingIndex !== -1) {
@@ -316,15 +318,15 @@ const TicketBookingDetails = () => {
     const isAlreadySelectedByName = () => {
       if (cat === "Adult") {
         return travelers.some(
-          (t) => t.fname === member.first_name && t.lname === member.last_name
+          (t) => t.fname === member.first_name && t.lname === member.last_name,
         );
       } else if (cat === "Child") {
         return childtravelers.some(
-          (t) => t.fname === member.first_name && t.lname === member.last_name
+          (t) => t.fname === member.first_name && t.lname === member.last_name,
         );
       } else if (cat === "Infant") {
         return infanttravelers.some(
-          (t) => t.fname === member.first_name && t.lname === member.last_name
+          (t) => t.fname === member.first_name && t.lname === member.last_name,
         );
       }
       return false;
@@ -370,7 +372,7 @@ const TicketBookingDetails = () => {
     } else if (cat === "Infant") {
       const formattedDate = dayjs(member.dob).format("YYYY-MM-DD");
       setInfantTravelers((prev) =>
-        updateTravelers(prev, { dob: formattedDate })
+        updateTravelers(prev, { dob: formattedDate }),
       );
     }
 
@@ -444,7 +446,7 @@ const TicketBookingDetails = () => {
           alert(
             `Please enter a valid 10-digit phone number for Adult Traveler ${
               i + 1
-            }.`
+            }.`,
           );
           return;
         }
@@ -471,7 +473,7 @@ const TicketBookingDetails = () => {
           alert(
             `Please enter a valid 10-digit phone number for Child Traveler ${
               j + 1
-            }.`
+            }.`,
           );
           return;
         }
@@ -504,7 +506,7 @@ const TicketBookingDetails = () => {
           alert(
             `Please enter a valid 10-digit phone number for Child Traveler ${
               k + 1
-            }.`
+            }.`,
           );
           return;
         }
@@ -542,7 +544,7 @@ const TicketBookingDetails = () => {
 
     if (infanttraveler > 0 && !hasValidInfant) {
       alert(
-        "At least one traveler must be between 0 and 2 years old if an infant traveler is selected."
+        "At least one traveler must be between 0 and 2 years old if an infant traveler is selected.",
       );
       return;
     }
@@ -580,8 +582,6 @@ const TicketBookingDetails = () => {
   };
 
   const handleDateChangeAdult = (index, date) => {
-    console.log("HANDLE DATE", index, date);
-    console.log("ANother ", dayjs(date).format("YYYY-MM-DD"));
     if (date) {
       const birthYear = date.year();
       const currentYear = dayjs().year();
@@ -914,7 +914,7 @@ const TicketBookingDetails = () => {
         item?.international_flight_staus == 1
       ) {
         alert(
-          `Please select the expiry date of passport for Traveler ${i + 1}.`
+          `Please select the expiry date of passport for Traveler ${i + 1}.`,
         );
         return;
       }
@@ -994,8 +994,8 @@ const TicketBookingDetails = () => {
         traveler.gender.value === "male"
           ? "Mr"
           : traveler.gender.value === "female"
-          ? "Miss"
-          : "",
+            ? "Miss"
+            : "",
 
       first_name: traveler.fname,
       middle_name: "",
@@ -1058,7 +1058,7 @@ const TicketBookingDetails = () => {
       } else if (response.errorCode == 2001) {
         console.error("API call failed:", response.status, response.statusText);
         alert(
-          "Failed to submit the form Please check all the Details and try again"
+          "Failed to submit the form Please check all the Details and try again",
         );
         Notification("error", "Error!", data.errorMessage);
         setLoading(false);
@@ -1126,7 +1126,7 @@ const TicketBookingDetails = () => {
           item?.international_flight_staus == 1
         ) {
           alert(
-            `Please select the expiry date of passport for Traveler ${i + 1}.`
+            `Please select the expiry date of passport for Traveler ${i + 1}.`,
           );
           return;
         }
@@ -1146,50 +1146,14 @@ const TicketBookingDetails = () => {
       return;
     }
 
-    // Age Validation
-    // const currentDate = new Date();
-    // let hasValidAdult = false,
-    //   hasValidChild = false,
-    //   hasValidInfant = false;
-
-    // travelers.forEach((traveler) => {
-    //   const dob = new Date(traveler.dob);
-    //   const age = (currentDate - dob) / (1000 * 60 * 60 * 24 * 365.25);
-
-    //   if (age > 12) hasValidAdult = true;
-    //   if (age >= 2 && age <= 12) hasValidChild = true;
-    //   if (age >= 0 && age < 2) hasValidInfant = true;
-    // });
-
-    // if (adulttraveler > 0 && !hasValidAdult) {
-    //   alert(
-    //     "At least one traveler must be 12 years or older if an adult traveler is selected."
-    //   );
-    //   return;
-    // }
-
-    // if (childtraveler > 0 && !hasValidChild) {
-    //   alert(
-    //     "At least one traveler must be between 2 and 12 years old if a child traveler is selected."
-    //   );
-    //   return;
-    // }
-
-    // if (infanttraveler > 0 && !hasValidInfant) {
-    //   alert(
-    //     "At least one traveler must be between 0 and 2 years old if an infant traveler is selected."
-    //   );
-    //   return;
-    // }
-
     const formdata = new FormData();
     formdata.append(
       "airline_name",
-      getCondition === 0 ? item?.airline : item?.airline_name
+      getCondition === 0 ? item?.airline : item?.airline_name,
     );
     formdata.append(
       "airline_code",
-      getCondition === 0 ? item?.flight_number : item?.flight_number
+      getCondition === 0 ? item?.flight_number : item?.flight_number,
     );
     // formdata.append(
     //   "departure_date",
@@ -1200,8 +1164,8 @@ const TicketBookingDetails = () => {
       "departure_date",
       moment(
         getCondition === 0 ? item?.departure_date : item?.onward_date,
-        "YYYY/MM/DD"
-      ).format("YYYY/MM/DD")
+        "YYYY/MM/DD",
+      ).format("YYYY/MM/DD"),
     );
 
     // formdata.append(
@@ -1213,43 +1177,43 @@ const TicketBookingDetails = () => {
       "arrival_date",
       moment(
         getCondition === 0 ? item?.arival_date : item?.arr_date,
-        "YYYY/MM/DD" // use the correct input format if needed
-      ).format("YYYY/MM/DD")
+        "YYYY/MM/DD", // use the correct input format if needed
+      ).format("YYYY/MM/DD"),
     );
 
     formdata.append(
       "departure_time",
-      getCondition === 0 ? item?.departure_time : item?.dep_time
+      getCondition === 0 ? item?.departure_time : item?.dep_time,
     );
     formdata.append(
       "arrival_time",
-      getCondition === 0 ? item?.arival_time : item?.arr_time
+      getCondition === 0 ? item?.arival_time : item?.arr_time,
     );
     formdata.append("booking_id", refId);
     formdata.append("get_con", getCondition);
     formdata.append(
       "departure_terminal_no",
-      getCondition === 0 ? "" : item?.dep_terminal_no
+      getCondition === 0 ? "" : item?.dep_terminal_no,
     );
     formdata.append(
       "arrival_terminal_no",
-      getCondition === 0 ? "" : item?.arr_terminal_no
+      getCondition === 0 ? "" : item?.arr_terminal_no,
     );
     formdata.append(
       "departure_airport_name",
-      getCondition === 0 ? "" : item?.dep_airport_name
+      getCondition === 0 ? "" : item?.dep_airport_name,
     );
     formdata.append(
       "arrival_airport_name",
-      getCondition === 0 ? "" : item?.arr_airport_name
+      getCondition === 0 ? "" : item?.arr_airport_name,
     );
     formdata.append(
       "departure_city",
-      getCondition === 0 ? item?.origin : item?.dep_city_name
+      getCondition === 0 ? item?.origin : item?.dep_city_name,
     );
     formdata.append(
       "arrival_city",
-      getCondition === 0 ? item?.destination : item?.arr_city_name
+      getCondition === 0 ? item?.destination : item?.arr_city_name,
     );
     formdata.append(
       "stop",
@@ -1257,7 +1221,7 @@ const TicketBookingDetails = () => {
         ? item?.flight_route === "Non-Stop" || "Non - Stop"
           ? 0
           : item?.flight_route
-        : item?.no_of_stop
+        : item?.no_of_stop,
     );
     if (getCondition === 1) {
       if (item?.stop_data.length > 0) {
@@ -1265,15 +1229,15 @@ const TicketBookingDetails = () => {
           formdata.append(`stop_city[${j}]`, item?.stop_data[j].city_name);
           formdata.append(
             `stop_arrival[${j}]`,
-            item?.stop_data[j].arrival_time
+            item?.stop_data[j].arrival_time,
           );
           formdata.append(
             `stop_layover_duration[${j}]`,
-            item?.stop_data[j].stop_duration
+            item?.stop_data[j].stop_duration,
           );
           formdata.append(
             `stop_departure[${j}]`,
-            item?.stop_data[j].departure_time
+            item?.stop_data[j].departure_time,
           );
         }
       }
@@ -1288,57 +1252,57 @@ const TicketBookingDetails = () => {
     if (item?.trip_type == 1) {
       formdata.append(
         "return_airline_name",
-        getCondition == 0 ? "" : item?.airline_name
+        getCondition == 0 ? "" : item?.airline_name,
       );
       formdata.append(
         "return_airline_code",
-        getCondition == 0 ? "" : item?.return_flight_number
+        getCondition == 0 ? "" : item?.return_flight_number,
       );
       formdata.append(
         "return_departure_date",
-        getCondition == 0 ? "" : item?.return_flight_data?.return_dep_date
+        getCondition == 0 ? "" : item?.return_flight_data?.return_dep_date,
       );
       formdata.append(
         "return_arrival_date",
-        getCondition == 0 ? "" : item?.return_flight_data?.return_arr_date
+        getCondition == 0 ? "" : item?.return_flight_data?.return_arr_date,
       );
       formdata.append(
         "return_departure_time",
-        getCondition == 0 ? "" : item?.return_flight_data?.return_dep_time
+        getCondition == 0 ? "" : item?.return_flight_data?.return_dep_time,
       );
       formdata.append(
         "return_arrival_time",
-        getCondition == 0 ? "" : item?.return_flight_data?.return_arr_time
+        getCondition == 0 ? "" : item?.return_flight_data?.return_arr_time,
       );
       formdata.append(
         "return_departure_city",
-        getCondition == 0 ? "" : item?.return_flight_data?.return_dep_city_name
+        getCondition == 0 ? "" : item?.return_flight_data?.return_dep_city_name,
       );
       formdata.append(
         "return_arrival_city",
-        getCondition == 0 ? "" : item?.return_flight_data?.return_arr_city_name
+        getCondition == 0 ? "" : item?.return_flight_data?.return_arr_city_name,
       );
       formdata.append(
         "return_stop",
-        getCondition == 0 ? "" : item?.return_no_of_stop
+        getCondition == 0 ? "" : item?.return_no_of_stop,
       );
       if (item?.return_stop_data.length > 0) {
         for (let k = 0; k < item?.return_stop_data.length; k++) {
           formdata.append(
             `return_stop_city[${k}]`,
-            getCondition == 0 ? "" : item?.return_stop_data[k].city_name
+            getCondition == 0 ? "" : item?.return_stop_data[k].city_name,
           );
           formdata.append(
             `return_stop_arrival[${k}]`,
-            getCondition == 0 ? "" : item?.return_stop_data[k].arrival_time
+            getCondition == 0 ? "" : item?.return_stop_data[k].arrival_time,
           );
           formdata.append(
             `return_stop_layover_duration[${k}]`,
-            getCondition == 0 ? "" : item?.return_stop_data[k].stop_duration
+            getCondition == 0 ? "" : item?.return_stop_data[k].stop_duration,
           );
           formdata.append(
             `return_stop_departure[${k}]`,
-            getCondition == 0 ? "" : item?.return_stop_data[k].departure_time
+            getCondition == 0 ? "" : item?.return_stop_data[k].departure_time,
           );
         }
       }
@@ -1350,40 +1314,40 @@ const TicketBookingDetails = () => {
         "is_refundable",
         item?.FareClasses[0].Class_Desc == "Non Refundable (LIVE Booking)"
           ? 0
-          : 1
+          : 1,
       );
     }
     formdata.append(
       "available_seats",
-      getCondition == 0 ? 0 : item?.available_seats
+      getCondition == 0 ? 0 : item?.available_seats,
     );
     formdata.append(
       "total_baggage",
-      getCondition == 0 ? "" : item?.check_in_baggage_adult
+      getCondition == 0 ? "" : item?.check_in_baggage_adult,
     );
     formdata.append(
       "check_in_adult",
-      getCondition == 0 ? "" : item?.check_in_baggage_adult
+      getCondition == 0 ? "" : item?.check_in_baggage_adult,
     );
     formdata.append(
       "check_in_children",
-      getCondition == 0 ? "" : item?.check_in_baggage_children
+      getCondition == 0 ? "" : item?.check_in_baggage_children,
     );
     formdata.append(
       "check_in_infant",
-      getCondition == 0 ? "" : item?.check_in_baggage_infant
+      getCondition == 0 ? "" : item?.check_in_baggage_infant,
     );
     formdata.append(
       "cabin_adult",
-      getCondition == 0 ? "" : item?.cabin_baggage_adult
+      getCondition == 0 ? "" : item?.cabin_baggage_adult,
     );
     formdata.append(
       "cabin_children",
-      getCondition == 0 ? "" : item?.cabin_baggage_children
+      getCondition == 0 ? "" : item?.cabin_baggage_children,
     );
     formdata.append(
       "cabin_infant",
-      getCondition == 0 ? "" : item?.cabin_baggage_infant
+      getCondition == 0 ? "" : item?.cabin_baggage_infant,
     );
     formdata.append("adult_travelers", adulttraveler);
     formdata.append("child_travelers", childtraveler);
@@ -1394,36 +1358,36 @@ const TicketBookingDetails = () => {
       getCondition == 0
         ? item?.price * ((adulttraveler || 0) + (childtraveler || 0)) +
             item?.infant_price * (infanttraveler || 0)
-        : item?.total_payable_price
+        : item?.total_payable_price,
     );
     formdata.append(
       "base_fare",
       getCondition == 0
         ? item?.price * ((adulttraveler || 0) + (childtraveler || 0)) +
             item?.infant_price * (infanttraveler || 0)
-        : item?.total_payable_price
+        : item?.total_payable_price,
     );
     formdata.append(
       "discount",
-      getCondition == 0 ? "" : item?.price_breakup?.discount
+      getCondition == 0 ? "" : item?.price_breakup?.discount,
     );
     formdata.append(
       "taxes_and_others",
-      getCondition == 0 ? "" : item?.price_breakup?.fee_taxes
+      getCondition == 0 ? "" : item?.price_breakup?.fee_taxes,
     );
     formdata.append(
       "service_fees",
-      getCondition == 0 ? "" : item?.price_breakup?.service_charge
+      getCondition == 0 ? "" : item?.price_breakup?.service_charge,
     );
     formdata.append(
       "is_international",
       getCondition == 0
         ? 0
         : item?.international_flight_staus == 0
-        ? "0"
-        : item?.international_flight_staus == 1
-        ? "1"
-        : ""
+          ? "0"
+          : item?.international_flight_staus == 1
+            ? "1"
+            : "",
     );
 
     // Loop over Adult travelers
@@ -1437,10 +1401,10 @@ const TicketBookingDetails = () => {
         traveler.gender?.value === "male"
           ? 1
           : traveler.gender?.value === "female"
-          ? 2
-          : traveler.gender?.value === "other"
-          ? 3
-          : ""
+            ? 2
+            : traveler.gender?.value === "other"
+              ? 3
+              : "",
       );
 
       formdata.append(`dob[${i}]`, getCondition == 0 ? "" : traveler.dob);
@@ -1448,13 +1412,13 @@ const TicketBookingDetails = () => {
       formdata.append(`email[${i}]`, getCondition == 0 ? "" : traveler.email);
       formdata.append(
         `phone_no[${i}]`,
-        getCondition == 0 ? "" : traveler.number
+        getCondition == 0 ? "" : traveler.number,
       );
       if (getCondition == 1) {
         if (item?.international_flight_staus == 1) {
           formdata.append(
             `passport_expiry_date[${i}]`,
-            getCondition == 0 ? "" : traveler.passport_expire_date
+            getCondition == 0 ? "" : traveler.passport_expire_date,
           );
           formdata.append(`passport_no[${i}]`, traveler.passport_no);
         }
@@ -1474,33 +1438,33 @@ const TicketBookingDetails = () => {
         traveler.gender?.value === "male"
           ? 1
           : traveler.gender?.value === "female"
-          ? 2
-          : traveler.gender?.value === "other"
-          ? 3
-          : ""
+            ? 2
+            : traveler.gender?.value === "other"
+              ? 3
+              : "",
       );
       formdata.append(
         `dob[${offset + i}]`,
-        getCondition == 0 ? "" : traveler.dob
+        getCondition == 0 ? "" : traveler.dob,
       );
       formdata.append(
         `age[${offset + i}]`,
-        getCondition == 0 ? "" : traveler.age
+        getCondition == 0 ? "" : traveler.age,
       );
       formdata.append(
         `email[${offset + i}]`,
-        getCondition == 0 ? "" : traveler.email
+        getCondition == 0 ? "" : traveler.email,
       );
       formdata.append(
         `phone_no[${offset + i}]`,
-        getCondition == 0 ? "" : traveler.number
+        getCondition == 0 ? "" : traveler.number,
       );
 
       if (getCondition == 1) {
         if (item?.international_flight_staus == 1) {
           formdata.append(
             `passport_expiry_date[${offset + i}]`,
-            traveler.passport_expire_date
+            traveler.passport_expire_date,
           );
           formdata.append(`passport_no[${offset + i}]`, traveler.passport_no);
         }
@@ -1520,33 +1484,33 @@ const TicketBookingDetails = () => {
         traveler.gender?.value === "male"
           ? 1
           : traveler.gender?.value === "female"
-          ? 2
-          : traveler.gender?.value === "other"
-          ? 3
-          : ""
+            ? 2
+            : traveler.gender?.value === "other"
+              ? 3
+              : "",
       );
       formdata.append(
         `dob[${offset + i}]`,
-        getCondition == 0 ? "" : traveler.dob
+        getCondition == 0 ? "" : traveler.dob,
       );
       formdata.append(
         `age[${offset + i}]`,
-        getCondition == 0 ? "" : traveler.age
+        getCondition == 0 ? "" : traveler.age,
       );
       formdata.append(
         `email[${offset + i}]`,
-        getCondition == 0 ? "" : traveler.email
+        getCondition == 0 ? "" : traveler.email,
       );
       formdata.append(
         `phone_no[${offset + i}]`,
-        getCondition == 0 ? "" : traveler.number
+        getCondition == 0 ? "" : traveler.number,
       );
 
       if (getCondition == 1) {
         if (item?.international_flight_staus == 1) {
           formdata.append(
             `passport_expiry_date[${offset + i}]`,
-            traveler.passport_expire_date
+            traveler.passport_expire_date,
           );
           formdata.append(`passport_no[${offset + i}]`, traveler.passport_no);
         }
@@ -1574,7 +1538,7 @@ const TicketBookingDetails = () => {
         Notification(
           "success",
           "Success",
-          "Ticket has been booked successfully"
+          "Ticket has been booked successfully",
         );
         // openModal();
         closeModal();
@@ -1591,7 +1555,7 @@ const TicketBookingDetails = () => {
             age: "",
             passport_expire_date: null,
             passport_no: "",
-          }))
+          })),
         );
         setCheck(false);
       } else {
@@ -1630,8 +1594,8 @@ const TicketBookingDetails = () => {
           {member.gender === 1
             ? "Male"
             : member.gender === 2
-            ? "Female"
-            : "Other"}
+              ? "Female"
+              : "Other"}
         </div>
         {member?.dob === null ? (
           <></>
@@ -1718,7 +1682,7 @@ const TicketBookingDetails = () => {
     formdata.append("type", "GET");
     formdata.append(
       "url",
-      `${getItinerary}/${itineraryCode}?traceId=${traceid}`
+      `${getItinerary}/${itineraryCode}?traceId=${traceid}`,
     );
     formdata.append("url_token", `Bearer ${token}`);
 
@@ -2157,7 +2121,7 @@ const TicketBookingDetails = () => {
                                 handleInputChange(
                                   index,
                                   "fname",
-                                  e.target.value
+                                  e.target.value,
                                 )
                               }
                               className="w-100 p-2 inpttticket"
@@ -2173,7 +2137,7 @@ const TicketBookingDetails = () => {
                                 handleInputChange(
                                   index,
                                   "lname",
-                                  e.target.value
+                                  e.target.value,
                                 )
                               }
                               className="w-100 p-2 inpttticket"
@@ -2224,7 +2188,7 @@ const TicketBookingDetails = () => {
                                     handleInputChangeAdult(
                                       index,
                                       "email",
-                                      e.target.value
+                                      e.target.value,
                                     )
                                   }
                                   className="w-100 p-2 inpttticket"
@@ -2241,12 +2205,12 @@ const TicketBookingDetails = () => {
                                   onChange={(e) => {
                                     const value = e.target.value.replace(
                                       /[^0-9]/g,
-                                      ""
+                                      "",
                                     ); // Keep only numbers
                                     handleInputChangeAdult(
                                       index,
                                       "number",
-                                      value
+                                      value,
                                     );
                                   }}
                                   className="w-100 p-2 inpttticket"
@@ -2285,7 +2249,7 @@ const TicketBookingDetails = () => {
                                         handleInputChangeAdult(
                                           index,
                                           "passport_no",
-                                          e.target.value
+                                          e.target.value,
                                         )
                                       }
                                     />
@@ -2384,7 +2348,7 @@ const TicketBookingDetails = () => {
                                 handleInputChange2(
                                   index,
                                   "fname",
-                                  e.target.value
+                                  e.target.value,
                                 )
                               }
                               className="w-100 p-2 inpttticket"
@@ -2400,7 +2364,7 @@ const TicketBookingDetails = () => {
                                 handleInputChange2(
                                   index,
                                   "lname",
-                                  e.target.value
+                                  e.target.value,
                                 )
                               }
                               className="w-100 p-2 inpttticket"
@@ -2451,7 +2415,7 @@ const TicketBookingDetails = () => {
                                     handleInputChangeChild(
                                       index,
                                       "email",
-                                      e.target.value
+                                      e.target.value,
                                     )
                                   }
                                   className="w-100 p-2 inpttticket"
@@ -2468,12 +2432,12 @@ const TicketBookingDetails = () => {
                                   onChange={(e) => {
                                     const value = e.target.value.replace(
                                       /[^0-9]/g,
-                                      ""
+                                      "",
                                     );
                                     handleInputChangeChild(
                                       index,
                                       "number",
-                                      value
+                                      value,
                                     );
                                   }}
                                   className="w-100 p-2 inpttticket"
@@ -2513,7 +2477,7 @@ const TicketBookingDetails = () => {
                                         handleInputChangeChild(
                                           index,
                                           "passport_no",
-                                          e.target.value
+                                          e.target.value,
                                         )
                                       }
                                     />
@@ -2613,7 +2577,7 @@ const TicketBookingDetails = () => {
                                 handleInputChange3(
                                   index,
                                   "fname",
-                                  e.target.value
+                                  e.target.value,
                                 )
                               }
                               className="w-100 p-2 inpttticket"
@@ -2628,7 +2592,7 @@ const TicketBookingDetails = () => {
                                 handleInputChange3(
                                   index,
                                   "lname",
-                                  e.target.value
+                                  e.target.value,
                                 )
                               }
                               className="w-100 p-2 inpttticket"
@@ -2700,7 +2664,7 @@ const TicketBookingDetails = () => {
                                     handleInputChangeInfant(
                                       index,
                                       "email",
-                                      e.target.value
+                                      e.target.value,
                                     )
                                   }
                                   className="w-100 p-2 inpttticket"
@@ -2717,12 +2681,12 @@ const TicketBookingDetails = () => {
                                   onChange={(e) => {
                                     const value = e.target.value.replace(
                                       /[^0-9]/g,
-                                      ""
+                                      "",
                                     ); // Keep only numbers
                                     handleInputChangeInfant(
                                       index,
                                       "number",
-                                      value
+                                      value,
                                     );
                                   }}
                                   className="w-100 p-2 inpttticket"
@@ -2762,7 +2726,7 @@ const TicketBookingDetails = () => {
                                         handleInputChangeInfant(
                                           index,
                                           "passport_no",
-                                          e.target.value
+                                          e.target.value,
                                         )
                                       }
                                       // readOnly
@@ -2906,11 +2870,11 @@ const TicketBookingDetails = () => {
                             {(() => {
                               const departure = moment(item?.sg[0]?.or?.dT);
                               const arrival = moment(
-                                item?.sg[item?.sg.length - 1]?.ds?.aT
+                                item?.sg[item?.sg.length - 1]?.ds?.aT,
                               );
                               const totalMinutes = arrival.diff(
                                 departure,
-                                "minutes"
+                                "minutes",
                               );
                               return `${Math.floor(totalMinutes / 60)}h ${
                                 totalMinutes % 60
@@ -2935,7 +2899,7 @@ const TicketBookingDetails = () => {
                       <div className="flight-departure text-center">
                         <h5 className="text-dark fs-6 fs-lg-5 fw-bold">
                           {moment(item?.sg[item?.sg.length - 1]?.ds?.aT).format(
-                            "hh:mm A"
+                            "hh:mm A",
                           )}
                         </h5>
                         <h5 className="text-dark fs-6 fs-lg-5">
@@ -2943,7 +2907,7 @@ const TicketBookingDetails = () => {
                         </h5>
                         <div className="fw-bold fs-lg-5 text-dark align-self-center">
                           {moment(item?.sg[item?.sg.length - 1]?.ds?.aT).format(
-                            "DD-MM-YYYY"
+                            "DD-MM-YYYY",
                           )}
                         </div>
                       </div>
@@ -2964,7 +2928,7 @@ const TicketBookingDetails = () => {
                             </h5>
                             <div className="fw-bold fs-lg-5 text-dark align-self-center">
                               {moment(
-                                item?.return_flight_data?.return_dep_date
+                                item?.return_flight_data?.return_dep_date,
                               ).format("DD-MM-YYYY")}
                             </div>
                           </div>
@@ -2999,7 +2963,7 @@ const TicketBookingDetails = () => {
                             </h5>
                             <div className="fw-bold fs-lg-5 text-dark align-self-center">
                               {moment(
-                                item?.return_flight_data?.return_arr_date
+                                item?.return_flight_data?.return_arr_date,
                               ).format("DD-MM-YYYY")}
                             </div>
                           </div>
@@ -3234,7 +3198,7 @@ const TicketBookingDetails = () => {
                         {getCondition == 1
                           ? moment(item?.dep_date).format("DD-MM-YYYY")
                           : moment(item?.departure_date).format(
-                              "DD-MM-YYYY"
+                              "DD-MM-YYYY",
                             )}{" "}
                         <br />
                         {getCondition == 1
@@ -3245,7 +3209,7 @@ const TicketBookingDetails = () => {
                         {getCondition == 0
                           ? calculateDuration(
                               item?.departure_time,
-                              item?.arival_time
+                              item?.arival_time,
                             )
                           : calculateDuration(item?.dep_time, item?.arr_time)}
 
@@ -3365,7 +3329,7 @@ const TicketBookingDetails = () => {
                             {item?.return_flight_data?.return_dep_city_name}
                             <br />
                             {moment(
-                              item?.return_flight_data?.return_dep_date
+                              item?.return_flight_data?.return_dep_date,
                             ).format("DD-MM-YYYY")}
                             <br />
                             {item?.return_flight_data?.return_dep_time}
@@ -3380,7 +3344,7 @@ const TicketBookingDetails = () => {
                             {item?.return_flight_data?.return_arr_city_name}{" "}
                             <br />
                             {moment(
-                              item?.return_flight_data?.return_arr_date
+                              item?.return_flight_data?.return_arr_date,
                             ).format("DD-MM-YYYY")}{" "}
                             <br />
                             {item?.return_flight_data?.return_arr_time}
@@ -3416,7 +3380,7 @@ const TicketBookingDetails = () => {
                           <td>{traveler.fname}</td>
                           <td>{traveler.lname}</td>
                         </tr>
-                      )
+                      ),
                     )}
                     {/* <tr>
             <td>1</td>

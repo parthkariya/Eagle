@@ -93,7 +93,8 @@ const flight_reducer = (state, action) => {
     return {
       ...state,
       flightCheapFix_Loading: false,
-      flightCheapFix_Data: action.payload,
+      flightCheapFix_Data: action.payload?.data,
+      cheapfixbooking_token_ID: action?.payload?.booking_token_id,
     };
   }
   if (action.type == FLIGHT_SEARCH_CHEAPFIX_ERROR) {

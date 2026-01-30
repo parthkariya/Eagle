@@ -26,7 +26,6 @@ myHeaders.append("Content-Type", "application/json");
 export const ACCEPT_HEADER1 = myHeaders;
 
 // API
-
 export const get_state = BaseUrl2 + "get-state";
 export const register = BaseUrl2 + "register";
 export const login = BaseUrl + "login";
@@ -36,6 +35,7 @@ export const forgot_password = BaseUrl + "forgot-password";
 export const change_password = BaseUrl + "change-password";
 export const booking = BaseUrl + "booking";
 export const Booking = BaseUrl2 + "booking";
+export const Bookingaapniapi = BaseUrl2 + "booking";
 export const get_booking = BaseUrl2 + "get-booking";
 export const get_flight_Booking = BaseUrl2 + "get-flights-booking";
 export const update_profile = BaseUrl + "update-profile";

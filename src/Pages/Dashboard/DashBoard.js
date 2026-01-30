@@ -135,17 +135,15 @@ const DashBoard = () => {
         >
           {page}
         </button>
-      )
+      ),
     );
   };
-
 
   function logout() {
     localStorage.clear();
     navigate("/");
     window.location.reload(false);
   }
-
 
   const openModal = () => setIsOpen(true);
   const closeModal = () => setIsOpen(false);
@@ -178,9 +176,8 @@ const DashBoard = () => {
       });
   };
 
-
   const [modalWidth, setModalWidth] = useState(
-    window.innerWidth <= 600 ? "90vw" : "80vw"
+    window.innerWidth <= 600 ? "90vw" : "80vw",
   );
 
   useEffect(() => {
@@ -242,7 +239,7 @@ const DashBoard = () => {
         },
       })
       .then((res) => {
-        console.log("res", res.data.data);
+        console.log("res okok", res.data.data);
 
         if (res.data.success == 1) {
           setFlightData(res.data.data);
@@ -261,7 +258,6 @@ const DashBoard = () => {
       });
   };
 
-
   const GetAllFlightBookings = async () => {
     setFlightLoading(true);
     const token = JSON.parse(localStorage.getItem("is_token"));
@@ -276,7 +272,6 @@ const DashBoard = () => {
 
       if (res.data.success === 1) {
         const raw = res.data.data; // array of bookings
-
         // ---- NORMALISE -------------------------------------------------
         const normalised = raw.map((item) => {
           // 1. TravClan – already has the deep structure
@@ -298,7 +293,8 @@ const DashBoard = () => {
                   itemCode: `airiq-${item.id}`,
                   itemFlight: {
                     airlineName: item.airline_name || "Unknown Airline",
-                    flightNumber: (item.airline_code || "").split(" ").pop() || "",
+                    flightNumber:
+                      (item.airline_code || "").split(" ").pop() || "",
                     departureAt: `${item.departure_date}T${item.departure_time}.000Z`,
                     arrivalAt: `${item.arrival_date}T${item.arrival_time}.000Z`,
                     fareIdentifier: { name: "Economy" },
@@ -315,7 +311,7 @@ const DashBoard = () => {
                           ds: {
                             aC: item.arrival_city || "",
                             aN: "",
-                            aT: `${item.arrival_date}T${item.arrival_time}`,     // ← CRITICAL
+                            aT: `${item.arrival_date}T${item.arrival_time}`, // ← CRITICAL
                           },
                           bg: item.total_baggage || "Reconfirm with Airline",
                           cBg: item.total_baggage || "Reconfirm with Airline",
@@ -326,7 +322,9 @@ const DashBoard = () => {
                     fareQuote: {
                       paxFareBreakUp: [
                         {
-                          gst: Math.round((Number(item.taxes_and_others) || 0) * 0.05),
+                          gst: Math.round(
+                            (Number(item.taxes_and_others) || 0) * 0.05,
+                          ),
                           yrTax: 0,
                         },
                       ],
@@ -381,7 +379,8 @@ const DashBoard = () => {
 
           // fallback – unknown provider
           return {
-            booking_code: item.booking_code || item.booking_id || `UNKNOWN-${item.id}`,
+            booking_code:
+              item.booking_code || item.booking_id || `UNKNOWN-${item.id}`,
           };
         });
 
@@ -402,7 +401,7 @@ const DashBoard = () => {
 
     const filtered = data.filter((item) => {
       const departureDateTime = new Date(
-        `${item.departure_date}T${item.departure_time}`
+        `${item.departure_date}T${item.departure_time}`,
       );
       if (type === "upcoming") {
         return departureDateTime >= now;
@@ -419,7 +418,7 @@ const DashBoard = () => {
     const now = new Date();
     const filtered = data.filter((item) => {
       const departureDateTime = new Date(
-        `${item.departure_date}T${item.departure_time}`
+        `${item.departure_date}T${item.departure_time}`,
       );
       if (type === "upcoming") {
         return departureDateTime >= now && item.is_cancel != 1;
@@ -432,7 +431,6 @@ const DashBoard = () => {
     });
     setFilteredBookingData(filtered);
   };
-
 
   const handleTabChange = (type) => {
     setSelectedTab(type);
@@ -460,8 +458,6 @@ const DashBoard = () => {
     filterBookings(getBookingData, selectedTab);
     filterBookingsBus(booking_data, selectedTab);
   }, [getBookingData]);
-
-
 
   const handleViewBookingBus = async (pnr) => {
     const formdata = new FormData();
@@ -682,16 +678,16 @@ const DashBoard = () => {
                                 <div className="duration">
                                   {(() => {
                                     const departure = moment(
-                                      departureSegment?.or?.dT
+                                      departureSegment?.or?.dT,
                                     );
                                     const arrival = moment(
-                                      departureSegment?.ds?.aT
+                                      departureSegment?.ds?.aT,
                                     );
 
                                     // total minutes
                                     const totalMinutes = arrival.diff(
                                       departure,
-                                      "minutes"
+                                      "minutes",
                                     );
 
                                     return `${Math.floor(totalMinutes / 60)}h ${totalMinutes % 60}m`;
@@ -718,10 +714,11 @@ const DashBoard = () => {
                                 <div className="stops">
                                   {flightInfo.stopCount.stops === 0
                                     ? "Direct"
-                                    : `${flightInfo.stopCount.stops} stop${flightInfo.stopCount.stops > 1
-                                      ? "s"
-                                      : ""
-                                    }`}
+                                    : `${flightInfo.stopCount.stops} stop${
+                                        flightInfo.stopCount.stops > 1
+                                          ? "s"
+                                          : ""
+                                      }`}
                                 </div>
                               </div>
                             </div>
@@ -780,10 +777,11 @@ const DashBoard = () => {
                             <div className="detail-group">
                               <span className="detail-key">Refund</span>
                               <span
-                                className={`detail-value ${flightInfo.isRefundable
-                                  ? "refundable"
-                                  : "non-refundable"
-                                  }`}
+                                className={`detail-value ${
+                                  flightInfo.isRefundable
+                                    ? "refundable"
+                                    : "non-refundable"
+                                }`}
                               >
                                 {flightInfo.isRefundable ? "Yes" : "No"}
                               </span>
@@ -979,18 +977,23 @@ const DashBoard = () => {
                                     <div className="datetime">
                                       <div className="time">
                                         {(() => {
-                                          const date = new Date(item.itemFlight.departureAt);
-                                          return date.toLocaleTimeString("en-US", {
-                                            hour: "2-digit",
-                                            minute: "2-digit",
-                                            hour12: false,
-                                            timeZone: "UTC", // ← Show time as per UTC (same as API)
-                                          });
+                                          const date = new Date(
+                                            item.itemFlight.departureAt,
+                                          );
+                                          return date.toLocaleTimeString(
+                                            "en-US",
+                                            {
+                                              hour: "2-digit",
+                                              minute: "2-digit",
+                                              hour12: false,
+                                              timeZone: "UTC", // ← Show time as per UTC (same as API)
+                                            },
+                                          );
                                         })()}
                                       </div>
                                       <div className="date">
                                         {new Date(
-                                          item.itemFlight.departureAt
+                                          item.itemFlight.departureAt,
                                         ).toLocaleDateString("en-US", {
                                           month: "short",
                                           day: "numeric",
@@ -1002,10 +1005,19 @@ const DashBoard = () => {
                                   <div className="route-line">
                                     <div className="duration-badge">
                                       {(() => {
-                                        const dep = moment(item.itemFlight.departureAt);
-                                        const arr = moment(item.itemFlight.arrivalAt);
-                                        const totalMinutes = arr.diff(dep, "minutes");
-                                        const hours = Math.floor(totalMinutes / 60);
+                                        const dep = moment(
+                                          item.itemFlight.departureAt,
+                                        );
+                                        const arr = moment(
+                                          item.itemFlight.arrivalAt,
+                                        );
+                                        const totalMinutes = arr.diff(
+                                          dep,
+                                          "minutes",
+                                        );
+                                        const hours = Math.floor(
+                                          totalMinutes / 60,
+                                        );
                                         const minutes = totalMinutes % 60;
                                         return `${hours}h ${minutes}m`;
                                       })()}
@@ -1026,11 +1038,13 @@ const DashBoard = () => {
                                     <div className="stops-info">
                                       {item.itemFlight.stopCount.stops === 0
                                         ? "Direct"
-                                        : `${item.itemFlight.stopCount.stops
-                                        } stop${item.itemFlight.stopCount.stops > 1
-                                          ? "s"
-                                          : ""
-                                        }`}
+                                        : `${
+                                            item.itemFlight.stopCount.stops
+                                          } stop${
+                                            item.itemFlight.stopCount.stops > 1
+                                              ? "s"
+                                              : ""
+                                          }`}
                                     </div>
                                   </div>
 
@@ -1041,18 +1055,23 @@ const DashBoard = () => {
                                     <div className="datetime">
                                       <div className="time">
                                         {(() => {
-                                          const date = new Date(item.itemFlight.arrivalAt);  // ← arrivalAt
-                                          return date.toLocaleTimeString("en-US", {
-                                            hour: "2-digit",
-                                            minute: "2-digit",
-                                            hour12: false,
-                                            timeZone: "UTC"
-                                          });
+                                          const date = new Date(
+                                            item.itemFlight.arrivalAt,
+                                          ); // ← arrivalAt
+                                          return date.toLocaleTimeString(
+                                            "en-US",
+                                            {
+                                              hour: "2-digit",
+                                              minute: "2-digit",
+                                              hour12: false,
+                                              timeZone: "UTC",
+                                            },
+                                          );
                                         })()}
                                       </div>
                                       <div className="date">
                                         {new Date(
-                                          item.itemFlight.arrivalAt
+                                          item.itemFlight.arrivalAt,
                                         ).toLocaleDateString("en-US", {
                                           month: "short",
                                           day: "numeric",
@@ -1064,24 +1083,37 @@ const DashBoard = () => {
 
                                 <div className="flight-details-grid">
                                   <div className="detail-item">
-                                    <span className="detail-label">Baggage</span>
+                                    <span className="detail-label">
+                                      Baggage
+                                    </span>
                                     <span className="detail-value">
-                                      {item.itemFlight.segments?.[0]?.[0]?.bg || "Reconfirm with Airline"}
+                                      {item.itemFlight.segments?.[0]?.[0]?.bg ||
+                                        "Reconfirm with Airline"}
                                     </span>
                                   </div>
                                   <div className="detail-item">
-                                    <span className="detail-label">Cabin Bag</span>
+                                    <span className="detail-label">
+                                      Cabin Bag
+                                    </span>
                                     <span className="detail-value">
-                                      {item.itemFlight.segments?.[0]?.[0]?.cBg || "Reconfirm with Airline"}
+                                      {item.itemFlight.segments?.[0]?.[0]
+                                        ?.cBg || "Reconfirm with Airline"}
                                     </span>
                                   </div>
                                   <div className="detail-item">
-                                    <span className="detail-label">Refundable</span>
+                                    <span className="detail-label">
+                                      Refundable
+                                    </span>
                                     <span
-                                      className={`detail-value ${item.itemFlight.isRefundable ? "refundable" : "non-refundable"
-                                        }`}
+                                      className={`detail-value ${
+                                        item.itemFlight.isRefundable
+                                          ? "refundable"
+                                          : "non-refundable"
+                                      }`}
                                     >
-                                      {item.itemFlight.isRefundable ? "Yes" : "No"}
+                                      {item.itemFlight.isRefundable
+                                        ? "Yes"
+                                        : "No"}
                                     </span>
                                   </div>
                                 </div>
@@ -1099,19 +1131,22 @@ const DashBoard = () => {
                             <div className="pricing-card">
                               <div className="price-row">
                                 <span className="price-label">Base Fare</span>
-                                <span className="price-amount">
+                                <span className="price-amount-dashboard">
                                   ₹{baseFare?.toLocaleString() || "0"}
                                 </span>
                               </div>
                               <div className="price-row">
-                                <span className="price-label">Taxes & Fees</span>
-                                <span className="price-amount">
+                                <span className="price-label">
+                                  Taxes & Fees
+                                </span>
+                                <span className="price-amount-dashboard">
                                   ₹{taxAndSurcharge?.toLocaleString() || "0"}
                                 </span>
                               </div>
 
                               {/* ---- GST & YR Tax – only show if TravClan (paxFareBreakUp exists) ---- */}
-                              {itineraryItems?.[0]?.itemFlight?.fareQuote?.paxFareBreakUp?.[0] && (
+                              {itineraryItems?.[0]?.itemFlight?.fareQuote
+                                ?.paxFareBreakUp?.[0] && (
                                 <div className="tax-breakdown">
                                   <div className="tax-item">
                                     <span>
@@ -1127,7 +1162,9 @@ const DashBoard = () => {
                               )}
 
                               <div className="price-total">
-                                <span className="total-label">Total Amount</span>
+                                <span className="total-label">
+                                  Total Amount
+                                </span>
                                 <span className="total-amount">
                                   ₹{totalAmount?.toLocaleString() || "0"}
                                 </span>
@@ -1172,7 +1209,7 @@ const DashBoard = () => {
                                       </span>
                                       <span className="info-value">
                                         {new Date(
-                                          passenger.dateOfBirth
+                                          passenger.dateOfBirth,
                                         ).toLocaleDateString("en-US", {
                                           year: "numeric",
                                           month: "long",
@@ -1202,7 +1239,7 @@ const DashBoard = () => {
                                       </span>
                                       <span className="info-value">
                                         {new Date(
-                                          passenger.passportExpiry
+                                          passenger.passportExpiry,
                                         ).toLocaleDateString("en-US", {
                                           year: "numeric",
                                           month: "long",
@@ -1256,7 +1293,7 @@ const DashBoard = () => {
                                       __html: rule.fareRuleDetail,
                                     }}
                                   />
-                                )
+                                ),
                               )}
                             </div>
                           </section>
@@ -1270,8 +1307,9 @@ const DashBoard = () => {
             <section className="container p-0 bookingsec shadow">
               <div className="tabSec">
                 <div
-                  className={`tabDiv ${selectedTab === "upcoming" ? "activeTab" : ""
-                    }`}
+                  className={`tabDiv ${
+                    selectedTab === "upcoming" ? "activeTab" : ""
+                  }`}
                   onClick={() => handleTabChange("upcoming")}
                 >
                   <div>
@@ -1281,8 +1319,9 @@ const DashBoard = () => {
                 </div>
 
                 <div
-                  className={`tabDiv ${selectedTab === "CANCELLED" ? "activeTab" : ""
-                    }`}
+                  className={`tabDiv ${
+                    selectedTab === "CANCELLED" ? "activeTab" : ""
+                  }`}
                   onClick={() => handleTabChange("CANCELLED")}
                 >
                   <div>
@@ -1292,8 +1331,9 @@ const DashBoard = () => {
                 </div>
 
                 <div
-                  className={`tabDiv ${selectedTab === "completed" ? "activeTab" : ""
-                    }`}
+                  className={`tabDiv ${
+                    selectedTab === "completed" ? "activeTab" : ""
+                  }`}
                   onClick={() => handleTabChange("completed")}
                 >
                   <div>
@@ -1375,7 +1415,7 @@ const DashBoard = () => {
                                                 to={"/ViewBooking"}
                                                 onClick={() => {
                                                   handleViewBookingBus(
-                                                    item?.PNRNO
+                                                    item?.PNRNO,
                                                   );
                                                 }}
                                                 state={{ item }}
@@ -1394,7 +1434,7 @@ const DashBoard = () => {
                                               </div>
                                               <div className="completedDate">
                                                 {moment(
-                                                  item.departure_date
+                                                  item.departure_date,
                                                 ).format("DD MMM'YY")}{" "}
                                                 <span className="text-secondary fw-light completedTime">
                                                   {item.departure_time}
@@ -1417,7 +1457,7 @@ const DashBoard = () => {
                                               </div>
                                               <div className="completedDate">
                                                 {moment(
-                                                  item.arrival_date
+                                                  item.arrival_date,
                                                 ).format("DD MMM'YY")}{" "}
                                                 <span className="text-secondary fw-light completedTime">
                                                   {item.arrival_time}
@@ -1459,7 +1499,7 @@ const DashBoard = () => {
                                                 className="completeCancelBokingbtn"
                                                 onClick={() => {
                                                   handleCancelBookingDetails(
-                                                    item.PNRNO
+                                                    item.PNRNO,
                                                   ); // ✅ Open modal
                                                   setSelectedPNR(item.PNRNO); // ✅ Set selected PNR
                                                 }}
@@ -1557,7 +1597,7 @@ const DashBoard = () => {
                                               </div>
                                               <div className="completedDate">
                                                 {moment(
-                                                  item.departure_date
+                                                  item.departure_date,
                                                 ).format("DD MMM'YY")}{" "}
                                                 <span className="text-secondary fw-light completedTime">
                                                   {item.departure_time}
@@ -1577,7 +1617,7 @@ const DashBoard = () => {
                                               </div>
                                               <div className="completedDate">
                                                 {moment(
-                                                  item.arrival_date
+                                                  item.arrival_date,
                                                 ).format("DD MMM'YY")}{" "}
                                                 <span className="text-secondary fw-light completedTime">
                                                   {item.arrival_time}
@@ -1699,7 +1739,7 @@ const DashBoard = () => {
                                                   to={"/ViewBooking"}
                                                   onClick={() => {
                                                     handleViewBookingBus(
-                                                      item?.PNRNO
+                                                      item?.PNRNO,
                                                     );
                                                   }}
                                                   state={{ item }}
@@ -1718,7 +1758,7 @@ const DashBoard = () => {
                                                 </div>
                                                 <div className="completedDate">
                                                   {moment(
-                                                    item.departure_date
+                                                    item.departure_date,
                                                   ).format("DD MMM'YY")}{" "}
                                                   <span className="text-secondary fw-light completedTime">
                                                     {item.departure_time}
@@ -1741,7 +1781,7 @@ const DashBoard = () => {
                                                 </div>
                                                 <div className="completedDate">
                                                   {moment(
-                                                    item.arrival_date
+                                                    item.arrival_date,
                                                   ).format("DD MMM'YY")}{" "}
                                                   <span className="text-secondary fw-light completedTime">
                                                     {item.arrival_time}
@@ -1771,12 +1811,12 @@ const DashBoard = () => {
                                                       {item.child[0].last_name}{" "}
                                                       {item.child.length >
                                                         1 && (
-                                                          <span>
-                                                            +
-                                                            {item.child.length -
-                                                              1}
-                                                          </span>
-                                                        )}
+                                                        <span>
+                                                          +
+                                                          {item.child.length -
+                                                            1}
+                                                        </span>
+                                                      )}
                                                     </div>
                                                   </div>
                                                 )}
@@ -1946,7 +1986,7 @@ const DashBoard = () => {
                 <div className="col-12 col-md-6 ">
                   <div
                     className=""
-                  // style={{ borderRight: "2px solid #ddb46b", height: "100%" }}
+                    // style={{ borderRight: "2px solid #ddb46b", height: "100%" }}
                   >
                     <div
                       className="row p-2 gap-2 align-items-center justify-content-around "
@@ -2191,7 +2231,7 @@ const DashBoard = () => {
                       style={{ border: "2px solid #ddb46b" }}
                     >
                       {getModalData?.return_departure_date ===
-                        getModalData?.return_arrival_date ? (
+                      getModalData?.return_arrival_date ? (
                         <div className="row gap-2 p-2 align-items-center justify-content-around">
                           <div className="col-5 text-center fw-bold">Date </div>
                           <div className="col-6 text-center">
@@ -2488,7 +2528,7 @@ const DashBoard = () => {
                             <>
                               <div
                                 className="mt-3"
-                              // style={{ border: "2px solid #ddb46b" }}
+                                // style={{ border: "2px solid #ddb46b" }}
                               >
                                 <div className="booking_details_baggage_head text-center ticket_booking_details_table_border p-2">
                                   Cabin
@@ -2922,7 +2962,7 @@ const DashBoard = () => {
                   <div className="col-12 col-md-6 ">
                     <div
                       className=""
-                    // style={{ borderRight: "2px solid #ddb46b", height: "100%" }}
+                      // style={{ borderRight: "2px solid #ddb46b", height: "100%" }}
                     >
                       <div
                         className="row p-2 gap-2 align-items-center justify-content-around "
@@ -3057,7 +3097,7 @@ const DashBoard = () => {
                         style={{ border: "2px solid #ddb46b" }}
                       >
                         {getModalData?.return_departure_date ===
-                          getModalData?.return_arrival_date ? (
+                        getModalData?.return_arrival_date ? (
                           <div className="row gap-2 p-2 align-items-center justify-content-around">
                             <div className="col-5 text-center fw-bold">
                               Date{" "}
@@ -3346,7 +3386,7 @@ const DashBoard = () => {
                             <>
                               <div
                                 className="mt-3"
-                              // style={{ border: "2px solid #ddb46b" }}
+                                // style={{ border: "2px solid #ddb46b" }}
                               >
                                 <div className="booking_details_baggage_head text-center ticket_booking_details_table_border p-2">
                                   Cabin
